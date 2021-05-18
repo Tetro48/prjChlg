@@ -1,0 +1,13 @@
+fileFormatVersion: 2
+guid: 456f862c770b09f40b133a200ea470b7
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences:
+  - gameAudio: {instanceID: 0}
+  - audioPieceLock: {fileID: 8300000, guid: 4c41b7f591027304189c7ee16669b233, type: 3}
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
