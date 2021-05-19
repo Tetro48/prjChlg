@@ -223,8 +223,17 @@ public class PiecesController : MonoBehaviour {
             {
                 if(GameEngine.instance.ARE < 1 || executedHold == true)
                 {
-                    SpawnPiece(bag[pieces]);
                     GameEngine.instance.lineClonePiecesLeft--;
+                    if (GameEngine.instance.lineClonePiecesLeft == 0)
+                    {
+                        GameEngine.instance.lineClonePiecesLeft = GameEngine.instance.lineClonePerPiece[GameEngine.instance.curSect];
+                        BoardController.instance.CloneLineToBottom();
+                    }
+                    else if (GameEngine.instance.lineClonePiecesLeft > GameEngine.instance.lineClonePerPiece[GameEngine.instance.curSect])
+                    {
+                        GameEngine.instance.lineClonePiecesLeft = GameEngine.instance.lineClonePerPiece[GameEngine.instance.curSect];
+                    }
+                    SpawnPiece(bag[pieces]);
                     for (int i = 0; i < (int)Math.Floor(gravityTiles); i++)
                     {
                         if(piecemovementlocked == false)MoveCurPiece(Vector2Int.down);
