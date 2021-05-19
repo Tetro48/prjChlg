@@ -244,15 +244,15 @@ public class MenuEngine : MonoBehaviour
                 }
                 if (frames == 361)
                 {
-                    NotificationEngine.instance.InstantiateNotification("Singles: " + GameEngine.instance.singles, Color.white);
-                    NotificationEngine.instance.InstantiateNotification("Doubles: " + GameEngine.instance.doubles, Color.white);
-                    NotificationEngine.instance.InstantiateNotification("Triples: " + GameEngine.instance.triples, Color.white);
-                    NotificationEngine.instance.InstantiateNotification("Quads: " + GameEngine.instance.tetrises, Color.white);
-                    NotificationEngine.instance.InstantiateNotification("5 lines: " + GameEngine.instance.pentrises, Color.white);
-                    NotificationEngine.instance.InstantiateNotification("6 lines: " + GameEngine.instance.sixtrises, Color.white);
-                    NotificationEngine.instance.InstantiateNotification("7 lines: " + GameEngine.instance.septrises, Color.white);
-                    NotificationEngine.instance.InstantiateNotification("8+ lines: " + GameEngine.instance.octrises, Color.white);
-                    NotificationEngine.instance.InstantiateNotification("Total lines: " + GameEngine.instance.totalLines, Color.white);
+                    if(GameEngine.instance.singles > 0) NotificationEngine.instance.InstantiateNotification("Singles: " + GameEngine.instance.singles, Color.white);
+                    if(GameEngine.instance.doubles > 0) NotificationEngine.instance.InstantiateNotification("Doubles: " + GameEngine.instance.doubles, Color.white);
+                    if(GameEngine.instance.triples > 0) NotificationEngine.instance.InstantiateNotification("Triples: " + GameEngine.instance.triples, Color.white);
+                    if(GameEngine.instance.tetrises > 0) NotificationEngine.instance.InstantiateNotification("Quads: " + GameEngine.instance.tetrises, Color.white);
+                    if(GameEngine.instance.pentrises > 0) NotificationEngine.instance.InstantiateNotification("5 lines: " + GameEngine.instance.pentrises, Color.white);
+                    if(GameEngine.instance.sixtrises > 0) NotificationEngine.instance.InstantiateNotification("6 lines: " + GameEngine.instance.sixtrises, Color.white);
+                    if(GameEngine.instance.septrises > 0) NotificationEngine.instance.InstantiateNotification("7 lines: " + GameEngine.instance.septrises, Color.white);
+                    if(GameEngine.instance.octrises > 0) NotificationEngine.instance.InstantiateNotification("8+ lines: " + GameEngine.instance.octrises, Color.white);
+                    if(GameEngine.instance.totalLines > 0) NotificationEngine.instance.InstantiateNotification("Total lines: " + GameEngine.instance.totalLines, Color.white);
                     NotificationEngine.instance.InstantiateNotification("Level: " + GameEngine.instance.level + "/" + (GameEngine.instance.level < 2100 ? (GameEngine.instance.curSect + 1) * 100 : 2100), Color.white);
                     NotificationEngine.instance.InstantiateNotification("Gravity: " + GameEngine.instance.gravity, Color.white);
                     NotificationEngine.instance.InstantiateNotification("Time: " + GameEngine.instance.timeCounter.text, Color.white);

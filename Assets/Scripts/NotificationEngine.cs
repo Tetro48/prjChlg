@@ -45,11 +45,11 @@ public class NotificationEngine : MonoBehaviour
             {
                 notificationInstance[i].transform.position -= new Vector3((256/15)*MenuEngine.instance.reswidth, 0, 0);
             }
-            if (notifAnimFrames[i] > 569)
+            if (notifAnimFrames[i] > 269)
             {
                 notificationInstance[i].transform.position += new Vector3((256/15)*MenuEngine.instance.reswidth, 0, 0);
             }
-            if (notifAnimFrames[i] > 600)
+            if (notifAnimFrames[i] > 300)
             {
                 Destroy(notificationInstance[i]);
                 notificationInstance.RemoveAt(i);

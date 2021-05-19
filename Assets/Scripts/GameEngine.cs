@@ -10,7 +10,7 @@ using TMPro;
 public enum RotationSystems {SRS, ARS}
 public class GameEngine : MonoBehaviour
 {
-    public int time;
+    public int time, controllerdisconnectTime;
     public int level;
     public int curSect, sectAfter20g;
     private double musicTime;
@@ -190,6 +190,7 @@ public class GameEngine : MonoBehaviour
         // musicTime += Time.deltaTime;
         FadeoutBGM();
         ChangeBGM();
+        if(controllerdisconnectTime > 0)controllerdisconnectTime--;
         // if (Input.GetKey(KeyCode.X) || Input.GetKey(KeyCode.Space)) Inputs[2] = true;
         // if (Input.GetKey(KeyCode.A)) Inputs[3] = true;
         // if (Input.GetKey(KeyCode.C)) Inputs[4] = true;
@@ -228,5 +229,5 @@ public class GameEngine : MonoBehaviour
     {
         if (MenuEngine.instance.curBoard != null) MenuEngine.instance.GameOver = true;
     }
-    public void ControllerSwap() {if (MenuEngine.instance.curBoard != null) NotificationEngine.instance.InstantiateNotification("Controller is swapped", Color.white);}
+    public void ControllerSwap() {if (MenuEngine.instance.curBoard != null && controllerdisconnectTime == 0) {NotificationEngine.instance.InstantiateNotification("Controller is swapped", Color.white); controllerdisconnectTime = 300;} }
 }
