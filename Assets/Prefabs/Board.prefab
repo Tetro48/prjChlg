@@ -5701,11 +5701,11 @@ AudioSource:
   m_Enabled: 1
   serializedVersion: 4
   OutputAudioMixerGroup: {fileID: 0}
-  m_audioClip: {fileID: 0}
+  m_audioClip: {fileID: 8300000, guid: fb55e26a55ad5534cbb6c6e30d83a656, type: 3}
   m_PlayOnAwake: 0
   m_Volume: 1
   m_Pitch: 1
-  Loop: 0
+  Loop: 1
   Mute: 0
   Spatialize: 0
   SpatializePostEffects: 0
@@ -6397,6 +6397,7 @@ MonoBehaviour:
   audioLineFall: {fileID: 8300000, guid: 593050431a0d777469f48f58e0b0a60b, type: 3}
   audioPieceLock: {fileID: 8300000, guid: f77ceeac82370c74ab7ba4f850219b6c, type: 3}
   audioLineClone: {fileID: 8300000, guid: 494d18e15d765164990c13d67ce4ff6a, type: 3}
+  warning: {fileID: 8300000, guid: fb55e26a55ad5534cbb6c6e30d83a656, type: 3}
   tetrisText: {fileID: 0}
   tileClone: {fileID: 2796074006605267220, guid: 617534ae5383fb442a34058db65d55be,
     type: 3}

@@ -68,6 +68,14 @@
                     "expectedControlType": "Button",
                     "processors": "",
                     "interactions": ""
+                },
+                {
+                    "name": "Show Grade Score",
+                    "type": "Button",
+                    "id": "cf300265-2f9e-481f-bd7d-0a0d56df258c",
+                    "expectedControlType": "Button",
+                    "processors": "",
+                    "interactions": ""
                 }
             ],
             "bindings": [
@@ -332,6 +340,17 @@
                     "processors": "",
                     "groups": "Gamepad",
                     "action": "Clockwise",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "57416ef8-3c1b-4e02-acbf-4a2b0d9183e8",
+                    "path": "<Keyboard>/g",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "Keyboard",
+                    "action": "Show Grade Score",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }

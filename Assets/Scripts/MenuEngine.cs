@@ -23,6 +23,7 @@ public class MenuEngine : MonoBehaviour
     public bool pressedSettingsMenu, pressedInputsMenu;
     public bool pressedBack;
 
+    public string[] gradeStringConversion = {"9","8","7","6","5","4","3","2","1","S1","S2","S3","S4","S5","S6","S7","S8","S9","GM"};
 
     public TextMeshProUGUI framerateCounter;
 
@@ -32,7 +33,7 @@ public class MenuEngine : MonoBehaviour
     public AudioClip clip, topoutSE;
     public GameObject inGameBoard, curBoard;
     public AudioClip ModeOK;
-    public GameObject mainMenu, mainMenuGUI1, mainMenuGUI2, mainMenuGUI3, settingsMenu, settingsMenuGUI1, settingsMenuGUI1Part, settingsMenuGUI2, settingsMenuGUI3, settingsMenuGUI4, settingsMenuGUI5, settingsMenuGUI6, settingsMenuGUI7, imgprjchlg, imgbg, curLevel, nextSecLv, levelSprite, timeCounter;
+    public GameObject mainMenu, mainMenuGUI1, mainMenuGUI2, mainMenuGUI3, settingsMenu, settingsMenuGUI1, settingsMenuGUI1Part, settingsMenuGUI2, settingsMenuGUI3, settingsMenuGUI4, settingsMenuGUI5, settingsMenuGUI6, settingsMenuGUI7, imgprjchlg, imgbg, curLevel, nextSecLv, levelSprite, timeCounter, gradeText;
     public GameObject[] mainMenuGUI, settingsMenuGUI, settingsMenuGUIpart;
     public RectTransform mainMenuMovement, mainMenuGUI1Movement, mainMenuGUI2Movement, mainMenuGUI3Movement, settingsMovement, settingsGUI1Movement, settingsGUI1PartMovement, settingsGUI2Movement, settingsGUI3Movement, settingsGUI4Movement, settingsGUI5Movement, settingsGUI6Movement, settingsGUI7Movement;
     public RectTransform[] mainMenuGUIMovement, settingsGUIMovement, settingsGUIPartMovement;
@@ -77,6 +78,7 @@ public class MenuEngine : MonoBehaviour
         alreadystarted = true;
         instance = this;
     }
+    
     private int resRefreshrates = 0;
     void Start()
     {
@@ -253,6 +255,9 @@ public class MenuEngine : MonoBehaviour
                     if(GameEngine.instance.septrises > 0) NotificationEngine.instance.InstantiateNotification("7 lines: " + GameEngine.instance.septrises, Color.white);
                     if(GameEngine.instance.octrises > 0) NotificationEngine.instance.InstantiateNotification("8+ lines: " + GameEngine.instance.octrises, Color.white);
                     if(GameEngine.instance.totalLines > 0) NotificationEngine.instance.InstantiateNotification("Total lines: " + GameEngine.instance.totalLines, Color.white);
+                    NotificationEngine.instance.InstantiateNotification("Grade: " + gradeStringConversion[GameEngine.instance.grade], Color.white);
+                    if(GameEngine.instance.statGradePoints > 0) {NotificationEngine.instance.InstantiateNotification("Total grade score:", Color.white);
+                    NotificationEngine.instance.InstantiateNotification(Math.Floor(GameEngine.instance.statGradePoints).ToString(), Color.white);}
                     NotificationEngine.instance.InstantiateNotification("Level: " + GameEngine.instance.level + "/" + (GameEngine.instance.level < 2100 ? (GameEngine.instance.curSect + 1) * 100 : 2100), Color.white);
                     NotificationEngine.instance.InstantiateNotification("Gravity: " + GameEngine.instance.gravity, Color.white);
                     NotificationEngine.instance.InstantiateNotification("Time: " + GameEngine.instance.timeCounter.text, Color.white);
@@ -288,6 +293,9 @@ public class MenuEngine : MonoBehaviour
                 if (frames == MMf + 7)
                 {
                     mainMenu.SetActive(false);
+                    GameEngine.instance.gradePoints = 0;
+                    GameEngine.instance.gradePointRequirement = 100;
+                    GameEngine.instance.statGradePoints = 0;
                     // SceneManager.LoadScene("GameScene");
                     GameObject board = GameObject.Instantiate(inGameBoard, transform);
                     curBoard = board;
@@ -296,6 +304,7 @@ public class MenuEngine : MonoBehaviour
                     nextSecLv.SetActive(true);
                     levelSprite.SetActive(true);
                     timeCounter.SetActive(true);
+                    gradeText.SetActive(true);
                     mainMenuMusic.Stop();
                     PiecesController.instance.UpdateShownPieces();
                 }
@@ -430,6 +439,8 @@ public class MenuEngine : MonoBehaviour
             GameEngine.instance.septrises = 0;
             GameEngine.instance.octrises = 0;
             GameEngine.instance.totalLines = 0;
+            GameEngine.instance.grade = 0;
+            GameEngine.instance.gradeIndicator.sprite = GameEngine.instance.gradeSprites[0];
             GameEngine.instance.bgmlv = 1;
             GameEngine.instance.timeCounter.text = "00:00:00";
             GameEngine.instance.nextSecLv.text = "100";
@@ -437,7 +448,7 @@ public class MenuEngine : MonoBehaviour
             Destroy(curBoard);
             GameEngine.instance.gameAudio.Stop();
             GameEngine.instance.gameAudio.clip = GameEngine.instance.bgm_1p_lv[0];
-            if (frames == 0)mainMenuMusic.Play();
+            if (!mainMenuMusic.isPlaying)mainMenuMusic.Play();
             frames++;
             // if (SceneManager.GetActiveScene().name != "MenuScene")SceneManager.LoadScene("MenuScene");
             // imgbg.SetActive(true);
@@ -446,6 +457,7 @@ public class MenuEngine : MonoBehaviour
             nextSecLv.SetActive(false);
             levelSprite.SetActive(false);
             timeCounter.SetActive(false);
+            gradeText.SetActive(false);
             mainMenu.SetActive(true);
             if (frames == 1)
             {

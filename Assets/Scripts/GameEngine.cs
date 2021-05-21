@@ -10,18 +10,24 @@ using TMPro;
 public enum RotationSystems {SRS, ARS}
 public class GameEngine : MonoBehaviour
 {
-    public int time, controllerdisconnectTime;
+    public int time, notifDelay;
     public int level;
     public int curSect, sectAfter20g;
+    // Number of combos | Keeping combo
+    public int comboCount, comboKeepCounter;
+    public AudioClip[] comboSE;
     private double musicTime;
     public AudioSource gameAudio;
     public AudioClip[] bgm_1p_lv;
     public string audioPath;
-    public AudioClip readySE, goSE;
+    public AudioClip readySE, goSE, gradeUp;
     public int bgmlv = 1;
+    public double gradePoints, statGradePoints, gradePointRequirement;
     public TextMeshPro levelTextRender, nextSecLv, timeCounter;
     public static GameEngine instance;
-    public SpriteRenderer readyGoIndicator;
+    public SpriteRenderer readyGoIndicator, gradeIndicator;
+    public Sprite[] gradeSprites;
+    public int grade;
     public Sprite readySprite, goSprite;
     public int nextPieces, nextibmblocks;
     public RotationSystems RS;
@@ -46,9 +52,37 @@ public class GameEngine : MonoBehaviour
     public bool[] HoldInputs;
     public Vector2 movement;
 
-    int[] lvlLineIncrement = {1, 3, 6, 10, 15, 21, 28, 36};
+	/** Line clear時に入る段位 point */
+	static int[] tableGradePoint = {10, 30, 60, 120, 180, 240, 300, 400};
+
+	/** 段位 pointのCombo bonus */
+	private static float[,] tableGradeComboBonus =
+	{
+		{1.0f,1.0f,1.0f,1.0f,1.0f,1.0f,1.0f,1.0f,1.0f,1.0f},
+		{1.0f,1.2f,1.2f,1.4f,1.4f,1.4f,1.4f,1.5f,1.5f,2.0f},
+		{1.0f,1.4f,1.5f,1.6f,1.7f,1.8f,1.9f,2.0f,2.1f,2.5f},
+		{1.0f,1.5f,1.8f,2.0f,2.2f,2.3f,2.4f,2.5f,2.6f,3.0f},
+		{1.0f,1.5f,1.8f,2.0f,2.2f,2.3f,2.4f,2.5f,2.6f,3.0f},
+		{1.0f,1.5f,1.8f,2.0f,2.2f,2.3f,2.4f,2.5f,2.6f,3.0f},
+		{1.0f,1.5f,1.8f,2.0f,2.2f,2.3f,2.4f,2.5f,2.6f,3.0f},
+		{1.0f,1.5f,1.8f,2.0f,2.2f,2.3f,2.4f,2.5f,2.6f,3.0f},
+	};
+    static int[] lvlLineIncrement = {1, 3, 6, 10, 15, 21, 28, 36};
     public void LineClears(int lines)
     {
+        if (lines > 0)
+        {
+            comboKeepCounter = 2;
+            if (lines > 1)
+            {
+                comboCount++;
+            }
+        }
+        if(comboCount >= 2) {
+            int cmbse = comboCount - 2;
+            if(cmbse > 20) cmbse = 20;
+            gameAudio.PlayOneShot(comboSE[cmbse]);
+        }
         level += lvlLineIncrement[lines-1];
         if(level > 2100) level = 2100;
         if(level/100 > curSect)
@@ -77,6 +111,27 @@ public class GameEngine : MonoBehaviour
                 gravity = gravity * 4;
             }
         }
+		int basepoint = tableGradePoint[lines - 1];
+        int indexcombo = comboCount - 1;
+        if(indexcombo < 0) indexcombo = 0;
+        float combobonus = tableGradeComboBonus[lines - 1, indexcombo];
+	
+		int levelbonus = 1 + (level / 250);
+	
+		float point = (basepoint * combobonus) * levelbonus;
+        if(sectAfter20g >= 21) point *= 10;
+        else if(sectAfter20g > 19) point *= 5;
+        else if(sectAfter20g > 18) point *= 2;
+		gradePoints += point;
+		statGradePoints += point;
+        while(gradePoints >= gradePointRequirement)
+        {
+			gradePoints -= gradePointRequirement;
+            if(grade<18)grade++;
+            gradeIndicator.sprite = gradeSprites[grade];
+            gameAudio.PlayOneShot(gradeUp);
+            gradePointRequirement *= Math.Abs(1 + ((Math.Abs(Math.Floor((double)level /100)+1)/4)));
+        }
         totalLines += lines;
         if(lines == 1) singles++;
         if(lines == 2) doubles++;
@@ -100,10 +155,11 @@ public class GameEngine : MonoBehaviour
         Debug.Log(audioPath);
         for (int i = 0; i < 7; i++)
         {
-            StartCoroutine(LoadMusic(i));
+            StartCoroutine(LoadLevelMusic(i));
         }
+        StartCoroutine(LoadMainMenuMusic());
     }
-    private IEnumerator LoadMusic(int lv)
+    private IEnumerator LoadLevelMusic(int lv)
     {
         WWW request;
         if(lv < 6) request = GetAudioFromFile(audioPath, "BGM_1p_lv"+(lv+1)+".wav");
@@ -112,10 +168,22 @@ public class GameEngine : MonoBehaviour
         yield return request;
 
         bgm_1p_lv[lv] = request.GetAudioClip();
-        bgm_1p_lv[lv].name = "BGM_" + (lv < 6 ? "1p_lv"+(lv+1)+".wav" : "ending2.wav");
+        bgm_1p_lv[lv].name = "BGM_" + (lv < 6 ? "1p_lv"+(lv+1)+"" : "ending2");
         if (lv == 0) gameAudio.clip = bgm_1p_lv[0];
     }
-    private WWW GetAudioFromFile(string path, string filename)
+    AudioClip MMmusic;
+    private IEnumerator LoadMainMenuMusic()
+    {
+        WWW request = GetAudioFromFile(audioPath, "BGM_player_data.wav");
+        Debug.Log(request);
+        yield return request;
+
+        MMmusic = request.GetAudioClip();
+        MMmusic.name = ("BGM_player_data");
+        MenuEngine.instance.mainMenuMusic.clip = MMmusic;
+        MenuEngine.instance.mainMenuMusic.Play();
+    }
+    public WWW GetAudioFromFile(string path, string filename)
     {
         string audioToLoad = string.Format(path + "{0}", filename);
         WWW request = new WWW(audioToLoad);
@@ -190,7 +258,7 @@ public class GameEngine : MonoBehaviour
         // musicTime += Time.deltaTime;
         FadeoutBGM();
         ChangeBGM();
-        if(controllerdisconnectTime > 0)controllerdisconnectTime--;
+        if(notifDelay > 0)notifDelay--;
         // if (Input.GetKey(KeyCode.X) || Input.GetKey(KeyCode.Space)) Inputs[2] = true;
         // if (Input.GetKey(KeyCode.A)) Inputs[3] = true;
         // if (Input.GetKey(KeyCode.C)) Inputs[4] = true;
@@ -210,6 +278,10 @@ public class GameEngine : MonoBehaviour
                 // if(FrameHoldInputs[i]>0)FrameHoldInputs[i]--;
                 // HoldInputs[i] = FrameHoldInputs[i] > 0;
             } 
+            if (comboKeepCounter == 0)
+            {
+                comboCount = 0;
+            }
         }
         else if (paused == true)
         {
@@ -229,5 +301,6 @@ public class GameEngine : MonoBehaviour
     {
         if (MenuEngine.instance.curBoard != null) MenuEngine.instance.GameOver = true;
     }
-    public void ControllerSwap() {if (MenuEngine.instance.curBoard != null && controllerdisconnectTime == 0) {NotificationEngine.instance.InstantiateNotification("Controller is swapped", Color.white); controllerdisconnectTime = 300;} }
+    public void ControllerSwap() {if (MenuEngine.instance.curBoard != null && notifDelay == 0) {NotificationEngine.instance.InstantiateNotification("Controller is swapped", Color.white); notifDelay = 300;} }
+    public void ShowGradeScore() {if (notifDelay == 0) {NotificationEngine.instance.InstantiateNotification("Grade score: ", Color.white); NotificationEngine.instance.InstantiateNotification(""+ Math.Floor(gradePoints), Color.white); NotificationEngine.instance.InstantiateNotification("/" + Math.Floor(gradePointRequirement), Color.white); notifDelay = 120;} }
 }

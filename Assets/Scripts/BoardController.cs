@@ -12,7 +12,7 @@ public class BoardController : MonoBehaviour {
     public int gridSizeX, gridSizeY;
     public AudioSource gameAudio;
     public AudioClip[] audioLineClear;
-    public AudioClip audioLineFall, audioPieceLock, audioLineClone;
+    public AudioClip audioLineFall, audioPieceLock, audioLineClone, warning;
 
     public GameObject tetrisText;
     public GameObject tileClone;
@@ -35,6 +35,7 @@ public class BoardController : MonoBehaviour {
 
     private void Update()
     {
+        TopoutWarning();
         if(GameEngine.instance.framestepped && !MenuEngine.instance.GameOver)
         {
             if(linecleared == true)
@@ -51,6 +52,28 @@ public class BoardController : MonoBehaviour {
         }
     }
 
+    public void TopoutWarning()
+    {
+        int tilesToWarn = 0;
+        for (int y = 16; y < gridSizeY; y++)
+        {
+            for (int x = 0; x < gridSizeX; x++)
+            {
+                if (fullGrid[x,y].isOccupied)
+                {
+                    tilesToWarn += y-15;
+                }
+            }
+        }
+        if (tilesToWarn > 18 && !MenuEngine.instance.GameOver)
+        {
+            gameAudio.loop = true;
+            if(!gameAudio.isPlaying)gameAudio.Play();
+        }
+        else
+        {gameAudio.loop = false;}
+
+    }
     private void LineClear(List<int> linesToClear)
     {
         GameEngine.instance.lineDelayf++;

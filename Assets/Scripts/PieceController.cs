@@ -353,7 +353,13 @@ public class PieceController : MonoBehaviour {
     {
         int oldRotationIndex = rotationIndex;
         rotationIndex += clockwise ? 1 : -1;
+        if (UD)rotationIndex += clockwise ? 1 : -1;
+
         rotationIndex = Mod(rotationIndex, 4);
+        if (GameEngine.instance.RS == RotationSystems.ARS && (curType == PieceType.S || curType == PieceType.Z))
+        {
+            rotationIndex = Mod(rotationIndex, 2);
+        }
 
         for(int i = 0; i < tiles.Length; i++)
         {
@@ -379,9 +385,13 @@ public class PieceController : MonoBehaviour {
     }
     public void RotatePiece180(bool clockwise, bool shouldOffset)
     {
-        int oldRotationIndex = rotationIndex;
-        rotationIndex += clockwise ? 1 : -1;
-        rotationIndex = Mod(rotationIndex, 4);
+        int oldRotationIndex = Mod(rotationIndex - 2, 4);
+        // rotationIndex += clockwise ? 1 : -1;
+        // rotationIndex = Mod(rotationIndex, 4);
+        // if (GameEngine.instance.RS == RotationSystems.ARS && (curType == PieceType.S || curType == PieceType.Z))
+        // {
+        //     rotationIndex = Mod(rotationIndex, 2);
+        // }
 
         for(int i = 0; i < tiles.Length; i++)
         {

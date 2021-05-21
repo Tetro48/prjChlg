@@ -148,25 +148,25 @@ public class PiecesController : MonoBehaviour {
             JLSTZ_OFFSET_DATA[0, 2] = Vector2Int.zero;
             JLSTZ_OFFSET_DATA[0, 3] = Vector2Int.zero;
 
-            JLSTZ_OFFSET_DATA[1, 0] = Vector2Int.zero;
-            JLSTZ_OFFSET_DATA[1, 1] = new Vector2Int(1,0);
-            JLSTZ_OFFSET_DATA[1, 2] = Vector2Int.zero;
-            JLSTZ_OFFSET_DATA[1, 3] = new Vector2Int(-1, 0);
+            JLSTZ_OFFSET_DATA[1, 0] = new Vector2Int(-1, 1);
+            JLSTZ_OFFSET_DATA[1, 1] = new Vector2Int(-2, 0);
+            JLSTZ_OFFSET_DATA[1, 2] = new Vector2Int(-1, 0);
+            JLSTZ_OFFSET_DATA[1, 3] = new Vector2Int(-2, 0);
 
-            JLSTZ_OFFSET_DATA[2, 0] = Vector2Int.zero;
-            JLSTZ_OFFSET_DATA[2, 1] = new Vector2Int(1, -1);
-            JLSTZ_OFFSET_DATA[2, 2] = Vector2Int.zero;
-            JLSTZ_OFFSET_DATA[2, 3] = new Vector2Int(-1, -1);
+            JLSTZ_OFFSET_DATA[2, 0] = new Vector2Int(1, 0);
+            JLSTZ_OFFSET_DATA[2, 1] = new Vector2Int(1, 0);
+            JLSTZ_OFFSET_DATA[2, 2] = new Vector2Int(1, 0);
+            JLSTZ_OFFSET_DATA[2, 3] = new Vector2Int(1, 0);
 
-            JLSTZ_OFFSET_DATA[3, 0] = Vector2Int.zero;
-            JLSTZ_OFFSET_DATA[3, 1] = new Vector2Int(0, 2);
-            JLSTZ_OFFSET_DATA[3, 2] = Vector2Int.zero;
-            JLSTZ_OFFSET_DATA[3, 3] = new Vector2Int(0, 2);
+            JLSTZ_OFFSET_DATA[3, 0] = new Vector2Int(0, 0);
+            JLSTZ_OFFSET_DATA[3, 1] = new Vector2Int(0, -1);
+            JLSTZ_OFFSET_DATA[3, 2] = new Vector2Int(0, -1);
+            JLSTZ_OFFSET_DATA[3, 3] = new Vector2Int(0, -1);
 
             JLSTZ_OFFSET_DATA[4, 0] = Vector2Int.zero;
-            JLSTZ_OFFSET_DATA[4, 1] = new Vector2Int(1, 2);
+            JLSTZ_OFFSET_DATA[4, 1] = Vector2Int.zero;
             JLSTZ_OFFSET_DATA[4, 2] = Vector2Int.zero;
-            JLSTZ_OFFSET_DATA[4, 3] = new Vector2Int(-1, 2);
+            JLSTZ_OFFSET_DATA[4, 3] = Vector2Int.zero;
 
             I_OFFSET_DATA = new Vector2Int[5, 4];
             I_OFFSET_DATA[0, 0] = Vector2Int.zero;
@@ -633,6 +633,7 @@ public class PiecesController : MonoBehaviour {
             gravityTiles = 22.0f;
         }
         pieces++;
+        if(GameEngine.instance.comboKeepCounter > 0)GameEngine.instance.comboKeepCounter--;
         allowHold = true;
         IHSexecuted = false;
         NextPiece();

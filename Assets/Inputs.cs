@@ -81,6 +81,14 @@ public class @Inputs : IInputActionCollection, IDisposable
                     ""expectedControlType"": ""Button"",
                     ""processors"": """",
                     ""interactions"": """"
+                },
+                {
+                    ""name"": ""Show Grade Score"",
+                    ""type"": ""Button"",
+                    ""id"": ""cf300265-2f9e-481f-bd7d-0a0d56df258c"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": """"
                 }
             ],
             ""bindings"": [
@@ -347,6 +355,17 @@ public class @Inputs : IInputActionCollection, IDisposable
                     ""action"": ""Clockwise"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""57416ef8-3c1b-4e02-acbf-4a2b0d9183e8"",
+                    ""path"": ""<Keyboard>/g"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": ""Keyboard"",
+                    ""action"": ""Show Grade Score"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
                 }
             ]
         }
@@ -386,6 +405,7 @@ public class @Inputs : IInputActionCollection, IDisposable
         m_Gamemaps_Hold = m_Gamemaps.FindAction("Hold", throwIfNotFound: true);
         m_Gamemaps_Pause = m_Gamemaps.FindAction("Pause", throwIfNotFound: true);
         m_Gamemaps_Framestep = m_Gamemaps.FindAction("Framestep", throwIfNotFound: true);
+        m_Gamemaps_ShowGradeScore = m_Gamemaps.FindAction("Show Grade Score", throwIfNotFound: true);
     }
 
     public void Dispose()
@@ -443,6 +463,7 @@ public class @Inputs : IInputActionCollection, IDisposable
     private readonly InputAction m_Gamemaps_Hold;
     private readonly InputAction m_Gamemaps_Pause;
     private readonly InputAction m_Gamemaps_Framestep;
+    private readonly InputAction m_Gamemaps_ShowGradeScore;
     public struct GamemapsActions
     {
         private @Inputs m_Wrapper;
@@ -455,6 +476,7 @@ public class @Inputs : IInputActionCollection, IDisposable
         public InputAction @Hold => m_Wrapper.m_Gamemaps_Hold;
         public InputAction @Pause => m_Wrapper.m_Gamemaps_Pause;
         public InputAction @Framestep => m_Wrapper.m_Gamemaps_Framestep;
+        public InputAction @ShowGradeScore => m_Wrapper.m_Gamemaps_ShowGradeScore;
         public InputActionMap Get() { return m_Wrapper.m_Gamemaps; }
         public void Enable() { Get().Enable(); }
         public void Disable() { Get().Disable(); }
@@ -488,6 +510,9 @@ public class @Inputs : IInputActionCollection, IDisposable
                 @Framestep.started -= m_Wrapper.m_GamemapsActionsCallbackInterface.OnFramestep;
                 @Framestep.performed -= m_Wrapper.m_GamemapsActionsCallbackInterface.OnFramestep;
                 @Framestep.canceled -= m_Wrapper.m_GamemapsActionsCallbackInterface.OnFramestep;
+                @ShowGradeScore.started -= m_Wrapper.m_GamemapsActionsCallbackInterface.OnShowGradeScore;
+                @ShowGradeScore.performed -= m_Wrapper.m_GamemapsActionsCallbackInterface.OnShowGradeScore;
+                @ShowGradeScore.canceled -= m_Wrapper.m_GamemapsActionsCallbackInterface.OnShowGradeScore;
             }
             m_Wrapper.m_GamemapsActionsCallbackInterface = instance;
             if (instance != null)
@@ -516,6 +541,9 @@ public class @Inputs : IInputActionCollection, IDisposable
                 @Framestep.started += instance.OnFramestep;
                 @Framestep.performed += instance.OnFramestep;
                 @Framestep.canceled += instance.OnFramestep;
+                @ShowGradeScore.started += instance.OnShowGradeScore;
+                @ShowGradeScore.performed += instance.OnShowGradeScore;
+                @ShowGradeScore.canceled += instance.OnShowGradeScore;
             }
         }
     }
@@ -548,5 +576,6 @@ public class @Inputs : IInputActionCollection, IDisposable
         void OnHold(InputAction.CallbackContext context);
         void OnPause(InputAction.CallbackContext context);
         void OnFramestep(InputAction.CallbackContext context);
+        void OnShowGradeScore(InputAction.CallbackContext context);
     }
 }
