@@ -20,6 +20,12 @@ TextureImporter:
   - first:
       213: 3595963730925701127
     second: Lives
+  - first:
+      213: -7901030952748609692
+    second: Roll Time
+  - first:
+      213: 5890253948028309410
+    second: Time
   externalObjects: {}
   serializedVersion: 11
   mipmaps:
@@ -121,7 +127,7 @@ TextureImporter:
       rect:
         serializedVersion: 2
         x: 0
-        y: 40
+        y: 56
         width: 32
         height: 8
       alignment: 0
@@ -142,7 +148,7 @@ TextureImporter:
       rect:
         serializedVersion: 2
         x: 0
-        y: 32
+        y: 48
         width: 32
         height: 8
       alignment: 0
@@ -163,7 +169,7 @@ TextureImporter:
       rect:
         serializedVersion: 2
         x: 0
-        y: 24
+        y: 40
         width: 40
         height: 8
       alignment: 0
@@ -184,7 +190,7 @@ TextureImporter:
       rect:
         serializedVersion: 2
         x: 0
-        y: 16
+        y: 32
         width: 40
         height: 8
       alignment: 0
@@ -205,7 +211,7 @@ TextureImporter:
       rect:
         serializedVersion: 2
         x: 0
-        y: 8
+        y: 24
         width: 40
         height: 8
       alignment: 0
@@ -226,7 +232,7 @@ TextureImporter:
       rect:
         serializedVersion: 2
         x: 0
-        y: 0
+        y: 16
         width: 40
         height: 8
       alignment: 0
@@ -238,6 +244,48 @@ TextureImporter:
       bones: []
       spriteID: 708c30706fd67e130800000000000000
       internalID: 3595963730925701127
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Roll Time
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 0
+        width: 32
+        height: 16
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 46f8d0eb536e95290800000000000000
+      internalID: -7901030952748609692
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Time
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 0
+        width: 32
+        height: 8
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 2afc11102c26eb150800000000000000
+      internalID: 5890253948028309410
       vertices: []
       indices: 
       edges: []

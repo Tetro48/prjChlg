@@ -221,7 +221,7 @@ public class PiecesController : MonoBehaviour {
         {
             if(bag[pieces] < 7)
             {
-                if(GameEngine.instance.ARE < 1 || executedHold == true)
+                if((GameEngine.instance.ARE < 1 && (!GameEngine.instance.ending || GameEngine.instance.AREf >= 0)) || executedHold == true)
                 {
                     GameEngine.instance.lineClonePiecesLeft--;
                     if (GameEngine.instance.lineClonePiecesLeft == 0)

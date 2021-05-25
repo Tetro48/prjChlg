@@ -16,6 +16,7 @@ public class PieceController : MonoBehaviour {
     public bool isDisabledFromSacrifice;
     public AudioClip audioPieceLock, audioPieceStep;
 
+    public int countLockResets, maxLockResets = 20;
     public bool harddrop;
     public bool LockDelayEnable;
     public bool zombieContr;
@@ -329,6 +330,8 @@ public class PieceController : MonoBehaviour {
             tiles[i].MoveTile(movement);
             LockDelayf = 0;
         }
+        if(!CanMovePiece(Vector2Int.down))countLockResets++;
+        if(countLockResets >= maxLockResets)LockDelayf = 2147483640;
         // if (!tiles[0].CanTileMove(Vector2Int.down + tiles[0].coordinates))  if(LockDelayEnable == false && PiecesController.instance.piecemovementlocked == false)  {LockDelayf = 0;  LockDelayEnable = true;}
         // else if (!tiles[1].CanTileMove(Vector2Int.down + tiles[1].coordinates)) if(LockDelayEnable == false && PiecesController.instance.piecemovementlocked == false)  {LockDelayf = 0;  LockDelayEnable = true;}
         // else if (!tiles[2].CanTileMove(Vector2Int.down + tiles[2].coordinates)) if(LockDelayEnable == false && PiecesController.instance.piecemovementlocked == false)  {LockDelayf = 0;  LockDelayEnable = true;}

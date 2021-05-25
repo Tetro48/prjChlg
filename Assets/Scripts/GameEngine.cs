@@ -10,8 +10,9 @@ using TMPro;
 public enum RotationSystems {SRS, ARS}
 public class GameEngine : MonoBehaviour
 {
-    public int time, notifDelay;
+    public int time, rollTime, rollTimeLimit = 6600, notifDelay;
     public int level;
+    public int endingLevel = 2100;
     public int curSect, sectAfter20g;
     // Number of combos | Keeping combo
     public int comboCount, comboKeepCounter;
@@ -20,10 +21,10 @@ public class GameEngine : MonoBehaviour
     public AudioSource gameAudio;
     public AudioClip[] bgm_1p_lv;
     public string audioPath;
-    public AudioClip readySE, goSE, gradeUp;
+    public AudioClip readySE, goSE, gradeUp, excellent;
     public int bgmlv = 1;
     public double gradePoints, statGradePoints, gradePointRequirement;
-    public TextMeshPro levelTextRender, nextSecLv, timeCounter;
+    public TextMeshPro levelTextRender, nextSecLv, timeCounter, rollTimeCounter;
     public static GameEngine instance;
     public SpriteRenderer readyGoIndicator, gradeIndicator;
     public Sprite[] gradeSprites;
@@ -31,6 +32,7 @@ public class GameEngine : MonoBehaviour
     public Sprite readySprite, goSprite;
     public int nextPieces, nextibmblocks;
     public RotationSystems RS;
+    public bool ending;
     public double LockDelay = 30;    
     public double DAS = 15;
     public double SDF = 6;
@@ -77,17 +79,25 @@ public class GameEngine : MonoBehaviour
             {
                 comboCount++;
             }
+            if(comboCount >= 2) {
+                int cmbse = comboCount - 2;
+                if(cmbse > 20) cmbse = 20;
+                gameAudio.PlayOneShot(comboSE[cmbse]);
+            }
         }
-        if(comboCount >= 2) {
-            int cmbse = comboCount - 2;
-            if(cmbse > 20) cmbse = 20;
-            gameAudio.PlayOneShot(comboSE[cmbse]);
+        if(level < endingLevel)
+        {
+            level += lvlLineIncrement[lines-1];
         }
-        level += lvlLineIncrement[lines-1];
-        if(level > 2100) level = 2100;
+        if(level > endingLevel) level = endingLevel;
         if(level/100 > curSect)
         {
             curSect++;
+            if (curSect > (endingLevel/100) - 1)
+            {
+                AREf = (int)ARE - 240;
+                ending = true;
+            }
             PiecesController.instance.gameAudio.PlayOneShot(PiecesController.instance.levelup);
             if (curSect < 20)
             {
@@ -201,7 +211,7 @@ public class GameEngine : MonoBehaviour
     }
     void ChangeBGM()
     {
-        if (tableBGMChange[bgmlv-1] != -1 && level >= tableBGMChange[bgmlv-1]) { bgmlv += 1; gameAudio.volume = 1; gameAudio.Stop(); gameAudio.clip = bgm_1p_lv[bgmlv-1]; gameAudio.Play();}
+        if (tableBGMChange[bgmlv-1] != -1 && level >= tableBGMChange[bgmlv-1]) { bgmlv += 1; gameAudio.volume = 1; gameAudio.Stop(); gameAudio.clip = bgm_1p_lv[bgmlv-1]; if(bgmlv < 7)gameAudio.Play();}
     }
     public void OnMovement(InputAction.CallbackContext value)
     {
@@ -250,11 +260,18 @@ public class GameEngine : MonoBehaviour
         if (value.performed) HoldInputs[7] = true;
         else HoldInputs[7] = false;
     }
+    public string timeCount(int time)
+    {
+        return Math.Floor(((double)time/36000)%6).ToString() + Math.Floor(((double)time/3600)%10) + ":" + Math.Floor(((double)time%3600/600)%6) + Math.Floor(((double)time%3600/60)%10) + ":" + Math.Floor((((double)time%60/600)*100)%10) + Math.Floor((((double)time%60/60)*100)%10);
+    }
     // Update is called once per frame
     void Update()
     {
-        if(level > 2100) level = 2100;
-        if(time == 1) gameAudio.Play();
+        
+        if(level > endingLevel) level = endingLevel;
+        if(time == 1 || (AREf == -1 && ending)) gameAudio.Play();
+        if (ending) MenuEngine.instance.supposedToBeAPartOfBoard[5].SetActive(true);
+        else MenuEngine.instance.supposedToBeAPartOfBoard[5].SetActive(false);
         // musicTime += Time.deltaTime;
         FadeoutBGM();
         ChangeBGM();
@@ -266,18 +283,27 @@ public class GameEngine : MonoBehaviour
         if (Input.GetKeyDown(KeyCode.D)) level = curSect*100+99;
         if((paused == false || (FrameStep == true && Inputs[7])) && MenuEngine.instance.GameOver == false)
         {
+            if (level >= endingLevel && AREf < (int)ARE)
+            {
+                int whichline = (AREf+240)/6;
+                Debug.Log(whichline);
+                BoardController.instance.DestroyLine(whichline);
+            }
+            if (AREf == (int)ARE - 239) gameAudio.PlayOneShot(excellent);
             if(AREf >= 0 && readyGoIndicator.sprite == null)time++;
-            int nextsecint = level < 2100 ? (curSect + 1) * 100 : 2100;
+            if(AREf >= 0 && readyGoIndicator.sprite == null && ending)rollTime++;
+            int nextsecint = level < endingLevel ? (curSect + 1) * 100 : endingLevel;
             levelTextRender.text = level.ToString();
             if(curSect < 21)nextSecLv.text = nextsecint.ToString();
-            timeCounter.text = Math.Floor(((double)time/36000)%6).ToString() + Math.Floor(((double)time/3600)%10) + ":" + Math.Floor(((double)time%3600/600)%6) + Math.Floor(((double)time%3600/60)%10) + ":" + Math.Floor((((double)time%60/600)*100)%10) + Math.Floor((((double)time%60/60)*100)%10);
+            timeCounter.text = timeCount(time);
+            rollTimeCounter.text = timeCount(rollTimeLimit - rollTime);
             framestepped = true;
-            for (int i = 0; i < 7; i++)
-            {
-                // if(Inputs[i]>0)Inputs[i]--;
-                // if(FrameHoldInputs[i]>0)FrameHoldInputs[i]--;
-                // HoldInputs[i] = FrameHoldInputs[i] > 0;
-            } 
+            // for (int i = 0; i < 7; i++)
+            // {
+            //     // if(Inputs[i]>0)Inputs[i]--;
+            //     // if(FrameHoldInputs[i]>0)FrameHoldInputs[i]--;
+            //     // HoldInputs[i] = FrameHoldInputs[i] > 0;
+            // } 
             if (comboKeepCounter == 0)
             {
                 comboCount = 0;

@@ -319,7 +319,7 @@ ParticleSystem:
       m_PreInfinity: 2
       m_PostInfinity: 2
       m_RotationOrder: 4
-  moveWithTransform: 1
+  moveWithTransform: 0
   moveWithCustomTransform: {fileID: 0}
   scalingMode: 1
   randomSeed: 0
@@ -814,7 +814,7 @@ ParticleSystem:
         m_PostInfinity: 2
         m_RotationOrder: 4
     randomizeRotationDirection: 0
-    maxNumParticles: 1000
+    maxNumParticles: 30000
     size3D: 0
     rotation3D: 0
     gravityModifier:
@@ -4945,7 +4945,7 @@ ParticleSystemRenderer:
   m_SortingLayerID: -1797078667
   m_SortingLayer: 1
   m_SortingOrder: 0
-  m_RenderMode: 0
+  m_RenderMode: 4
   m_SortMode: 0
   m_MinParticleSize: 0
   m_MaxParticleSize: 0.5
@@ -4963,7 +4963,7 @@ ParticleSystemRenderer:
   m_ApplyActiveColorSpace: 1
   m_AllowRoll: 1
   m_VertexStreams: 00010304
-  m_Mesh: {fileID: 0}
+  m_Mesh: {fileID: 10207, guid: 0000000000000000e000000000000000, type: 0}
   m_Mesh1: {fileID: 0}
   m_Mesh2: {fileID: 0}
   m_Mesh3: {fileID: 0}

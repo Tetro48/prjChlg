@@ -47,7 +47,7 @@ public class BoardController : MonoBehaviour {
             {
                 arereseted = true;
                 GameEngine.instance.lineDelayf = 0;
-                GameEngine.instance.AREf = (int)Math.Floor(GameEngine.instance.ARE - GameEngine.instance.AREline);
+                if(GameEngine.instance.level < 2099)GameEngine.instance.AREf = (int)Math.Floor(GameEngine.instance.ARE - GameEngine.instance.AREline);
             }
         }
     }
@@ -138,8 +138,17 @@ public class BoardController : MonoBehaviour {
     {
         for (int i = 0; i < gridSizeX; i++)
         {
+            // if (line < 0)
+            // {
+            //     Debug.LogError("Out of bounds!");
+            //     break;
+            // }
+            if(fullGrid[i,line].isOccupied){PieceController curPC = fullGrid[i, line].tileOnGridUnit.GetComponent<TileController>().pieceController;
+            curPC.tiles[fullGrid[i, line].tileOnGridUnit.GetComponent<TileController>().tileIndex] = null;
             Destroy(fullGrid[i, line].tileOnGridUnit);
             
+            if (!curPC.AnyTilesLeft()) { Destroy(curPC.gameObject); }}
+            fullGrid[i, line].tileOnGridUnit = null;
             fullGrid[i,line].isOccupied = false;
         }
     }
