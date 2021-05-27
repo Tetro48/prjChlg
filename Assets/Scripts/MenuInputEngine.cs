@@ -1,7 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-
+// This is unused. May get removed soon.
 [AddComponentMenu("Event/Event System")]
 [DisallowMultipleComponent]
 public class MenuInputEngine : MonoBehaviour
