@@ -478,7 +478,7 @@ public class PiecesController : MonoBehaviour {
                 }
                 ExecuteHold();
             }
-            if ((((GameEngine.instance.Inputs[2] || GameEngine.instance.Inputs[6]) && (!PrevInputs[2] && !PrevInputs[6])) || IRSCW) && !piecemovementlocked)
+            if ((((GameEngine.instance.Inputs[2] && !PrevInputs[2]) || (GameEngine.instance.Inputs[6] && !PrevInputs[6])) || IRSCW) && !piecemovementlocked)
             {
                 curPieceController.RotatePiece(true, true, false);
                 if (IRSCW)

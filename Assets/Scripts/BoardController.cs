@@ -262,7 +262,8 @@ public class BoardController : MonoBehaviour {
         //If this count get  to four lines, that is a Tetris line clear.
         int consecutiveLineClears = 0;
 
-        for(int y = 0; y < gridSizeY; y++)
+        int linesFrozen = GameEngine.instance.lineFreezingMechanic ? GameEngine.instance.linesFrozen[GameEngine.instance.curSect] : 0;
+        for(int y = linesFrozen; y < gridSizeY; y++)
         {
             bool lineClear = true;
             for(int x = 0; x < gridSizeX; x++)
@@ -295,7 +296,8 @@ public class BoardController : MonoBehaviour {
         {
             linecleared = true;
             ldldy = linesToClear;
-            gameAudio.PlayOneShot(audioLineClear[linesToClear.Count-1]);
+            int limitedSEcount = linesToClear.Count > audioLineClear.Length ? audioLineClear.Length-1 : linesToClear.Count-1;
+            gameAudio.PlayOneShot(audioLineClear[limitedSEcount]);
             GameEngine.instance.LineClears(linesToClear.Count);
             
 
@@ -377,7 +379,8 @@ public class BoardController : MonoBehaviour {
     /// <param name="lineToClear">Index of the line to be cleared</param>
     void ClearLine(int lineToClear)
     {
-        if(lineToClear < 0 || lineToClear > gridSizeY)
+        int linesFrozen = GameEngine.instance.lineFreezingMechanic ? GameEngine.instance.linesFrozen[GameEngine.instance.curSect] : 0;
+        if(lineToClear < linesFrozen || lineToClear > gridSizeY)
         {
             Debug.LogError("Error: Cannot Clear Line: " + lineToClear);
             return;

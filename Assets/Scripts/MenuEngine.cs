@@ -26,9 +26,12 @@ using TMPro;
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+public enum Language {English, Русский, 日本語};
+
 [RequireComponent(typeof(AudioSource))]
 public class MenuEngine : MonoBehaviour
 {
+    public Language language;
     public Discord.Discord discord;
     public static MenuEngine instance;
     public int frames = 0;
@@ -55,11 +58,39 @@ public class MenuEngine : MonoBehaviour
     public GameObject[] supposedToBeAPartOfBoard, mainMenuGUI, settingsMenuGUI, settingsMenuGUIpart;
     public RectTransform mainMenuMovement, mainMenuGUI1Movement, mainMenuGUI2Movement, mainMenuGUI3Movement, settingsMovement, settingsGUI1Movement, settingsGUI1PartMovement, settingsGUI2Movement, settingsGUI3Movement, settingsGUI4Movement, settingsGUI5Movement, settingsGUI6Movement, settingsGUI7Movement;
     public RectTransform[] mainMenuGUIMovement, settingsGUIMovement, settingsGUIPartMovement;
+    public TextMeshProUGUI[] mainMenuGUIText, settingsGUIText, inputsGUIText;
+    public String[,] mainMenuLangString = 
+    {
+        {"Play!", "Settings", "Quit"},
+        {"Играть!", "Настройки", "Выйти"},
+        {"Purei!", "Settingu", "Shu-ryo- suru"},
+
+    }, settingsLangString = 
+    {
+        {"Resolution:", "Inputs", "Rotation Systems", "Custom Mode settings", "Preferences settings", "Tuning", "< Back"},
+        {"Разрешение:", "Вводы", "Системы вращения", "Настройки режима", "Настройки предпотчении", "Тьюнинг", "< Назад"},
+        {"Kaizo-do", "Nyu-ryoku", "Kaiten shisutemu", "Kasutmumo-do no settei", "Purifarensu settei", "Chu-ningu", "< Bakku"},
+
+    }, inputsLangString = 
+    {
+        {"", "", "", "", "", "", ""},
+        {"", "", "", "", "", "", ""},
+        {"", "", "", "", "", "", ""},
+
+    }, notifLangString =
+    {
+        //
+        {"Singles: ", "Doubles: ", "Triples: ", "Tetrises: ", "lines: ", "Total ", "Pieces", "Grade: ", "Total grade score:", "Level: ", "Gravity: ", "Time: ", "500 level part complete!", "Controller is swapped", "Grade score: ", "Starting up!"},
+        {"Одиночные: ", "Двойные: ", "Тройные: ", "Тетрисы: ", "линии: ", "Всего ", "Фигур", "Оценка: ", "Общий счет оценки:", "Уровень: ", "Гравитация: ", "Время: ", "Достигнуто часть 500 уровней!", "Контроллер заменен", "Счет оценки: ", "Начинаем!"},
+        {"", "", "", "", "", "", "", "", "", "", "", "", "", "", "", ""},
+    };
     Vector3 boardpos, boardrot, posMM, posMMGUI1, posMMGUI2, posMMGUI3, posS, posSGUI1, posSGUI1P, posSGUI2, posSGUI3, posSGUI4, posSGUI5, posSGUI6, posSGUI7;
     public Vector3[] posMMGUI, posSGUI, posSGUIP;
     private float fallingdegree;
     Resolution[] resolutions;
     public float reswidth;
+
+    Language previousLang;
     public void QuitGame()
     {
         quitting = true;
@@ -71,7 +102,7 @@ public class MenuEngine : MonoBehaviour
     }
     public void PlayGame()
     {
-        if(!starting && !startGame) {startGame = true;  NotificationEngine.instance.InstantiateNotification("Starting up!", Color.white);}
+        if(!starting && !startGame) {startGame = true;  NotificationEngine.instance.InstantiateNotification(notifLangString[(int)language, 15], Color.white);}
     }
     public void Settings() { if (!starting && !pressedSettingsMenu) {pressedSettingsMenu = true; menu++;} }
     
@@ -98,7 +129,7 @@ public class MenuEngine : MonoBehaviour
     }
     void indicatorActivity(bool set, int upTo)
     {
-        int length = supposedToBeAPartOfBoard.Length < upTo ? supposedToBeAPartOfBoard.Length : upTo;
+        int length = supposedToBeAPartOfBoard.Length-1 < upTo ? supposedToBeAPartOfBoard.Length-1 : upTo;
         for (int i = 0; i < length; i++)
         {
             Debug.Log("ind:"+i);
@@ -197,6 +228,17 @@ public class MenuEngine : MonoBehaviour
         posSGUI1P.x -= (float)(500.0 * reswidth);
         settingsGUI1PartMovement.position = posSGUI1P;
     }
+    public void UpdateLang()
+    {
+        for (int mmguiIndex = 0; mmguiIndex < mainMenuGUI.Length; mmguiIndex++)
+        {
+            mainMenuGUIText[mmguiIndex].text = mainMenuLangString[(int)language, mmguiIndex];
+        }
+        for (int sguiIndex = 0; sguiIndex < settingsMenuGUI.Length; sguiIndex++)
+        {
+            settingsGUIText[sguiIndex].text = settingsLangString[(int)language, sguiIndex];
+        }
+    }
     public void SetResolution (int index)
     {
         Resolution resolution = resolutions[(resRefreshrates-1)+index*resRefreshrates];
@@ -213,6 +255,11 @@ public class MenuEngine : MonoBehaviour
     }
     void Update()
     {
+        if (previousLang != language)
+        {
+            previousLang = language;
+            UpdateLang();
+        }
         var activityManager = discord.GetActivityManager();
         int rpclvl = GameEngine.instance.level < 2100 ? (GameEngine.instance.curSect + 1) * 100 : 2100;
         var activity = new Discord.Activity {
@@ -274,22 +321,22 @@ public class MenuEngine : MonoBehaviour
                 if (frames == 361)
                 {
                     int pieceCountHoldRed = PiecesController.instance.pieceHold == 28 ? 0 : -1;
-                    if(GameEngine.instance.singles > 0) NotificationEngine.instance.InstantiateNotification("Singles: " + GameEngine.instance.singles, Color.white);
-                    if(GameEngine.instance.doubles > 0) NotificationEngine.instance.InstantiateNotification("Doubles: " + GameEngine.instance.doubles, Color.white);
-                    if(GameEngine.instance.triples > 0) NotificationEngine.instance.InstantiateNotification("Triples: " + GameEngine.instance.triples, Color.white);
-                    if(GameEngine.instance.tetrises > 0) NotificationEngine.instance.InstantiateNotification("Quads: " + GameEngine.instance.tetrises, Color.white);
-                    if(GameEngine.instance.pentrises > 0) NotificationEngine.instance.InstantiateNotification("5 lines: " + GameEngine.instance.pentrises, Color.white);
-                    if(GameEngine.instance.sixtrises > 0) NotificationEngine.instance.InstantiateNotification("6 lines: " + GameEngine.instance.sixtrises, Color.white);
-                    if(GameEngine.instance.septrises > 0) NotificationEngine.instance.InstantiateNotification("7 lines: " + GameEngine.instance.septrises, Color.white);
-                    if(GameEngine.instance.octrises > 0) NotificationEngine.instance.InstantiateNotification("8+ lines: " + GameEngine.instance.octrises, Color.white);
-                    if(GameEngine.instance.totalLines > 0) NotificationEngine.instance.InstantiateNotification("Total lines: " + GameEngine.instance.totalLines, Color.white);
-                    if(PiecesController.instance.pieces > 0) NotificationEngine.instance.InstantiateNotification("Pieces: " + (PiecesController.instance.pieces + pieceCountHoldRed), Color.white);
-                    NotificationEngine.instance.InstantiateNotification("Grade: " + gradeStringConversion[GameEngine.instance.grade], Color.white);
-                    if(GameEngine.instance.statGradePoints > 0) {NotificationEngine.instance.InstantiateNotification("Total grade score:", Color.white);
+                    if(GameEngine.instance.singles > 0) NotificationEngine.instance.InstantiateNotification(notifLangString[(int)language, 0] + GameEngine.instance.singles, Color.white); // Singles
+                    if(GameEngine.instance.doubles > 0) NotificationEngine.instance.InstantiateNotification(notifLangString[(int)language, 1] + GameEngine.instance.doubles, Color.white); // Doubles
+                    if(GameEngine.instance.triples > 0) NotificationEngine.instance.InstantiateNotification(notifLangString[(int)language, 2] + GameEngine.instance.triples, Color.white); // Triples
+                    if(GameEngine.instance.tetrises > 0) NotificationEngine.instance.InstantiateNotification(notifLangString[(int)language, 3] + GameEngine.instance.tetrises, Color.white); // Tetrises
+                    if(GameEngine.instance.pentrises > 0) NotificationEngine.instance.InstantiateNotification("5 " + notifLangString[(int)language, 4] + GameEngine.instance.pentrises, Color.white); // 5 lines
+                    if(GameEngine.instance.sixtrises > 0) NotificationEngine.instance.InstantiateNotification("6 " + notifLangString[(int)language, 4] + GameEngine.instance.sixtrises, Color.white); // 6 lines
+                    if(GameEngine.instance.septrises > 0) NotificationEngine.instance.InstantiateNotification("7 " + notifLangString[(int)language, 4] + GameEngine.instance.septrises, Color.white); // 7 lines
+                    if(GameEngine.instance.octrises > 0) NotificationEngine.instance.InstantiateNotification("8+ " + notifLangString[(int)language, 4] + GameEngine.instance.octrises, Color.white); // 8+ lines
+                    if(GameEngine.instance.totalLines > 0) NotificationEngine.instance.InstantiateNotification(notifLangString[(int)language, 5] + notifLangString[(int)language, 4] + GameEngine.instance.totalLines, Color.white); // Total lines
+                    if(PiecesController.instance.pieces > 0) NotificationEngine.instance.InstantiateNotification(notifLangString[(int)language, 6] + (PiecesController.instance.pieces + pieceCountHoldRed), Color.white); // Pieces
+                    NotificationEngine.instance.InstantiateNotification(notifLangString[(int)language, 7] + gradeStringConversion[GameEngine.instance.grade], Color.white); // Grade
+                    if(GameEngine.instance.statGradePoints > 0) {NotificationEngine.instance.InstantiateNotification(notifLangString[(int)language, 8], Color.white); // Total grade score
                     NotificationEngine.instance.InstantiateNotification(Math.Floor(GameEngine.instance.statGradePoints).ToString(), Color.white);}
-                    NotificationEngine.instance.InstantiateNotification("Level: " + GameEngine.instance.level + "/" + (GameEngine.instance.level < 2100 ? (GameEngine.instance.curSect + 1) * 100 : 2100), Color.white);
-                    NotificationEngine.instance.InstantiateNotification("Gravity: " + GameEngine.instance.gravity, Color.white);
-                    NotificationEngine.instance.InstantiateNotification("Time: " + GameEngine.instance.timeCounter.text, Color.white);
+                    NotificationEngine.instance.InstantiateNotification(notifLangString[(int)language, 9] + GameEngine.instance.level + "/" + (GameEngine.instance.level < 2100 ? (GameEngine.instance.curSect + 1) * 100 : 2100), Color.white); // Level
+                    NotificationEngine.instance.InstantiateNotification(notifLangString[(int)language, 10] + GameEngine.instance.gravity, Color.white); // Gravity
+                    NotificationEngine.instance.InstantiateNotification(notifLangString[(int)language, 11] + GameEngine.instance.timeCounter.text, Color.white);
                     frames = 0;
                     GameOver = false;
                     IntentionalGameOver = false;
@@ -465,6 +512,7 @@ public class MenuEngine : MonoBehaviour
             GameEngine.instance.septrises = 0;
             GameEngine.instance.octrises = 0;
             GameEngine.instance.totalLines = 0;
+            GameEngine.instance.lineClonePiecesLeft = 2147483647;
             GameEngine.instance.grade = 0;
             GameEngine.instance.gradeIndicator.sprite = GameEngine.instance.gradeSprites[0];
             GameEngine.instance.bgmlv = 1;

@@ -33,7 +33,7 @@ public class PieceController : MonoBehaviour {
     public int setDelayTime;
     public bool isDisabledFromSacrifice;
     public AudioClip audioPieceLock, audioPieceStep;
-
+    public GhostPieceController ghostContr;
     public int countLockResets, maxLockResets = 20;
     public bool harddrop;
     public bool LockDelayEnable;
@@ -358,6 +358,7 @@ public class PieceController : MonoBehaviour {
         if (!CanMovePiece(Vector2Int.down) && fullyLocked == false)  {if(LockDelayEnable == false && PiecesController.instance.piecemovementlocked == false)  {LockDelayf = 0;  LockDelayEnable = true;}}
         else LockDelayEnable = false;
 
+        ghostContr.UpdateGhostPiece();
         return true;
     }
 
@@ -403,6 +404,7 @@ public class PieceController : MonoBehaviour {
         {
             RotatePiece(!clockwise, /*rotIndex == 2 ? true :*/ false, UD);
         }
+        ghostContr.UpdateGhostPiece();
     }
     public void RotatePiece180(bool clockwise, bool shouldOffset)
     {
@@ -431,6 +433,7 @@ public class PieceController : MonoBehaviour {
             RotatePiece(!clockwise, /*rotIndex == 2 ? true :*/ false, true);
             Debug.Log("Couldn't apply 180 offset");
         }
+        ghostContr.UpdateGhostPiece();
     }
 
     /// <summary>

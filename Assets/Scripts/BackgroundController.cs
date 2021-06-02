@@ -62,7 +62,7 @@ public class BackgroundController : MonoBehaviour
     ///<param name="bg">Background sprite change by a integer</param>
     public void TriggerBackgroundChange(int bg)
     {
-        BGChanging = true;
+        if(bg != backgroundType)BGChanging = true;
         nextBackground = bg;
     }
 }

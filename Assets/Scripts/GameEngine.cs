@@ -50,7 +50,9 @@ public class GameEngine : MonoBehaviour
     public Sprite readySprite, goSprite;
     public int nextPieces, nextibmblocks;
     public RotationSystems RS;
+    public bool TLS;
     public bool ending;
+    public bool lineFreezingMechanic;
     public double LockDelay = 30;    
     public double DAS = 15;
     public double SDF = 6;
@@ -88,6 +90,7 @@ public class GameEngine : MonoBehaviour
 		{1.0f,1.5f,1.8f,2.0f,2.2f,2.3f,2.4f,2.5f,2.6f,3.0f},
 	};
     static int[] lvlLineIncrement = {1, 3, 6, 10, 15, 21, 28, 36};
+    public int[] linesFrozen = {0, 0, 0, 6, 4, 0, 0, 0, 8, 0, 0, 12, 16, 0, 0, 0, 19, 0, 0, 0, 10, 14};
     public void LineClears(int lines)
     {
         if (lines > 0)
@@ -121,7 +124,7 @@ public class GameEngine : MonoBehaviour
             {
                 BackgroundController.bginstance.TriggerBackgroundChange(curSect);
             }
-            if(curSect % 5 == 0) NotificationEngine.instance.InstantiateNotification("500 level part complete!",Color.white);
+            if(curSect % 5 == 0) NotificationEngine.instance.InstantiateNotification(MenuEngine.instance.notifLangString[(int)MenuEngine.instance.language, 12],Color.white);
             if (gravity >= 19.99999)
             {
                 ARE = (double)(ARE * percentage);
@@ -299,6 +302,7 @@ public class GameEngine : MonoBehaviour
         // if (Input.GetKey(KeyCode.C)) Inputs[4] = true;
         // if (Input.GetKeyDown(KeyCode.P) && MenuEngine.instance.curBoard != null) paused = !paused;
         if (Input.GetKeyDown(KeyCode.D)) level = curSect*100+99;
+        if (Input.GetKeyDown(KeyCode.H)) {gradePoints += gradePointRequirement; statGradePoints += gradePointRequirement;}
         if((paused == false || (FrameStep == true && Inputs[7])) && MenuEngine.instance.GameOver == false)
         {
             if (level >= endingLevel && AREf < (int)ARE)
@@ -345,6 +349,6 @@ public class GameEngine : MonoBehaviour
     {
         if (MenuEngine.instance.curBoard != null) MenuEngine.instance.GameOver = true;
     }
-    public void ControllerSwap() {if (MenuEngine.instance.curBoard != null && notifDelay == 0) {NotificationEngine.instance.InstantiateNotification("Controller is swapped", Color.white); notifDelay = 300;} }
-    public void ShowGradeScore() {if (notifDelay == 0) {NotificationEngine.instance.InstantiateNotification("Grade score: ", Color.white); NotificationEngine.instance.InstantiateNotification(""+ Math.Floor(gradePoints), Color.white); NotificationEngine.instance.InstantiateNotification("/" + Math.Floor(gradePointRequirement), Color.white); notifDelay = 120;} }
+    public void ControllerSwap() {if (MenuEngine.instance.curBoard != null && notifDelay == 0) {NotificationEngine.instance.InstantiateNotification(MenuEngine.instance.notifLangString[(int)MenuEngine.instance.language, 13], Color.white); notifDelay = 300;} }
+    public void ShowGradeScore() {if (notifDelay == 0) {NotificationEngine.instance.InstantiateNotification(MenuEngine.instance.notifLangString[(int)MenuEngine.instance.language, 14], Color.white); NotificationEngine.instance.InstantiateNotification(""+ Math.Floor(gradePoints), Color.white); NotificationEngine.instance.InstantiateNotification("/" + Math.Floor(gradePointRequirement), Color.white); notifDelay = 120;} }
 }
