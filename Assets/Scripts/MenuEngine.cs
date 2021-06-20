@@ -557,6 +557,7 @@ public class MenuEngine : MonoBehaviour
             GameEngine.instance.rollTime = 0;
             GameEngine.instance.level = 0;
             GameEngine.instance.curSect = 0;
+            GameEngine.instance.sectAfter20g = 0;
             GameEngine.instance.ARE = 41.66666666666666;
             GameEngine.instance.AREf = 42 - 300;
             GameEngine.instance.paused = true;
