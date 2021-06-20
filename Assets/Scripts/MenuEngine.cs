@@ -93,7 +93,7 @@ public class MenuEngine : MonoBehaviour
     Language previousLang;
     public void QuitGame()
     {
-        if (platformCompat() || Application.platform == RuntimePlatform.Android || Application.platform != RuntimePlatform.IPhonePlayer) quitting = true;
+        if (platformCompat() || Application.platform == RuntimePlatform.Android || Application.platform == RuntimePlatform.IPhonePlayer) quitting = true;
     }
     public void TriggerGameOver()
     {
@@ -247,7 +247,7 @@ public class MenuEngine : MonoBehaviour
             reswidth = (float)(Screen.width / 1920.0);
             settingsMenuGUI[0].SetActive(false);
             settingsMenuGUIpart[0].SetActive(false);
-            if(Application.platform != RuntimePlatform.Android || Application.platform != RuntimePlatform.IPhonePlayer)mainMenuGUI[2].SetActive(false);
+            if(Application.platform != RuntimePlatform.Android && Application.platform != RuntimePlatform.IPhonePlayer)mainMenuGUI[2].SetActive(false);
         }
         starting = true;
         if (Application.systemLanguage == SystemLanguage.Russian)
