@@ -29,7 +29,7 @@ public class BoardController : MonoBehaviour {
     public GameObject gridUnitPrefab;
     public int gridSizeX, gridSizeY;
     public AudioSource gameAudio;
-    public AudioClip[] audioLineClear;
+    public AudioClip[] audioLineClear, audioTSpinClear;
     public AudioClip audioLineFall, audioPieceLock, audioLineClone, warning;
 
     public GameObject tetrisText;
@@ -51,7 +51,7 @@ public class BoardController : MonoBehaviour {
         CreateGrid();
     }
 
-    private void Update()
+    private void FixedUpdate()
     {
         TopoutWarning();
         if(GameEngine.instance.framestepped && !MenuEngine.instance.GameOver)
@@ -170,11 +170,11 @@ public class BoardController : MonoBehaviour {
             fullGrid[i,line].isOccupied = false;
         }
     }
-    public void DecayLine(int line)
+    public void DecayLine(int line, float percentage)
     {
         for (int i = 0; i < gridSizeX; i++)
         {
-            DecayTile(new Vector2Int(i, line), 0.1f);
+            DecayTile(new Vector2Int(i, line), percentage);
         }
     }
     public void DecayTile(Vector2Int coords, float percentage)
@@ -223,7 +223,7 @@ public class BoardController : MonoBehaviour {
     /// <returns>Returns true if the coordinate is not occupied by a tetris piece</returns>
     public bool IsPosEmpty(Vector2Int coordToTest)
     {
-        if(coordToTest.y >= 22)
+        if(coordToTest.y >= 40)
         {
             return true;
         }
@@ -296,9 +296,19 @@ public class BoardController : MonoBehaviour {
         {
             linecleared = true;
             ldldy = linesToClear;
-            int limitedSEcount = linesToClear.Count > audioLineClear.Length ? audioLineClear.Length-1 : linesToClear.Count-1;
-            gameAudio.PlayOneShot(audioLineClear[limitedSEcount]);
-            GameEngine.instance.LineClears(linesToClear.Count);
+            bool tspinned = GameEngine.instance.tSpin;
+            if (tspinned)
+            {
+                int limitedTSSEcount = linesToClear.Count > audioTSpinClear.Length ? audioTSpinClear.Length-1 : linesToClear.Count-1;
+                gameAudio.PlayOneShot(audioTSpinClear[limitedTSSEcount]);
+                GameEngine.instance.tSpin = false;
+            }
+            else
+            {
+                int limitedSEcount = linesToClear.Count > audioLineClear.Length ? audioLineClear.Length-1 : linesToClear.Count-1;
+                gameAudio.PlayOneShot(audioLineClear[limitedSEcount]);
+            }
+            GameEngine.instance.LineClears(linesToClear.Count, tspinned);
             
 
             // PiecesController.instance.lineDelayf++;
@@ -397,7 +407,7 @@ public class BoardController : MonoBehaviour {
                     tileTexture = i;
                 }
             }
-            TileParticleSystem.instance.SummonParticles(new Vector2Int(x, lineToClear), tileTexture);
+            BoardParticleSystem.instance.SummonParticles(new Vector2Int(x, lineToClear), tileTexture);
             Destroy(fullGrid[x, lineToClear].tileOnGridUnit);
             if (!curPC.AnyTilesLeft()) { Destroy(curPC.gameObject); }
             fullGrid[x, lineToClear].tileOnGridUnit = null;

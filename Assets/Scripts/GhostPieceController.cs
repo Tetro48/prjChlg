@@ -14,11 +14,8 @@ public class GhostPieceController : MonoBehaviour
     void Awake()
     {
         sprRnd = GetComponent<SpriteRenderer>();
-        if (GameEngine.instance.level < 100 || GameEngine.instance.TLS)
-        {
-            visibility = true;
-        }
-        float transparency = visibility ? 0.3f : 0f;
+        if (GameEngine.instance.level < 100 || GameEngine.instance.TLS) visibility = true;
+        float transparency = 0.3f;
         for (int i = 0; i < tiles.Length; i++)
         {
             tiles[i].GetComponent<SpriteRenderer>().color = new Color(1f,1f,1f,transparency);
@@ -78,7 +75,7 @@ public class GhostPieceController : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if (PiecesController.instance.piecemovementlocked)
+        if (PiecesController.instance.piecemovementlocked || !visibility)
         {
             Destroy(this.gameObject);
         }

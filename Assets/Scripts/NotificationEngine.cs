@@ -38,7 +38,7 @@ public class NotificationEngine : MonoBehaviour
         GameObject notifInstantiate = GameObject.Instantiate(prefab, transform);
         if(notificationInstance.Count > 0) for (int i = 0; i < notificationInstance.Count; i++)
         {
-            notificationInstance[i].transform.position += new Vector3(0.0f, 80f*MenuEngine.instance.reswidth, 0.0f);
+            notificationInstance[i].transform.position += new Vector3(0.0f, 72f*(float)(Screen.height / 1080.0), 0.0f);
         }
         notificationInstance.Add(notifInstantiate);
         // notifInstantiate.GetComponent<SpriteRenderer>().color = color;
@@ -54,20 +54,20 @@ public class NotificationEngine : MonoBehaviour
     }
 
     // Update is called once per frame
-    void Update()
+    void FixedUpdate()
     {
         if(notificationInstance.Count > 0) for (int i = 0; i < notificationInstance.Count; i++)
         {
             notifAnimFrames[i]++;
-            if (notifAnimFrames[i] < 30)
+            if (notifAnimFrames[i] < 50)
             {
-                notificationInstance[i].transform.position -= new Vector3((256/15)*MenuEngine.instance.reswidth, 0, 0);
+                notificationInstance[i].transform.position -= new Vector3((256/25)*MenuEngine.instance.reswidth, 0, 0);
             }
-            if (notifAnimFrames[i] > 269)
+            if (notifAnimFrames[i] > 449)
             {
-                notificationInstance[i].transform.position += new Vector3((256/15)*MenuEngine.instance.reswidth, 0, 0);
+                notificationInstance[i].transform.position += new Vector3((256/25)*MenuEngine.instance.reswidth, 0, 0);
             }
-            if (notifAnimFrames[i] > 300)
+            if (notifAnimFrames[i] > 500)
             {
                 Destroy(notificationInstance[i]);
                 notificationInstance.RemoveAt(i);

@@ -39,17 +39,17 @@ public class BackgroundController : MonoBehaviour
     }
 
     // Update is called once per frame
-    void Update()
+    void FixedUpdate()
     {
         if (BGChanging)
         {
             if (backgroundType != nextBackground)
             {
-                this.spriteRenderer.color -= new Color(1f/30f,1f/30f,1f/30f, 0.0f);
+                this.spriteRenderer.color -= new Color(1f/50f,1f/50f,1f/50f, 0.0f);
             }
             else
             {
-                this.spriteRenderer.color += new Color(1/30f,1/30f,1/30f, 0.0f);
+                this.spriteRenderer.color += new Color(1/50f,1/50f,1/50f, 0.0f);
             }
             if(this.spriteRenderer.color == new Color(1f, 1f, 1f, 1f)) BGChanging = false;
         }

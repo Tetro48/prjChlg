@@ -54,7 +54,7 @@ public class MenuEngine : MonoBehaviour
     public AudioClip clip, topoutSE;
     public GameObject inGameBoard, curBoard;
     public AudioClip ModeOK;
-    public GameObject mainMenu, settingsMenu, imgprjchlg, curLevel, nextSecLv, levelSprite, timeCounter, gradeText;
+    public GameObject mainMenu, settingsMenu, imgprjchlg, curLevel, nextSecLv, levelSprite, timeCounter, gradeText, mobileInput;
     public GameObject[] supposedToBeAPartOfBoard, mainMenuGUI, settingsMenuGUI, settingsMenuGUIpart;
     public RectTransform mainMenuMovement, mainMenuGUI1Movement, mainMenuGUI2Movement, mainMenuGUI3Movement, settingsMovement, settingsGUI1Movement, settingsGUI1PartMovement, settingsGUI2Movement, settingsGUI3Movement, settingsGUI4Movement, settingsGUI5Movement, settingsGUI6Movement, settingsGUI7Movement;
     public RectTransform[] mainMenuGUIMovement, settingsGUIMovement, settingsGUIPartMovement;
@@ -80,8 +80,8 @@ public class MenuEngine : MonoBehaviour
     }, notifLangString =
     {
         //
-        {"Singles: ", "Doubles: ", "Triples: ", "Tetrises: ", "lines: ", "Total ", "Pieces", "Grade: ", "Total grade score:", "Level: ", "Gravity: ", "Time: ", "500 level part complete!", "Controller is swapped", "Grade score: ", "Starting up!"},
-        {"Одиночные: ", "Двойные: ", "Тройные: ", "Тетрисы: ", "линии: ", "Всего ", "Фигур", "Оценка: ", "Общий счет оценки:", "Уровень: ", "Гравитация: ", "Время: ", "Достигнуто часть 500 уровней!", "Контроллер заменен", "Счет оценки: ", "Начинаем!"},
+        {"Singles: ", "Doubles: ", "Triples: ", "Tetrises: ", "lines: ", "Total ", "Pieces: ", "Grade: ", "Total grade score:", "Level: ", "Gravity: ", "Time: ", "500 level part complete!", "Controller is swapped", "Grade score: ", "Starting up!"},
+        {"Одиночные: ", "Двойные: ", "Тройные: ", "Тетрисы: ", "линии: ", "Всего ", "Фигур: ", "Оценка: ", "Общий счет оценки:", "Уровень: ", "Гравитация: ", "Время: ", "Достигнуто часть 500 уровней!", "Контроллер заменен", "Счет оценки: ", "Начинаем!"},
         {"", "", "", "", "", "", "", "", "", "", "", "", "", "", "", ""},
     };
     Vector3 boardpos, boardrot, posMM, posMMGUI1, posMMGUI2, posMMGUI3, posS, posSGUI1, posSGUI1P, posSGUI2, posSGUI3, posSGUI4, posSGUI5, posSGUI6, posSGUI7;
@@ -93,7 +93,7 @@ public class MenuEngine : MonoBehaviour
     Language previousLang;
     public void QuitGame()
     {
-        quitting = true;
+        if (platformCompat() || Application.platform == RuntimePlatform.Android || Application.platform != RuntimePlatform.IPhonePlayer) quitting = true;
     }
     public void TriggerGameOver()
     {
@@ -119,34 +119,55 @@ public class MenuEngine : MonoBehaviour
             }
         }
     }
+    bool platformLogged = false;
+    public bool platformCompat()
+    {
+        if (Application.platform == RuntimePlatform.WindowsPlayer || Application.platform == RuntimePlatform.WindowsEditor)
+        {
+            if(!platformLogged) Debug.Log("Windows platform");
+            platformLogged = true;
+            return true;
+        }
+        if (Application.platform == RuntimePlatform.OSXPlayer || Application.platform == RuntimePlatform.OSXEditor)
+        {
+            if(!platformLogged) Debug.Log("macOS platform");
+            platformLogged = true;
+            return true;
+        }
+        if (Application.platform == RuntimePlatform.LinuxPlayer || Application.platform == RuntimePlatform.LinuxEditor)
+        {
+            if(!platformLogged) Debug.Log("Linux platform");
+            platformLogged = true;
+            return true;
+        }
+        if(!platformLogged) Debug.Log("Other platform");
+        if(!platformLogged) Debug.Log("Some functions are disabled for compatibility.");
+        platformLogged = true;
+        return false;
+    }
     public bool alreadystarted;
     void Awake()
     {
-        discord = new Discord.Discord(836600860976349192, (UInt64)Discord.CreateFlags.Default);
-        Application.targetFrameRate = 60;
+        if (platformCompat()) discord = new Discord.Discord(836600860976349192, (UInt64)Discord.CreateFlags.Default);
+        Application.targetFrameRate = Screen.currentResolution.refreshRate * 2;
         alreadystarted = true;
         instance = this;
     }
     void indicatorActivity(bool set, int upTo)
     {
-        int length = supposedToBeAPartOfBoard.Length-1 < upTo ? supposedToBeAPartOfBoard.Length-1 : upTo;
+        Debug.Log(supposedToBeAPartOfBoard.Length);
+        int length = supposedToBeAPartOfBoard.Length < upTo ? supposedToBeAPartOfBoard.Length : upTo;
         for (int i = 0; i < length; i++)
         {
             Debug.Log("ind:"+i);
             supposedToBeAPartOfBoard[i].SetActive(set);
         }
     }
-    
+    public bool drpcSwitch;
     private int resRefreshrates = 0;
     void Start()
     {
-        var activityManager = discord.GetActivityManager();
-        var activity = new Discord.Activity {
-            State = "Currently in main menu"
-        };
-        activityManager.UpdateActivity(activity, (res) => {
-        });
-        discord.RunCallbacks();
+        if(!platformCompat()) {reswidth = 1f; settingsMovement.position += new Vector3(0f,50f,0f);}
         GameObject[] objs = GameObject.FindGameObjectsWithTag("menuenginerelated");
         GameObject[] canvasobjs = GameObject.FindGameObjectsWithTag("Canvas");
         GameObject[] gameoverseobjs = GameObject.FindGameObjectsWithTag("GameOverSE");
@@ -187,37 +208,56 @@ public class MenuEngine : MonoBehaviour
         DontDestroyOnLoad(buttonseobjs[0]);
         // imgbg.SetActive(true);
         imgprjchlg.SetActive(true);
-        resolutions = Screen.resolutions;
-        resDropdown.ClearOptions();
-        List<string> options = new List<string>();
+        if (platformCompat())
+        {
+            resolutions = Screen.resolutions;
+            resDropdown.ClearOptions();
+            List<string> options = new List<string>();
 
-        int currentResolutionIndex = 1;
-        bool matchedrefrrate = true;
-        for (int j = 0; j < resolutions.Length && matchedrefrrate == true; j++)
-        {
-            if (j > 1)
+            int currentResolutionIndex = 1;
+            bool matchedrefrrate = true;
+            for (int j = 0; j < resolutions.Length && matchedrefrrate == true; j++)
             {
-                if (resolutions[1].refreshRate == resolutions[j].refreshRate)
+                if (j > 1)
                 {
-                    matchedrefrrate = false;
+                    if (resolutions[1].refreshRate == resolutions[j].refreshRate)
+                    {
+                        matchedrefrrate = false;
+                    }
+                    resRefreshrates++;
                 }
-                resRefreshrates++;
             }
-        }
-        for (int i = 0; i < resolutions.Length; i++)
-        {
-            string option = resolutions[i].width + "x" + resolutions[i].height;
-            if (resolutions[i].refreshRate == 60) options.Add(option);
-            if (resolutions[i].width == Screen.currentResolution.width && resolutions[i].height == Screen.currentResolution.height && resolutions[i].refreshRate == 60)
+            for (int i = 0; i < resolutions.Length; i++)
             {
-                currentResolutionIndex = i/resRefreshrates;
-                reswidth = (float)(resolutions[i/resRefreshrates].width / 1920);
+                string option = resolutions[i].width + "x" + resolutions[i].height;
+                if (resolutions[i].refreshRate == 60) options.Add(option);
+                if (resolutions[i].width == Screen.currentResolution.width && resolutions[i].height == Screen.currentResolution.height && resolutions[i].refreshRate == 60)
+                {
+                    currentResolutionIndex = i/resRefreshrates;
+                    reswidth = (float)(resolutions[i/resRefreshrates].width / 1920);
+                }
             }
+            resDropdown.AddOptions(options);
+            resDropdown.value = currentResolutionIndex;
+            resDropdown.RefreshShownValue();
+            mobileInput.SetActive(false);
         }
-        resDropdown.AddOptions(options);
-        resDropdown.value = currentResolutionIndex;
-        resDropdown.RefreshShownValue();
+        else
+        {
+            reswidth = (float)(Screen.width / 1920.0);
+            settingsMenuGUI[0].SetActive(false);
+            settingsMenuGUIpart[0].SetActive(false);
+            if(Application.platform != RuntimePlatform.Android || Application.platform != RuntimePlatform.IPhonePlayer)mainMenuGUI[2].SetActive(false);
+        }
         starting = true;
+        if (Application.systemLanguage == SystemLanguage.Russian)
+        {
+            language = Language.Русский;
+        }
+        if (Application.systemLanguage == SystemLanguage.Japanese)
+        {
+            language = Language.日本語;
+        }
         posMM = mainMenuMovement.position;
         posMM.x -= (float)(500.0 * reswidth);
         mainMenuMovement.position = posMM;
@@ -241,9 +281,12 @@ public class MenuEngine : MonoBehaviour
     }
     public void SetResolution (int index)
     {
-        Resolution resolution = resolutions[(resRefreshrates-1)+index*resRefreshrates];
-        Screen.SetResolution(resolution.width, resolution.height, true);
-        reswidth = (float)(resolution.width / 1920.0);
+        if (platformCompat())
+        {
+            Resolution resolution = resolutions[(resRefreshrates-1)+index*resRefreshrates];
+            Screen.SetResolution(resolution.width, resolution.height, true);
+            reswidth = (float)(resolution.width / 1920.0);
+        }
     }
     // void OnDestroy()
     // {
@@ -251,29 +294,50 @@ public class MenuEngine : MonoBehaviour
     // }
     void OnApplicationQuit()
     {
-        discord.Dispose();
+        if (platformCompat())discord.Dispose();
     }
+    double framerate;
+    [SerializeField] List<double> frameratebuffer;
+    // rough framerate measurement
     void Update()
+    {
+        double newframerate = 1.0 / Time.deltaTime;
+        frameratebuffer.Add(newframerate);
+        if (frameratebuffer.Count > 100)
+        {
+            frameratebuffer.RemoveAt(0);
+        }
+        double result = 0;
+        for (int fr = 0; fr < frameratebuffer.Count; fr++)
+        {
+            result += frameratebuffer[fr];
+        }
+        framerate = result/frameratebuffer.Count;
+    }
+    void FixedUpdate()
     {
         if (previousLang != language)
         {
             previousLang = language;
             UpdateLang();
         }
-        var activityManager = discord.GetActivityManager();
-        int rpclvl = GameEngine.instance.level < 2100 ? (GameEngine.instance.curSect + 1) * 100 : 2100;
-        var activity = new Discord.Activity {
-            Details = curBoard != null ? "Level " + GameEngine.instance.level + " | " + rpclvl : null,
-            State = !Application.genuine ? "The game is tampered" : 1.0 / Time.deltaTime > 100 ? "Too fast" : 1.0 / Time.deltaTime < 30 ? "Too slow" : IntentionalGameOver ? "Exiting..." : GameOver ? "Topped out" : curBoard != null && GameEngine.instance.paused && GameEngine.instance.FrameStep ? "Currently playing (Framestepping)" : curBoard != null && GameEngine.instance.paused && !GameEngine.instance.FrameStep ? "Paused" : curBoard != null ? "Currently playing" : quitting ? "Quitting" : menu == 1 ? "Currently in settings menu" :"Currently in main menu"
-        };
-        activityManager.UpdateActivity(activity, (res) => {
-        });
-        discord.RunCallbacks();
-        var MMf = mainMenuGUI.Length * 5;
-        var SBf = settingsMenuGUI.Length * 5;
-        var SBVf = settingsGUIMovement.Length * 5;
+        if (platformCompat())
+        {
+            var activityManager = discord.GetActivityManager();
+            int rpclvl = GameEngine.instance.level < 2100 ? (GameEngine.instance.curSect + 1) * 100 : 2100;
+            var activity = new Discord.Activity {
+                Details = curBoard != null ? "Level " + GameEngine.instance.level + " | " + rpclvl : null,
+                State = !Application.genuine ? "The game is tampered" : framerate > 2600 ? "Suspiciously high framerate" : framerate < 10 ? "Suspiciously low framerate" : IntentionalGameOver ? "Exiting..." : GameOver ? "Topped out" : curBoard != null && GameEngine.instance.paused && GameEngine.instance.FrameStep ? "Currently playing (Framestepping)" : curBoard != null && GameEngine.instance.paused && !GameEngine.instance.FrameStep ? "Paused" : curBoard != null ? "Currently playing" : quitting ? "Quitting" : menu == 1 ? "Currently in settings menu" :"Currently in main menu"
+            };
+            activityManager.UpdateActivity(activity, (res) => {
+            });
+            if(drpcSwitch)discord.RunCallbacks();
+        }
+        var MMf = mainMenuGUI.Length * 8;
+        var SBf = settingsMenuGUI.Length * 8;
+        var SBVf = settingsGUIMovement.Length * 8;
         var MMSBf = (MMf + SBf);
-        var MMSf = (MMf + 30);
+        var MMSf = (MMf + 50);
         var MMSCf = (MMSf + SBf);
         var MMSCVf = (MMSf + SBVf);
         if(curBoard == null && Input.GetKeyDown(KeyCode.Escape))
@@ -289,36 +353,36 @@ public class MenuEngine : MonoBehaviour
                 audioSourceConfirmation.Play();
             }
         }
-        reswidth = (float)(Screen.currentResolution.width / 1920.0);
-        framerateCounter.text = (Math.Floor((1.0 / Time.deltaTime)*10)/10).ToString();
+        reswidth = (float)(Screen.width / 1920.0);
+        framerateCounter.text = (Math.Floor((framerate)*10)/10).ToString();
         if (GameOver)
         {
             GameEngine.instance.readyGoIndicator.sprite = null;
             GameEngine.instance.gameAudio.Stop();
             if(frames%10==9 && frames<400)BoardController.instance.DestroyLine(frames/10);
-            if(frames<400)BoardController.instance.DecayLine(frames/10);
+            if(frames<400)BoardController.instance.DecayLine(frames/10, 0.1f);
             frames++;
             if(frames > 300)
             {
                 boardpos = this.transform.position;
-                boardpos.y -= (float)(0.16f + (((frames-300) / 20) * ((frames-300) / 20)));
+                boardpos.y -= (float)(0.1f + (((frames-300) / 33) * ((frames-300) / 33)));
                 this.transform.position = boardpos;
                 // boardrot = curBoard.transform.Rotate;
                 // boardrot.z -= 0.16f;
-                curBoard.transform.Rotate(new Vector3(0f, 0f, -0.16f - (float)(((frames-300) / 40) * ((frames-400) / 40))));
+                curBoard.transform.Rotate(new Vector3(0f, 0f, -0.1f - (float)(((frames-300) / 66) * ((frames-400) / 66))));
                 if (frames == 301)
                 {
                     audioSource2.PlayOneShot(topoutSE);
                 }
-                if (frames == 331)
+                if (frames == 351)
                 {
                     audioSource2.Play();
                 }
-                if (frames == 360)
+                if (frames == 400)
                 {
                     // SceneManager.LoadScene("MenuScene");
                 }
-                if (frames == 361)
+                if (frames == 401)
                 {
                     int pieceCountHoldRed = PiecesController.instance.pieceHold == 28 ? 0 : -1;
                     if(GameEngine.instance.singles > 0) NotificationEngine.instance.InstantiateNotification(notifLangString[(int)language, 0] + GameEngine.instance.singles, Color.white); // Singles
@@ -354,19 +418,19 @@ public class MenuEngine : MonoBehaviour
                 mainMenu.SetActive(true);
                 audioSource.PlayOneShot(clip);
             }
-            else if(frames % 5 == 4 && frames < MMf -1)
+            else if(frames % 8 == 7 && frames < MMf -1)
             {
-                audioSource.PlayOneShot(clip);
+                if(mainMenuGUI[(frames-1)/8].activeSelf)audioSource.PlayOneShot(clip);
             }
             if(frames < MMf + 1)
             {
-                posMMGUI[(frames-1)/5] = mainMenuGUIMovement[(frames-1)/5].position;
-                posMMGUI[(frames-1)/5].x -= (float)(100.0 * reswidth);
-                mainMenuGUIMovement[(frames-1)/5].position = posMMGUI[(frames-1)/5];
+                posMMGUI[(frames-1)/8] = mainMenuGUIMovement[(frames-1)/8].position;
+                posMMGUI[(frames-1)/8].x -= (float)(62.5 * reswidth);
+                mainMenuGUIMovement[(frames-1)/8].position = posMMGUI[(frames-1)/8];
             }
-            if (startGame && frames > MMf + 6)
+            if (startGame && frames > MMf + 10)
             {
-                if (frames == MMf + 7)
+                if (frames == MMf + 11)
                 {
                     mainMenu.SetActive(false);
                     GameEngine.instance.gradePoints = 0;
@@ -376,31 +440,31 @@ public class MenuEngine : MonoBehaviour
                     GameObject board = GameObject.Instantiate(inGameBoard, transform);
                     curBoard = board;
                     this.transform.position = new Vector3(0.0f, 20f, 0.0f);
-                    indicatorActivity(true, 5);
+                    indicatorActivity(true, 6);
                     mainMenuMusic.Stop();
                     PiecesController.instance.UpdateShownPieces();
                 }
-                if (frames == MMf + 8)   this.transform.position = new Vector3(0.0f, 18f, 0.0f);
-                if (frames == MMf + 9)   this.transform.position = new Vector3(0.0f, 16f, 0.0f);
-                if (frames == MMf + 10)   this.transform.position = new Vector3(0.0f, 14f, 0.0f);
-                if (frames == MMf + 11)   this.transform.position = new Vector3(0.0f, 12f, 0.0f);
-                if (frames == MMf + 12)   this.transform.position = new Vector3(0.0f, 10f, 0.0f);
-                if (frames == MMf + 13)   this.transform.position = new Vector3(0.0f, 8f, 0.0f);
-                if (frames == MMf + 14)   this.transform.position = new Vector3(0.0f, 6f, 0.0f);
-                if (frames == MMf + 15)   this.transform.position = new Vector3(0.0f, 4f, 0.0f);
-                if (frames == MMf + 16)   this.transform.position = new Vector3(0.0f, 2f, 0.0f);
-                if (frames == MMf + 17)   this.transform.position = new Vector3(0.0f, 0f, 0.0f);
-                if (frames == MMf + 18)   this.transform.position = new Vector3(0.0f, -0.8f, 0.0f);
-                if (frames == MMf + 19)   this.transform.position = new Vector3(0.0f, -1.4f, 0.0f);
-                if (frames == MMf + 20)   this.transform.position = new Vector3(0.0f, -2f, 0.0f);
-                if (frames == MMf + 21)   this.transform.position = new Vector3(0.0f, -1.3f, 0.0f);
-                if (frames == MMf + 23)   this.transform.position = new Vector3(0.0f, -0.7f, 0.0f);
-                if (frames == MMf + 23)   this.transform.position = new Vector3(0.0f, 0f, 0.0f);
+                if (frames == MMf + 12)   this.transform.position = new Vector3(0.0f, 18f, 0.0f);
+                if (frames == MMf + 13)   this.transform.position = new Vector3(0.0f, 16f, 0.0f);
+                if (frames == MMf + 14)   this.transform.position = new Vector3(0.0f, 14f, 0.0f);
+                if (frames == MMf + 15)   this.transform.position = new Vector3(0.0f, 12f, 0.0f);
+                if (frames == MMf + 16)   this.transform.position = new Vector3(0.0f, 10f, 0.0f);
+                if (frames == MMf + 17)   this.transform.position = new Vector3(0.0f, 8f, 0.0f);
+                if (frames == MMf + 18)   this.transform.position = new Vector3(0.0f, 6f, 0.0f);
+                if (frames == MMf + 19)   this.transform.position = new Vector3(0.0f, 4f, 0.0f);
+                if (frames == MMf + 20)   this.transform.position = new Vector3(0.0f, 2f, 0.0f);
+                if (frames == MMf + 21)   this.transform.position = new Vector3(0.0f, 0f, 0.0f);
+                if (frames == MMf + 22)   this.transform.position = new Vector3(0.0f, -0.8f, 0.0f);
+                if (frames == MMf + 23)   this.transform.position = new Vector3(0.0f, -1.4f, 0.0f);
+                if (frames == MMf + 24)   this.transform.position = new Vector3(0.0f, -2f, 0.0f);
+                if (frames == MMf + 25)   this.transform.position = new Vector3(0.0f, -1.3f, 0.0f);
+                if (frames == MMf + 26)   this.transform.position = new Vector3(0.0f, -0.7f, 0.0f);
+                if (frames == MMf + 27)   this.transform.position = new Vector3(0.0f, 0f, 0.0f);
                 // if (frames == 23)
                 // {
                 //     SceneManager.UnloadSceneAsync("MenuScene");
                 // }
-                if (frames > MMf + 23)
+                if (frames > MMf + 27)
                 {
                     // PiecesController.instance.bagPieceResult=Random.Range(0,7);
                     startGame = false;
@@ -413,10 +477,10 @@ public class MenuEngine : MonoBehaviour
             }
             if (pressedSettingsMenu && frames > MMSf && menu == 1)
             {
-                if(frames % 5 == 0)
+                if(frames % 8 == 0)
                 {
                     mainMenu.SetActive(false);
-                    audioSource.PlayOneShot(clip);
+                    if(settingsMenuGUI[((frames-1) - MMSf)/8].activeSelf)audioSource.PlayOneShot(clip);
                 }
                 if (frames == MMSf + 1)
                 {
@@ -424,14 +488,14 @@ public class MenuEngine : MonoBehaviour
                 }
                 if (frames < MMSCf + 1)
                 {
-                    posSGUI[((frames-1) - MMSf)/5] = settingsGUIMovement[((frames-1) - MMSf)/5].position;
-                    posSGUI[((frames-1) - MMSf)/5].x += (float)(100.0 * reswidth);
-                    settingsGUIMovement[((frames-1) - MMSf)/5].position = posSGUI[((frames-1) - MMSf)/5];
-                    if((frames-1) < MMSf + settingsGUIPartMovement.Length * 5)
+                    posSGUI[((frames-1) - MMSf)/8] = settingsGUIMovement[((frames-1) - MMSf)/8].position;
+                    posSGUI[((frames-1) - MMSf)/8].x += (float)(62.5 * reswidth);
+                    settingsGUIMovement[((frames-1) - MMSf)/8].position = posSGUI[((frames-1) - MMSf)/8];
+                    if((frames-1) < MMSf + settingsGUIPartMovement.Length * 8)
                     {
-                        posSGUIP[((frames-1) - MMSf)/5] = settingsGUIPartMovement[((frames-1) - MMSf)/5].position;
-                        posSGUIP[((frames-1) - MMSf)/5].x += (float)(200.0 * reswidth);
-                        settingsGUIPartMovement[((frames-1) - MMSf)/5].position = posSGUIP[((frames-1) - MMSf)/5];
+                        posSGUIP[((frames-1) - MMSf)/8] = settingsGUIPartMovement[((frames-1) - MMSf)/8].position;
+                        posSGUIP[((frames-1) - MMSf)/8].x += (float)(125.0 * reswidth);
+                        settingsGUIPartMovement[((frames-1) - MMSf)/8].position = posSGUIP[((frames-1) - MMSf)/8];
                     }
                 }
                 else
@@ -457,27 +521,27 @@ public class MenuEngine : MonoBehaviour
                     mainMenu.SetActive(true);
                     audioSource.PlayOneShot(clip);
                 }
-                else if(frames % 5 == 0)
+                else if(frames % 8 == 0)
                 {
                     audioSource.PlayOneShot(clip);
                 }
                 if (frames < SBf + 1)
                 {
-                    posSGUI[(frames-1)/5] = settingsGUIMovement[(frames-1)/5].position;
-                    posSGUI[(frames-1)/5].x -= (float)(100.0 * reswidth);
-                    settingsGUIMovement[(frames-1)/5].position = posSGUI[(frames-1)/5];
-                    if(frames < settingsMenuGUIpart.Length * 5 +1)
+                    posSGUI[(frames-1)/8] = settingsGUIMovement[(frames-1)/8].position;
+                    posSGUI[(frames-1)/8].x -= (float)(62.5 * reswidth);
+                    settingsGUIMovement[(frames-1)/8].position = posSGUI[(frames-1)/8];
+                    if(frames < settingsMenuGUIpart.Length * 8 +1)
                     {
-                        posSGUIP[(frames-1)/5] = settingsGUIPartMovement[(frames-1)/5].position;
-                        posSGUIP[(frames-1)/5].x -= (float)(200.0 * reswidth);
-                        settingsGUIPartMovement[(frames-1)/5].position = posSGUIP[(frames-1)/5];
+                        posSGUIP[(frames-1)/8] = settingsGUIPartMovement[(frames-1)/8].position;
+                        posSGUIP[(frames-1)/8].x -= (float)(125.0 * reswidth);
+                        settingsGUIPartMovement[(frames-1)/8].position = posSGUIP[(frames-1)/8];
                     }
                 }
                 else if(frames < MMSBf + 1)
                 {
-                    posMMGUI[((frames-1) - SBf)/5] = mainMenuGUIMovement[((frames-1) - SBf)/5].position;
-                    posMMGUI[((frames-1) - SBf)/5].x += (float)(100.0 * reswidth);
-                    mainMenuGUIMovement[((frames-1) - SBf)/5].position = posMMGUI[((frames-1) - SBf)/5];
+                    posMMGUI[((frames-1) - SBf)/8] = mainMenuGUIMovement[((frames-1) - SBf)/8].position;
+                    posMMGUI[((frames-1) - SBf)/8].x += (float)(62.5 * reswidth);
+                    mainMenuGUIMovement[((frames-1) - SBf)/8].position = posMMGUI[((frames-1) - SBf)/8];
                 }
                 else
                 {
@@ -493,15 +557,15 @@ public class MenuEngine : MonoBehaviour
             GameEngine.instance.rollTime = 0;
             GameEngine.instance.level = 0;
             GameEngine.instance.curSect = 0;
-            GameEngine.instance.ARE = 25;
-            GameEngine.instance.AREf = 25 - 180;
+            GameEngine.instance.ARE = 41.66666666666666;
+            GameEngine.instance.AREf = 42 - 300;
             GameEngine.instance.paused = true;
-            GameEngine.instance.DAS = 15;
-            GameEngine.instance.AREline = 10;
+            GameEngine.instance.DAS = 25;
+            GameEngine.instance.AREline = 16.66666666666666666;
             GameEngine.instance.nextibmblocks = 0;
-            GameEngine.instance.LockDelay = 30;
+            GameEngine.instance.LockDelay = 50;
             GameEngine.instance.lineDelayf = 0;
-            GameEngine.instance.lineDelay = 15;
+            GameEngine.instance.lineDelay = 25;
             GameEngine.instance.gravity = 5/64f;
             GameEngine.instance.singles = 0;
             GameEngine.instance.doubles = 0;
@@ -523,27 +587,28 @@ public class MenuEngine : MonoBehaviour
             Destroy(curBoard);
             GameEngine.instance.gameAudio.Stop();
             GameEngine.instance.gameAudio.clip = GameEngine.instance.bgm_1p_lv[0];
+            GameEngine.instance.gameAudio.volume = 1f;
             if (!mainMenuMusic.isPlaying)mainMenuMusic.Play();
             frames++;
             // if (SceneManager.GetActiveScene().name != "MenuScene")SceneManager.LoadScene("MenuScene");
             // imgbg.SetActive(true);
             // imgprjchlg.SetActive(true);
-            indicatorActivity(false, 6);
+            indicatorActivity(false, 7);
             mainMenu.SetActive(true);
             if (frames == 1)
             {
                 // mainMenu.SetActive(true);
                 audioSource.PlayOneShot(clip);
             }
-            else if(frames % 10 == 9 && frames < mainMenuGUI.Length * 10 - 1)
+            else if(frames % 17 == 16 && frames < mainMenuGUI.Length * 17 - 1)
             {
-                audioSource.PlayOneShot(clip);
+                if(mainMenuGUI[(frames-1)/17].activeSelf)audioSource.PlayOneShot(clip);
             }
-            if(frames < mainMenuGUI.Length * 10 + 1)
+            if(frames < mainMenuGUI.Length * 17 + 1)
             {
-                posMMGUI[(frames-1)/10] = mainMenuGUIMovement[(frames-1)/10].position;
-                posMMGUI[(frames-1)/10].x += (float)(50.0 * reswidth);
-                mainMenuGUIMovement[(frames-1)/10].position = posMMGUI[(frames-1)/10];
+                posMMGUI[(frames-1)/17] = mainMenuGUIMovement[(frames-1)/17].position;
+                posMMGUI[(frames-1)/17].x += (float)(29.411764705882352941176470588235 * reswidth);
+                mainMenuGUIMovement[(frames-1)/17].position = posMMGUI[(frames-1)/17];
             }
             else
             {

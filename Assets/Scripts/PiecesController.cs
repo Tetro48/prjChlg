@@ -345,7 +345,7 @@ public class PiecesController : MonoBehaviour {
             }
             if(bag[pieces] == 4)
             {
-                gameAudio.PlayOneShot(nextpiece1);
+                gameAudio.PlayOneShot(nextpiece7);
             }
             if(bag[pieces] == 5)
             {
@@ -372,7 +372,7 @@ public class PiecesController : MonoBehaviour {
     /// <summary>
     /// Called once every frame. Checks for player input.
     /// </summary>
-    private void Update()
+    private void FixedUpdate()
     {
         if (GameEngine.instance.lineClonePiecesLeft == 0)
         {
@@ -533,6 +533,7 @@ public class PiecesController : MonoBehaviour {
             // {
             //     SpawnDebug(6);
             // }
+            if(!curPieceController.CanMovePiece(Vector2Int.zero) && !piecemovementlocked)   curPieceController.SendPieceToFloor();
             for (int i = 0; i < (int)Math.Floor(gravityTiles); i++)
             {
                 if(piecemovementlocked == false)MoveCurPiece(Vector2Int.down);
@@ -546,7 +547,7 @@ public class PiecesController : MonoBehaviour {
             {
                 PrevInputs[i] = GameEngine.instance.Inputs[i];
             }
-            if(!piecemovementlocked || !PrevInputs[0] == GameEngine.instance.Inputs[0])PrevInputs[0] = GameEngine.instance.Inputs[0];
+            if(!piecemovementlocked || PrevInputs[0] == true)PrevInputs[0] = GameEngine.instance.Inputs[0];
         }
     }
 

@@ -67,7 +67,7 @@ public class PieceController : MonoBehaviour {
         } 
     }
 
-    private void Update()
+    private void FixedUpdate()
     {
         if(GameEngine.instance.framestepped)
         {
@@ -358,7 +358,7 @@ public class PieceController : MonoBehaviour {
         if (!CanMovePiece(Vector2Int.down) && fullyLocked == false)  {if(LockDelayEnable == false && PiecesController.instance.piecemovementlocked == false)  {LockDelayf = 0;  LockDelayEnable = true;}}
         else LockDelayEnable = false;
 
-        ghostContr.UpdateGhostPiece();
+        if (GameEngine.instance.level < 100 || GameEngine.instance.TLS) ghostContr.UpdateGhostPiece();
         return true;
     }
 
@@ -378,10 +378,12 @@ public class PieceController : MonoBehaviour {
         if (UD)rotationIndex += clockwise ? 1 : -1;
 
         rotationIndex = Mod(rotationIndex, 4);
-        if (GameEngine.instance.RS == RotationSystems.ARS && (curType == PieceType.S || curType == PieceType.Z))
-        {
-            rotationIndex = Mod(rotationIndex, 2);
-        }
+        // if (GameEngine.instance.RS == RotationSystems.ARS && (curType == PieceType.S || curType == PieceType.Z))
+        // {
+        //     rotationIndex = Mod(rotationIndex, 2);
+        // }
+
+        GameEngine.instance.tSpin = (curType == PieceType.T && LockDelayEnable);
 
         for(int i = 0; i < tiles.Length; i++)
         {
@@ -404,7 +406,7 @@ public class PieceController : MonoBehaviour {
         {
             RotatePiece(!clockwise, /*rotIndex == 2 ? true :*/ false, UD);
         }
-        ghostContr.UpdateGhostPiece();
+        if (GameEngine.instance.level < 100 || GameEngine.instance.TLS) ghostContr.UpdateGhostPiece();
     }
     public void RotatePiece180(bool clockwise, bool shouldOffset)
     {
@@ -433,7 +435,7 @@ public class PieceController : MonoBehaviour {
             RotatePiece(!clockwise, /*rotIndex == 2 ? true :*/ false, true);
             Debug.Log("Couldn't apply 180 offset");
         }
-        ghostContr.UpdateGhostPiece();
+        if (GameEngine.instance.level < 100 || GameEngine.instance.TLS) ghostContr.UpdateGhostPiece();
     }
 
     /// <summary>
@@ -575,6 +577,7 @@ public class PieceController : MonoBehaviour {
     public void SendPieceToFloor()
     {
         harddrop = true;
+        PiecesController.instance.PrevInputs[0] = true;
         while (MovePiece(Vector2Int.down)) {}
     }
 }

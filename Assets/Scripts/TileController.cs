@@ -45,10 +45,10 @@ public class TileController : MonoBehaviour {
         originalSpr = spriteRenderer.sprite;
         pieceController = myPC;
         tileIndex = index;
-        if (!BoardController.instance.IsPosEmpty(coordinates))
-        {
-            myPC.SetPiece();
-        }
+        // if (!BoardController.instance.IsPosEmpty(coordinates))
+        // {
+        //     myPC.SetPiece();
+        // }
     }
 
     /// <summary>
@@ -120,13 +120,11 @@ public class TileController : MonoBehaviour {
     /// <returns>True if the tile is on the board. False if tile is above playing field, GAME OVER.</returns>
     public bool SetTile()
     {
-        if (coordinates.y >= 22 || !BoardController.instance.IsPosEmpty(coordinates) || coordinates.x >= 10)
-        {
-            return false;
-        }
+
+        if (coordinates.y >= 24 || !BoardController.instance.IsPosEmpty(coordinates) || coordinates.x >= 10) {BoardController.instance.OccupyPos(coordinates, gameObject); return false;}
 
         BoardController.instance.OccupyPos(coordinates, gameObject);
-        return true;
+        return true; // when if statement up here is false, that line of code is ignored.                     ⬆ is a reason why return true; will not execute when if statement is false.
     }
     /// <summary>
     /// Sets the tile in it's current position

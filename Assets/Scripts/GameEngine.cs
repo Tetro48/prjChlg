@@ -42,7 +42,8 @@ public class GameEngine : MonoBehaviour
     public AudioClip readySE, goSE, gradeUp, excellent;
     public int bgmlv = 1;
     public double gradePoints, statGradePoints, gradePointRequirement;
-    public TextMeshPro levelTextRender, nextSecLv, timeCounter, rollTimeCounter;
+    private int virtualBasePoint;
+    public TextMeshPro levelTextRender, nextSecLv, timeCounter, rollTimeCounter, ppsCounter;
     public static GameEngine instance;
     public SpriteRenderer readyGoIndicator, gradeIndicator;
     public Sprite[] gradeSprites;
@@ -51,17 +52,18 @@ public class GameEngine : MonoBehaviour
     public int nextPieces, nextibmblocks;
     public RotationSystems RS;
     public bool TLS;
+    public bool tSpin;
     public bool ending;
     public bool lineFreezingMechanic;
-    public double LockDelay = 30;    
+    public double LockDelay = 50;    
     public double DAS = 15;
     public double SDF = 6;
-    public double ARE = 25;
-    public int AREf = 25 - 180;
-    public double AREline = 10;
+    public double ARE = 41.66666666666666;
+    public int AREf = 42 - 300;
+    public double AREline = 16.66666666666666666;
     public int lineDelayf = 0;
-    public double lineDelay = 15;
-    public float gravity = 5/64f;
+    public double lineDelay = 25;
+    public float gravity = 3/64f;
     public int singles, doubles, triples, tetrises, pentrises, sixtrises, septrises, octrises;
     public int totalLines;
     public int[] lineClonePerPiece = {2147483647,2147483647,20,20,20,20,20,20,20,20,16,16,16,8,8,6,5,4,3,2,2,2};
@@ -74,8 +76,9 @@ public class GameEngine : MonoBehaviour
     public bool[] HoldInputs;
     public Vector2 movement;
 
+
 	/** Line clear時に入る段位 point */
-	static int[] tableGradePoint = {10, 30, 60, 120, 180, 240, 300, 400};
+	static int[] tableGradePoint = {10, 30, 60, 120, 180, 240, 300, 400, 520, 640, 780, 920, 1060, 1200, 1500, 1800, 2100, 2400, 3000, 4000, 5500, 7500, 10000};
 
 	/** 段位 pointのCombo bonus */
 	private static float[,] tableGradeComboBonus =
@@ -88,10 +91,25 @@ public class GameEngine : MonoBehaviour
 		{1.0f,1.5f,1.8f,2.0f,2.2f,2.3f,2.4f,2.5f,2.6f,3.0f},
 		{1.0f,1.5f,1.8f,2.0f,2.2f,2.3f,2.4f,2.5f,2.6f,3.0f},
 		{1.0f,1.5f,1.8f,2.0f,2.2f,2.3f,2.4f,2.5f,2.6f,3.0f},
+		{1.0f,1.5f,1.8f,2.0f,2.2f,2.3f,2.4f,2.5f,2.6f,3.0f},
+		{1.0f,1.5f,1.8f,2.0f,2.2f,2.3f,2.4f,2.5f,2.6f,3.0f},
+		{1.0f,1.5f,1.8f,2.0f,2.2f,2.3f,2.4f,2.5f,2.6f,3.0f},
+		{1.0f,1.5f,1.8f,2.0f,2.2f,2.3f,2.4f,2.5f,2.6f,3.0f},
+		{1.0f,1.5f,1.8f,2.0f,2.2f,2.3f,2.4f,2.5f,2.6f,3.0f},
+		{1.0f,1.5f,1.8f,2.0f,2.2f,2.3f,2.4f,2.5f,2.6f,3.0f},
+		{1.0f,1.5f,1.8f,2.0f,2.2f,2.3f,2.4f,2.5f,2.6f,3.0f},
+		{1.0f,1.5f,1.8f,2.0f,2.2f,2.3f,2.4f,2.5f,2.6f,3.0f},
+		{1.0f,1.5f,1.8f,2.0f,2.2f,2.3f,2.4f,2.5f,2.6f,3.0f},
+		{1.0f,1.5f,1.8f,2.0f,2.2f,2.3f,2.4f,2.5f,2.6f,3.0f},
+		{1.0f,1.5f,1.8f,2.0f,2.2f,2.3f,2.4f,2.5f,2.6f,3.0f},
+		{1.0f,1.5f,1.8f,2.0f,2.2f,2.3f,2.4f,2.5f,2.6f,3.0f},
+		{1.0f,1.5f,1.8f,2.0f,2.2f,2.3f,2.4f,2.5f,2.6f,3.0f},
+		{1.0f,1.5f,1.8f,2.0f,2.2f,2.3f,2.4f,2.5f,2.6f,3.0f},
+		{1.0f,1.5f,1.8f,2.0f,2.2f,2.3f,2.4f,2.5f,2.6f,3.0f},
 	};
-    static int[] lvlLineIncrement = {1, 3, 6, 10, 15, 21, 28, 36};
+    static int[] lvlLineIncrement = {1, 3, 6, 10, 15, 21, 28, 36, 48, 70, 88, 90, 90, 90, 90, 90, 90, 90, 90, 90, 90, 90, 90};
     public int[] linesFrozen = {0, 0, 0, 6, 4, 0, 0, 0, 8, 0, 0, 12, 16, 0, 0, 0, 19, 0, 0, 0, 10, 14};
-    public void LineClears(int lines)
+    public void LineClears(int lines, bool spin)
     {
         if (lines > 0)
         {
@@ -99,11 +117,11 @@ public class GameEngine : MonoBehaviour
             if (lines > 1)
             {
                 comboCount++;
-            }
-            if(comboCount >= 2) {
-                int cmbse = comboCount - 2;
-                if(cmbse > 20) cmbse = 20;
-                gameAudio.PlayOneShot(comboSE[cmbse]);
+                if(comboCount >= 2) {
+                    int cmbse = comboCount - 2;
+                    if(cmbse > 20) cmbse = 20;
+                    gameAudio.PlayOneShot(comboSE[cmbse]);
+                }
             }
         }
         if(level < endingLevel)
@@ -116,7 +134,7 @@ public class GameEngine : MonoBehaviour
             curSect++;
             if (curSect > (endingLevel/100) - 1)
             {
-                AREf = (int)ARE - 240;
+                AREf = (int)ARE - 400;
                 ending = true;
             }
             PiecesController.instance.gameAudio.PlayOneShot(PiecesController.instance.levelup);
@@ -125,7 +143,7 @@ public class GameEngine : MonoBehaviour
                 BackgroundController.bginstance.TriggerBackgroundChange(curSect);
             }
             if(curSect % 5 == 0) NotificationEngine.instance.InstantiateNotification(MenuEngine.instance.notifLangString[(int)MenuEngine.instance.language, 12],Color.white);
-            if (gravity >= 19.99999)
+            if (gravity >= 12.5)
             {
                 ARE = (double)(ARE * percentage);
                 AREline = (double)(AREline * percentage);
@@ -136,13 +154,26 @@ public class GameEngine : MonoBehaviour
                 {
                     LockDelay = 1.000001d;
                 }
+                if (gravity >= 19.99999) gravity = gravity * 4;
             }
             else
             {
                 gravity = gravity * 4;
             }
         }
+        if (spin)
+        {
+            if(lines == 1)virtualBasePoint += 10;
+            if(lines == 2)virtualBasePoint += 20;
+            if(lines == 3)virtualBasePoint += 30;
+            if(lines == 4)virtualBasePoint += 50;
+            if(lines == 5)virtualBasePoint += 70;
+            if(lines >= 6)virtualBasePoint += (100 + (lines-6)*40);
+        }
 		int basepoint = tableGradePoint[lines - 1];
+        basepoint += virtualBasePoint;
+        virtualBasePoint = 0;
+
         int indexcombo = comboCount - 1;
         if(indexcombo < 0) indexcombo = 0;
         float combobonus = tableGradeComboBonus[lines - 1, indexcombo];
@@ -283,41 +314,48 @@ public class GameEngine : MonoBehaviour
     }
     public string timeCount(int time)
     {
-        return Math.Floor(((double)time/36000)%6).ToString() + Math.Floor(((double)time/3600)%10) + ":" + Math.Floor(((double)time%3600/600)%6) + Math.Floor(((double)time%3600/60)%10) + ":" + Math.Floor((((double)time%60/600)*100)%10) + Math.Floor((((double)time%60/60)*100)%10);
+        return Math.Floor(((double)time/60000)%6).ToString() + Math.Floor(((double)time/6000)%10) + ":" + Math.Floor(((double)time%6000/1000)%6) + Math.Floor(((double)time%6000/100)%10) + ":" + Math.Floor((((double)time%100/1000)*100)%10) + Math.Floor((((double)time%100/100)*100)%10);
+    }
+    public void SpawnFireworks()
+    {
+        BoardParticleSystem.instance.SummonFirework(new Vector2(0f, 10f), new Vector2(10f,10f));
     }
     // Update is called once per frame
-    void Update()
+    void FixedUpdate()
     {
         
         if(level > endingLevel) level = endingLevel;
         if(time == 1 || (AREf == -1 && ending)) gameAudio.Play();
-        if (ending) MenuEngine.instance.supposedToBeAPartOfBoard[5].SetActive(true);
-        else MenuEngine.instance.supposedToBeAPartOfBoard[5].SetActive(false);
+        if (ending) MenuEngine.instance.supposedToBeAPartOfBoard[6].SetActive(true);
+        else MenuEngine.instance.supposedToBeAPartOfBoard[6].SetActive(false);
         // musicTime += Time.deltaTime;
         FadeoutBGM();
         ChangeBGM();
         if(notifDelay > 0)notifDelay--;
+        if(MenuEngine.instance.curBoard != null){int pieceCountHoldRed = PiecesController.instance.pieceHold == 28 ? -1 : -2;
+        if(time > 0)ppsCounter.text = Math.Floor(((double)(PiecesController.instance.pieces + pieceCountHoldRed) / ((double)time/100))*100)/100 + " pieces/second";}
         // if (Input.GetKey(KeyCode.X) || Input.GetKey(KeyCode.Space)) Inputs[2] = true;
         // if (Input.GetKey(KeyCode.A)) Inputs[3] = true;
         // if (Input.GetKey(KeyCode.C)) Inputs[4] = true;
         // if (Input.GetKeyDown(KeyCode.P) && MenuEngine.instance.curBoard != null) paused = !paused;
+        if (Input.GetKeyDown(KeyCode.F)) SpawnFireworks();
         if (Input.GetKeyDown(KeyCode.D)) level = curSect*100+99;
         if (Input.GetKeyDown(KeyCode.H)) {gradePoints += gradePointRequirement; statGradePoints += gradePointRequirement;}
         if((paused == false || (FrameStep == true && Inputs[7])) && MenuEngine.instance.GameOver == false)
         {
             if (level >= endingLevel && AREf < (int)ARE)
             {
-                int whichline = (AREf+240)/6;
+                int whichline = ((AREf - (int)ARE)+240)/6;
                 Debug.Log(whichline);
                 BoardController.instance.DestroyLine(whichline);
             }
-            if (AREf == (int)ARE - 239) gameAudio.PlayOneShot(excellent);
-            if(AREf >= 0 && readyGoIndicator.sprite == null)time++;
-            if(AREf >= 0 && readyGoIndicator.sprite == null && ending)rollTime++;
+            if (AREf == (int)ARE - 399) gameAudio.PlayOneShot(excellent);
+            if(AREf >= 0 && readyGoIndicator.sprite == null && rollTime < rollTimeLimit)time++;
+            if(AREf >= 0 && readyGoIndicator.sprite == null && ending && rollTime < rollTimeLimit)rollTime++;
             int nextsecint = level < endingLevel ? (curSect + 1) * 100 : endingLevel;
             levelTextRender.text = level.ToString();
             if(curSect < 21)nextSecLv.text = nextsecint.ToString();
-            timeCounter.text = timeCount(time);
+            if(!ending)timeCounter.text = timeCount(time);
             rollTimeCounter.text = timeCount(rollTimeLimit - rollTime);
             framestepped = true;
             // for (int i = 0; i < 7; i++)
@@ -336,19 +374,34 @@ public class GameEngine : MonoBehaviour
             framestepped = false;
         }
         Inputs[7] = false;
-        if(AREf == ARE - 120 && level < 100) {gameAudio.PlayOneShot(readySE); readyGoIndicator.sprite = readySprite;}
-        if(AREf == ARE - 60 && level < 100) {gameAudio.PlayOneShot(goSE); readyGoIndicator.sprite = goSprite;}
-        if(AREf == ARE - 1 && level < 100) readyGoIndicator.sprite = null;
-        if (curSect < 5) DAS = 15;
-        else if (curSect < 9) DAS = 9;
-        else if (curSect < 13) DAS = 6;
-        else if (curSect < 17) DAS = 2;
+        if(AREf == (int)ARE - 200 && level < 100) {gameAudio.PlayOneShot(readySE); readyGoIndicator.sprite = readySprite;}
+        if(AREf == (int)ARE - 100 && level < 100) {gameAudio.PlayOneShot(goSE); readyGoIndicator.sprite = goSprite;}
+        if(AREf == (int)ARE - 1 && level < 100) readyGoIndicator.sprite = null;
+        if (sectAfter20g < 1) DAS = 25;
+        else if (sectAfter20g < 5) DAS = 15;
+        else if (sectAfter20g < 9) DAS = 10;
+        else if (sectAfter20g < 13) DAS = 3;
         else DAS = 1;
     }
     public void DisconnectGameOver()
     {
         if (MenuEngine.instance.curBoard != null) MenuEngine.instance.GameOver = true;
     }
-    public void ControllerSwap() {if (MenuEngine.instance.curBoard != null && notifDelay == 0) {NotificationEngine.instance.InstantiateNotification(MenuEngine.instance.notifLangString[(int)MenuEngine.instance.language, 13], Color.white); notifDelay = 300;} }
-    public void ShowGradeScore() {if (notifDelay == 0) {NotificationEngine.instance.InstantiateNotification(MenuEngine.instance.notifLangString[(int)MenuEngine.instance.language, 14], Color.white); NotificationEngine.instance.InstantiateNotification(""+ Math.Floor(gradePoints), Color.white); NotificationEngine.instance.InstantiateNotification("/" + Math.Floor(gradePointRequirement), Color.white); notifDelay = 120;} }
+    public void ControllerSwap() 
+    {
+        if (MenuEngine.instance.curBoard != null && notifDelay == 0) 
+        {
+            NotificationEngine.instance.InstantiateNotification(MenuEngine.instance.notifLangString[(int)MenuEngine.instance.language, 13], Color.white); notifDelay = 300;
+        } 
+    }
+    public void ShowGradeScore() 
+    {
+        if (notifDelay == 0) 
+        {
+            NotificationEngine.instance.InstantiateNotification(MenuEngine.instance.notifLangString[(int)MenuEngine.instance.language, 14], Color.white);
+            NotificationEngine.instance.InstantiateNotification(""+ Math.Floor(gradePoints), Color.white);
+            NotificationEngine.instance.InstantiateNotification("/" + Math.Floor(gradePointRequirement), Color.white);
+            notifDelay = 200;
+        }
+    }
 }
