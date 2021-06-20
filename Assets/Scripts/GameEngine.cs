@@ -154,7 +154,7 @@ public class GameEngine : MonoBehaviour
                 {
                     LockDelay = 1.000001d;
                 }
-                if (gravity >= 19.99999) gravity = gravity * 4;
+                if (gravity < 19.99999) gravity = gravity * 4;
             }
             else
             {
