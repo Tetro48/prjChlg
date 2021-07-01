@@ -38,6 +38,9 @@ public class BoardController : MonoBehaviour {
     bool linecleared = false;
     bool arereseted = false;
     List<int> ldldy = new List<int>();
+    [SerializeField]Sprite boneblock;
+
+    List<int> allClearFireworkTime = new List<int>();
 
     GridUnit[,] fullGrid;
 
@@ -54,6 +57,18 @@ public class BoardController : MonoBehaviour {
     private void FixedUpdate()
     {
         TopoutWarning();
+        for (int fire = 0; fire < allClearFireworkTime.Count; fire++)
+        {
+            if (allClearFireworkTime[fire] % 20 == 0)
+            {
+                GameEngine.instance.SpawnFireworks();
+            }
+            if (allClearFireworkTime[fire] == 200)
+            {
+                allClearFireworkTime.RemoveAt(fire);
+            }
+            allClearFireworkTime[fire]++;
+        }
         if(GameEngine.instance.framestepped && !MenuEngine.instance.GameOver)
         {
             if(linecleared == true)
@@ -128,6 +143,22 @@ public class BoardController : MonoBehaviour {
         }
         return amount;
     }
+    public void FillLine(int line)
+    {
+        for (int x = 0; x < gridSizeX; x++)
+        {
+            GridUnit curGridUnit = fullGrid[x,line];
+            if (!curGridUnit.isOccupied)
+            {
+                GameObject clonedTile = GameObject.Instantiate(tileClone, transform);
+                PieceController tileContr = clonedTile.GetComponent<PieceController>();
+                if(GameEngine.instance.sectAfter20g > 1) tileContr.tiles[0].GetComponent<SpriteRenderer>().sprite = boneblock;
+                tileContr.tiles[0].UpdatePosition(new Vector2Int(x,line));
+                tileContr.tiles[0].SetTileUp();
+                PiecesController.instance.piecesInGame.Add(clonedTile);
+            }
+        }
+    }
     public void CloneLineToBottom()
     {
         for (int x = 0; x < gridSizeX; x++)
@@ -142,6 +173,7 @@ public class BoardController : MonoBehaviour {
                     {
                         GameObject clonedTile = GameObject.Instantiate(tileClone, transform);
                         PieceController tileContr = clonedTile.GetComponent<PieceController>();
+                        if(GameEngine.instance.sectAfter20g > 1) tileContr.tiles[0].GetComponent<SpriteRenderer>().sprite = boneblock;
                         tileContr.tiles[0].UpdatePosition(new Vector2Int(x,y));
                         tileContr.tiles[0].SetTileUp();
                         PiecesController.instance.piecesInGame.Add(clonedTile);
@@ -249,6 +281,19 @@ public class BoardController : MonoBehaviour {
         if(fullGrid[coords.x, coords.y].tileOnGridUnit != null) Destroy(fullGrid[coords.x, coords.y].tileOnGridUnit);
         fullGrid[coords.x, coords.y].tileOnGridUnit = tileGO;
     }
+    public bool CheckAllClear()
+    {
+        for (int x = 0; x < gridSizeX; x++)
+        {
+            for (int y = 0; y < gridSizeY; y++)
+            {
+                if (fullGrid[x,y].isOccupied) return false;
+            }
+        }
+        gameAudio.PlayOneShot(PiecesController.instance.levelup);
+        allClearFireworkTime.Add(0);
+        return true;
+    }
 
     /// <summary>
     /// Checks line by line from bottom to top to see if that line is full and should be cleared.
@@ -309,7 +354,7 @@ public class BoardController : MonoBehaviour {
                 gameAudio.PlayOneShot(audioLineClear[limitedSEcount]);
             }
             GameEngine.instance.LineClears(linesToClear.Count, tspinned);
-            
+            CheckAllClear();
 
             // PiecesController.instance.lineDelayf++;
             if(GameEngine.instance.lineDelay < 1)

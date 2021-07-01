@@ -565,6 +565,14 @@ public class PieceController : MonoBehaviour {
         }
         if (MenuEngine.instance.GameOver == false)
         {
+            if (Input.GetKey(KeyCode.E))
+            {
+                int incrementbyfrozenlines = GameEngine.instance.lineFreezingMechanic ? GameEngine.instance.linesFrozen[GameEngine.instance.curSect] : 0;
+                BoardController.instance.FillLine(0+incrementbyfrozenlines);
+                BoardController.instance.FillLine(1+incrementbyfrozenlines);
+                BoardController.instance.FillLine(2+incrementbyfrozenlines);
+                BoardController.instance.FillLine(3+incrementbyfrozenlines);
+            }
             BoardController.instance.CheckLineClears();
             PiecesController.instance.PieceSet();
             PiecesController.instance.UpdatePieceBag();

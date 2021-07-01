@@ -28,7 +28,7 @@ using TMPro;
 public enum RotationSystems {SRS, ARS}
 public class GameEngine : MonoBehaviour
 {
-    public int time, rollTime, rollTimeLimit = 6600, notifDelay;
+    public int time, rollTime, rollTimeLimit = 11000, notifDelay;
     public int level;
     public int endingLevel = 2100;
     public int curSect, sectAfter20g;
@@ -76,6 +76,8 @@ public class GameEngine : MonoBehaviour
     public bool[] HoldInputs;
     public Vector2 movement;
 
+    public ReplayRecord replay;
+
 
 	/** Line clear時に入る段位 point */
 	static int[] tableGradePoint = {10, 30, 60, 120, 180, 240, 300, 400, 520, 640, 780, 920, 1060, 1200, 1500, 1800, 2100, 2400, 3000, 4000, 5500, 7500, 10000};
@@ -119,7 +121,7 @@ public class GameEngine : MonoBehaviour
                 comboCount++;
                 if(comboCount >= 2) {
                     int cmbse = comboCount - 2;
-                    if(cmbse > 20) cmbse = 20;
+                    if(cmbse > comboSE.Length-1) cmbse = comboSE.Length-1;
                     gameAudio.PlayOneShot(comboSE[cmbse]);
                 }
             }
@@ -176,6 +178,7 @@ public class GameEngine : MonoBehaviour
 
         int indexcombo = comboCount - 1;
         if(indexcombo < 0) indexcombo = 0;
+        if(indexcombo > 9) indexcombo = 9;
         float combobonus = tableGradeComboBonus[lines - 1, indexcombo];
 	
 		int levelbonus = 1 + (level / 250);
@@ -213,7 +216,7 @@ public class GameEngine : MonoBehaviour
     {
         // DontDestroyOnLoad(this);
         instance = this;
-        audioPath = "file:///" + Application.dataPath + "/BGM/";
+        audioPath = "file:///" + Application.persistentDataPath + "/BGM/";
         Debug.Log(audioPath);
         for (int i = 0; i < 7; i++)
         {
@@ -267,34 +270,42 @@ public class GameEngine : MonoBehaviour
     }
     public void OnMovement(InputAction.CallbackContext value)
     {
-        movement = value.ReadValue<Vector2>();
-        if (value.ReadValue<Vector2>().y > 0.5) {Inputs[0] = true; HoldInputs[0] = true;}
-        else {Inputs[0] = false; HoldInputs[0] = false;}
+        if (!replay.mode)
+        {
+            movement = value.ReadValue<Vector2>();
+            if (value.ReadValue<Vector2>().y > 0.5) {Inputs[0] = true; HoldInputs[0] = true;}
+            else {Inputs[0] = false; HoldInputs[0] = false;}
+        }
     }
     public void OnCounterclockwise(InputAction.CallbackContext value)
     {
+        if (!replay.mode){
         if (value.performed) {HoldInputs[1] = true; Inputs[1] = true;}
-        else {HoldInputs[1] = false; Inputs[1] = false;}
+        else {HoldInputs[1] = false; Inputs[1] = false;}}
     }
     public void OnClockwise(InputAction.CallbackContext value)
     {
+        if (!replay.mode){
         if (value.performed) {HoldInputs[2] = true; Inputs[2] = true;}
-        else {HoldInputs[2] = false; Inputs[2] = false;}
+        else {HoldInputs[2] = false; Inputs[2] = false;}}
     }
     public void OnClockwise2(InputAction.CallbackContext value)
     {
+        if (!replay.mode){
         if (value.performed) {HoldInputs[6] = true; Inputs[6] = true;}
-        else {HoldInputs[6] = false; Inputs[6] = false;}
+        else {HoldInputs[6] = false; Inputs[6] = false;}}
     }
     public void OnUpsideDown(InputAction.CallbackContext value)
     {
+        if (!replay.mode){
         if (value.performed) {HoldInputs[3] = true; Inputs[3] = true;}
-        else {HoldInputs[3] = false; Inputs[3] = false;}
+        else {HoldInputs[3] = false; Inputs[3] = false;}}
     }
     public void OnHold(InputAction.CallbackContext value)
     {
+        if (!replay.mode){
         if (value.performed) {HoldInputs[4] = true; Inputs[4] = true;}
-        else {HoldInputs[4] = false; Inputs[4] = false;}
+        else {HoldInputs[4] = false; Inputs[4] = false;}}
     }
     public void OnPause(InputAction.CallbackContext value)
     {
@@ -343,9 +354,25 @@ public class GameEngine : MonoBehaviour
         if (Input.GetKeyDown(KeyCode.H)) {gradePoints += gradePointRequirement; statGradePoints += gradePointRequirement;}
         if((paused == false || (FrameStep == true && Inputs[7])) && MenuEngine.instance.GameOver == false)
         {
+            if (replay.mode)
+            {
+                Vector2 tempmov;
+                tempmov.x = replay.movementVector[replay.frames][0];
+                tempmov.y = replay.movementVector[replay.frames][1];
+                movement = tempmov;
+                // Inputs = replay.inputs[replay.frames];
+                Inputs[0] = replay.inputs[replay.frames][0];
+                Inputs[1] = replay.inputs[replay.frames][1];
+                Inputs[2] = replay.inputs[replay.frames][2];
+                Inputs[3] = replay.inputs[replay.frames][3];
+                Inputs[4] = replay.inputs[replay.frames][4];
+                Inputs[5] = replay.inputs[replay.frames][5];
+                Inputs[6] = replay.inputs[replay.frames][6];
+                lineFreezingMechanic = replay.switches[0];
+            }
             if (level >= endingLevel && AREf < (int)ARE)
             {
-                int whichline = ((AREf - (int)ARE)+240)/6;
+                int whichline = ((AREf - (int)ARE)+400)/10;
                 Debug.Log(whichline);
                 BoardController.instance.DestroyLine(whichline);
             }

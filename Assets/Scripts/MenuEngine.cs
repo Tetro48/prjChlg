@@ -54,11 +54,17 @@ public class MenuEngine : MonoBehaviour
     public AudioClip clip, topoutSE;
     public GameObject inGameBoard, curBoard;
     public AudioClip ModeOK;
-    public GameObject mainMenu, settingsMenu, imgprjchlg, curLevel, nextSecLv, levelSprite, timeCounter, gradeText, mobileInput;
-    public GameObject[] supposedToBeAPartOfBoard, mainMenuGUI, settingsMenuGUI, settingsMenuGUIpart;
-    public RectTransform mainMenuMovement, mainMenuGUI1Movement, mainMenuGUI2Movement, mainMenuGUI3Movement, settingsMovement, settingsGUI1Movement, settingsGUI1PartMovement, settingsGUI2Movement, settingsGUI3Movement, settingsGUI4Movement, settingsGUI5Movement, settingsGUI6Movement, settingsGUI7Movement;
-    public RectTransform[] mainMenuGUIMovement, settingsGUIMovement, settingsGUIPartMovement;
+    public GameObject mainMenu, settingsMenu, inputsMenu, rotationSystemsMenu, customModeSettingsMenu, preferencesMenu, tuningMenu, imgprjchlg, mobileInput;
+    public GameObject[] supposedToBeAPartOfBoard, mainMenuGUI, settingsMenuGUI, settingsMenuGUIpart, inputsMenuGUI, rotationSystemsMenuGUI, customModeSettingsMenuGUI, preferencesMenuGUI, tuningMenuGUI;
+    public RectTransform mainMenuMovement, settingsMovement,settingsGUI1PartMovement, inputsMovement, rotationSystemsMovement, customModeSettingsMovement, preferencesMovement, tuningMovement;
+    public RectTransform[] mainMenuGUIMovement, settingsGUIMovement, settingsGUIPartMovement, inputsGUIMovement, rotationSystemsGUIMovement, customModeSettingsGUIMovement, preferencesGUIMovement, tuningGUIMovement;
     public TextMeshProUGUI[] mainMenuGUIText, settingsGUIText, inputsGUIText;
+    Vector3 boardpos, boardrot, posMM, posS, posSGUI1P, posI, posRS, posCMS, posP, posT;
+    public Vector3[] posMMGUI, posSGUI, posSGUIP, posIGUI, posRSGUI, posCMSGUI, posPGUI, posTGUI;
+    private float fallingdegree;
+    Resolution[] resolutions;
+    public float reswidth;
+
     public String[,] mainMenuLangString = 
     {
         {"Play!", "Settings", "Quit"},
@@ -84,12 +90,6 @@ public class MenuEngine : MonoBehaviour
         {"Одиночные: ", "Двойные: ", "Тройные: ", "Тетрисы: ", "линии: ", "Всего ", "Фигур: ", "Оценка: ", "Общий счет оценки:", "Уровень: ", "Гравитация: ", "Время: ", "Достигнуто часть 500 уровней!", "Контроллер заменен", "Счет оценки: ", "Начинаем!"},
         {"", "", "", "", "", "", "", "", "", "", "", "", "", "", "", ""},
     };
-    Vector3 boardpos, boardrot, posMM, posMMGUI1, posMMGUI2, posMMGUI3, posS, posSGUI1, posSGUI1P, posSGUI2, posSGUI3, posSGUI4, posSGUI5, posSGUI6, posSGUI7;
-    public Vector3[] posMMGUI, posSGUI, posSGUIP;
-    private float fallingdegree;
-    Resolution[] resolutions;
-    public float reswidth;
-
     Language previousLang;
     public void QuitGame()
     {
@@ -106,10 +106,10 @@ public class MenuEngine : MonoBehaviour
     }
     public void Settings() { if (!starting && !pressedSettingsMenu) {pressedSettingsMenu = true; menu++;} }
     
-    public void Inputs() { if (!starting && !pressedInputsMenu) {pressedInputsMenu = true; menu++;} }
+    public void Inputs() { if (!starting && !pressedInputsMenu && !pressedSettingsMenu && !pressedBack) {pressedInputsMenu = true; menu++;} }
     public void Back()
     {
-        if (!pressedBack)
+        if (!pressedBack && !pressedSettingsMenu && !pressedInputsMenu)
         {
             pressedBack = true;
             menu--;
@@ -149,7 +149,7 @@ public class MenuEngine : MonoBehaviour
     void Awake()
     {
         if (platformCompat()) discord = new Discord.Discord(836600860976349192, (UInt64)Discord.CreateFlags.Default);
-        Application.targetFrameRate = Screen.currentResolution.refreshRate * 2;
+        Application.targetFrameRate = Screen.currentResolution.refreshRate * 4;
         alreadystarted = true;
         instance = this;
     }
@@ -167,7 +167,7 @@ public class MenuEngine : MonoBehaviour
     private int resRefreshrates = 0;
     void Start()
     {
-        if(!platformCompat()) {reswidth = 1f; settingsMovement.position += new Vector3(0f,50f,0f);}
+        if(!platformCompat()) {reswidth = 1f; settingsMovement.position += new Vector3(0f,47.77f * (Screen.height / 1080.0f),0f);}
         GameObject[] objs = GameObject.FindGameObjectsWithTag("menuenginerelated");
         GameObject[] canvasobjs = GameObject.FindGameObjectsWithTag("Canvas");
         GameObject[] gameoverseobjs = GameObject.FindGameObjectsWithTag("GameOverSE");
@@ -267,6 +267,9 @@ public class MenuEngine : MonoBehaviour
         posSGUI1P = settingsGUI1PartMovement.position;
         posSGUI1P.x -= (float)(500.0 * reswidth);
         settingsGUI1PartMovement.position = posSGUI1P;
+        posI = inputsMovement.position;
+        posI.x -= (float)(500.0 * reswidth);
+        inputsMovement.position = posI;
     }
     public void UpdateLang()
     {
@@ -301,8 +304,8 @@ public class MenuEngine : MonoBehaviour
     // rough framerate measurement
     void Update()
     {
-        double newframerate = 1.0 / Time.deltaTime;
-        frameratebuffer.Add(newframerate);
+        double rawframetime = Time.deltaTime;
+        frameratebuffer.Add(rawframetime);
         if (frameratebuffer.Count > 100)
         {
             frameratebuffer.RemoveAt(0);
@@ -312,7 +315,7 @@ public class MenuEngine : MonoBehaviour
         {
             result += frameratebuffer[fr];
         }
-        framerate = result/frameratebuffer.Count;
+        framerate = 1.0 / (result/frameratebuffer.Count);
     }
     void FixedUpdate()
     {
@@ -326,8 +329,11 @@ public class MenuEngine : MonoBehaviour
             var activityManager = discord.GetActivityManager();
             int rpclvl = GameEngine.instance.level < 2100 ? (GameEngine.instance.curSect + 1) * 100 : 2100;
             var activity = new Discord.Activity {
-                Details = curBoard != null ? "Level " + GameEngine.instance.level + " | " + rpclvl : null,
-                State = !Application.genuine ? "The game is tampered" : framerate > 2600 ? "Suspiciously high framerate" : framerate < 10 ? "Suspiciously low framerate" : IntentionalGameOver ? "Exiting..." : GameOver ? "Topped out" : curBoard != null && GameEngine.instance.paused && GameEngine.instance.FrameStep ? "Currently playing (Framestepping)" : curBoard != null && GameEngine.instance.paused && !GameEngine.instance.FrameStep ? "Paused" : curBoard != null ? "Currently playing" : quitting ? "Quitting" : menu == 1 ? "Currently in settings menu" :"Currently in main menu"
+                Details = curBoard != null ? "Level " + GameEngine.instance.level + " | " + rpclvl + (GameEngine.instance.level > 800 ? ". Struggling." : string.Empty) : null,
+                State = !Application.genuine ? "The game is tampered" : framerate > 2600 ? "Suspiciously high framerate" : framerate < 10 ? "Suspiciously low framerate" : IntentionalGameOver ? "Exiting..." : GameOver ? "Topped out" : curBoard != null && GameEngine.instance.paused && GameEngine.instance.FrameStep ? "Currently playing (Framestepping)" : curBoard != null && GameEngine.instance.paused && !GameEngine.instance.FrameStep ? "Paused" : curBoard != null ? "Currently playing" : quitting ? "Quitting" : menu == 1 ? "Currently in settings menu" :"Currently in main menu",
+                Assets = {
+                    LargeImage = "icon"
+                }
             };
             activityManager.UpdateActivity(activity, (res) => {
             });
@@ -335,8 +341,10 @@ public class MenuEngine : MonoBehaviour
         }
         var MMf = mainMenuGUI.Length * 8;
         var SBf = settingsMenuGUI.Length * 8;
+        var IPf = inputsMenuGUI.Length * 8;
         var SBVf = settingsGUIMovement.Length * 8;
         var MMSBf = (MMf + SBf);
+        var SBIPf = (SBf + IPf);
         var MMSf = (MMf + 50);
         var MMSCf = (MMSf + SBf);
         var MMSCVf = (MMSf + SBVf);
@@ -354,7 +362,7 @@ public class MenuEngine : MonoBehaviour
             }
         }
         reswidth = (float)(Screen.width / 1920.0);
-        framerateCounter.text = (Math.Floor((framerate)*10)/10).ToString();
+        framerateCounter.text = (Math.Floor((framerate)*100)/100) + " FPS";
         if (GameOver)
         {
             GameEngine.instance.readyGoIndicator.sprite = null;
@@ -407,6 +415,10 @@ public class MenuEngine : MonoBehaviour
                     starting = true;
                     this.transform.position = Vector3.zero;
                     BackgroundController.bginstance.TriggerBackgroundChange(0);
+                    if (!GameEngine.instance.replay.mode)
+                    {
+                        GameEngine.instance.replay.SaveReplay("1");
+                    }
                 }
             }
         }
@@ -432,6 +444,11 @@ public class MenuEngine : MonoBehaviour
             {
                 if (frames == MMf + 11)
                 {
+                    GameEngine.instance.replay.Reset();
+                    if (GameEngine.instance.replay.mode)
+                    {
+                        GameEngine.instance.replay.LoadReplay("1");
+                    }
                     mainMenu.SetActive(false);
                     GameEngine.instance.gradePoints = 0;
                     GameEngine.instance.gradePointRequirement = 100;
@@ -513,9 +530,9 @@ public class MenuEngine : MonoBehaviour
         }
         if (pressedBack)
         {
+            frames++;
             if (menu == 0)
             {
-                frames++;
                 if (frames == 1)
                 {
                     mainMenu.SetActive(true);
@@ -550,6 +567,79 @@ public class MenuEngine : MonoBehaviour
                     frames = 0;
                 }
             }
+            if (menu == 1)
+            {
+                if (frames == 1)
+                {
+                    settingsMenu.SetActive(true);
+                    audioSource.PlayOneShot(clip);
+                }
+                else if(frames % 8 == 0)
+                {
+                    audioSource.PlayOneShot(clip);
+                }
+                if (frames < IPf + 1)
+                {
+                    posIGUI[(frames-1)/8] = inputsGUIMovement[(frames-1)/8].position;
+                    posIGUI[(frames-1)/8].x -= (float)(62.5 * reswidth);
+                    inputsGUIMovement[(frames-1)/8].position = posIGUI[(frames-1)/8];
+                }
+                else if (frames < SBIPf + 1)
+                {
+                    posSGUI[((frames-1) - IPf)/8] = settingsGUIMovement[((frames-1) - IPf)/8].position;
+                    posSGUI[((frames-1) - IPf)/8].x += (float)(62.5 * reswidth);
+                    settingsGUIMovement[((frames-1) - IPf)/8].position = posSGUI[((frames-1) - IPf)/8];
+                    if(frames < settingsMenuGUIpart.Length * 8 +1 + IPf)
+                    {
+                        posSGUIP[((frames-1) - IPf)/8] = settingsGUIPartMovement[((frames-1) - IPf)/8].position;
+                        posSGUIP[((frames-1) - IPf)/8].x += (float)(125.0 * reswidth);
+                        settingsGUIPartMovement[((frames-1) - IPf)/8].position = posSGUIP[((frames-1) - IPf)/8];
+                    }
+                }
+                else
+                {
+                    inputsMenu.SetActive(false);
+                    pressedBack = false;
+                    frames = 0;
+                }
+            }
+        }
+        if (pressedInputsMenu)
+        {
+            frames++;
+            if (frames == 1)
+            {
+                inputsMenu.SetActive(true);
+                audioSource.PlayOneShot(clip);
+            }
+            else if(frames % 8 == 0)
+            {
+                audioSource.PlayOneShot(clip);
+            }
+            if (frames < SBf + 1)
+            {
+                posSGUI[(frames-1)/8] = settingsGUIMovement[(frames-1)/8].position;
+                posSGUI[(frames-1)/8].x -= (float)(62.5 * reswidth);
+                settingsGUIMovement[(frames-1)/8].position = posSGUI[(frames-1)/8];
+                if(frames < settingsMenuGUIpart.Length * 8 +1)
+                {
+                    posSGUIP[(frames-1)/8] = settingsGUIPartMovement[(frames-1)/8].position;
+                    posSGUIP[(frames-1)/8].x -= (float)(125.0 * reswidth);
+                    settingsGUIPartMovement[(frames-1)/8].position = posSGUIP[(frames-1)/8];
+                }
+            }
+            else if (frames < SBIPf + 1)
+            {
+                posIGUI[((frames-1) - SBf)/8] = inputsGUIMovement[((frames-1) - SBf)/8].position;
+                posIGUI[((frames-1) - SBf)/8].x += (float)(62.5 * reswidth);
+                inputsGUIMovement[((frames-1) - SBf)/8].position = posIGUI[((frames-1) - SBf)/8];
+            }
+            else
+            {
+                pressedInputsMenu = false;
+                settingsMenu.SetActive(false);
+                frames = 0;
+            }
         }
         if (starting)
         {
@@ -567,7 +657,7 @@ public class MenuEngine : MonoBehaviour
             GameEngine.instance.LockDelay = 50;
             GameEngine.instance.lineDelayf = 0;
             GameEngine.instance.lineDelay = 25;
-            GameEngine.instance.gravity = 5/64f;
+            GameEngine.instance.gravity = 3/64f;
             GameEngine.instance.singles = 0;
             GameEngine.instance.doubles = 0;
             GameEngine.instance.triples = 0;

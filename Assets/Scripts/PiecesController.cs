@@ -29,6 +29,8 @@ public class PiecesController : MonoBehaviour {
 
     public static PiecesController instance;
 
+    public int playerID;
+
     public GameObject piecePrefab;
     public Vector2Int spawnPos;
     public float dropTime;
@@ -86,19 +88,23 @@ public class PiecesController : MonoBehaviour {
     {
         instance = this;
         
-        bag = new List<int>();
-        for (int i = 0; i < 16; i++)
+        if(!GameEngine.instance.replay.mode)
         {
-            // bag.Add(new List<int> { 0, 1, 2, 3, 4, 5, 6 });
-            
-            List<int> bagshuff = new List<int>(){0,1,2,3,4,5,6};
-            Shuffle(bagshuff);
-            Debug.Log(bagshuff);
-            for (int j = 0; j < 7; j++)
+            bag = new List<int>();
+            for (int i = 0; i < 16; i++)
             {
-                bag.Add(bagshuff[j]);
+                // bag.Add(new List<int> { 0, 1, 2, 3, 4, 5, 6 });
+                
+                List<int> bagshuff = new List<int>(){0,1,2,3,4,5,6};
+                Shuffle(bagshuff);
+                Debug.Log(bagshuff);
+                for (int j = 0; j < 7; j++)
+                {
+                    bag.Add(bagshuff[j]);
+                }
             }
         }
+        else bag = GameEngine.instance.replay.bag;
 
         JLSTZ_OFFSET_DATA = new Vector2Int[5, 4];
         JLSTZ_OFFSET_DATA[0, 0] = Vector2Int.zero;
@@ -167,19 +173,19 @@ public class PiecesController : MonoBehaviour {
             JLSTZ_OFFSET_DATA[0, 3] = Vector2Int.zero;
 
             JLSTZ_OFFSET_DATA[1, 0] = new Vector2Int(-1, 1);
-            JLSTZ_OFFSET_DATA[1, 1] = new Vector2Int(-2, 0);
+            JLSTZ_OFFSET_DATA[1, 1] = new Vector2Int(0, 0);
             JLSTZ_OFFSET_DATA[1, 2] = new Vector2Int(-1, 0);
             JLSTZ_OFFSET_DATA[1, 3] = new Vector2Int(-2, 0);
 
-            JLSTZ_OFFSET_DATA[2, 0] = new Vector2Int(1, 0);
-            JLSTZ_OFFSET_DATA[2, 1] = new Vector2Int(1, 0);
-            JLSTZ_OFFSET_DATA[2, 2] = new Vector2Int(1, 0);
-            JLSTZ_OFFSET_DATA[2, 3] = new Vector2Int(1, 0);
+            JLSTZ_OFFSET_DATA[2, 0] = new Vector2Int(-1, 1);
+            JLSTZ_OFFSET_DATA[2, 1] = new Vector2Int(-2, 0);
+            JLSTZ_OFFSET_DATA[2, 2] = new Vector2Int(-1, 0);
+            JLSTZ_OFFSET_DATA[2, 3] = new Vector2Int(0, 0);
 
             JLSTZ_OFFSET_DATA[3, 0] = new Vector2Int(0, 0);
-            JLSTZ_OFFSET_DATA[3, 1] = new Vector2Int(0, -1);
-            JLSTZ_OFFSET_DATA[3, 2] = new Vector2Int(0, -1);
-            JLSTZ_OFFSET_DATA[3, 3] = new Vector2Int(0, -1);
+            JLSTZ_OFFSET_DATA[3, 1] = new Vector2Int(0, 0);
+            JLSTZ_OFFSET_DATA[3, 2] = new Vector2Int(0, 0);
+            JLSTZ_OFFSET_DATA[3, 3] = new Vector2Int(0, 0);
 
             JLSTZ_OFFSET_DATA[4, 0] = Vector2Int.zero;
             JLSTZ_OFFSET_DATA[4, 1] = Vector2Int.zero;
@@ -267,7 +273,7 @@ public class PiecesController : MonoBehaviour {
                 executedHold = false;
             }
         }
-        if (pieces % 7 == 0)
+        if (pieces % 7 == 0 && !GameEngine.instance.replay.mode)
         {
             List<int> bagshuff = new List<int>(){0,1,2,3,4,5,6};
             Shuffle(bagshuff);
@@ -277,6 +283,7 @@ public class PiecesController : MonoBehaviour {
                 bag.Add(bagshuff[j]);
             }
         }
+        GameEngine.instance.replay.bag = bag;
         bagPieceRetrieved = false;
     }
     bool IHSexecuted;

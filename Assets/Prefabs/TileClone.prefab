@@ -105,6 +105,9 @@ MonoBehaviour:
   isDisabledFromSacrifice: 0
   audioPieceLock: {fileID: 8300000, guid: f77ceeac82370c74ab7ba4f850219b6c, type: 3}
   audioPieceStep: {fileID: 8300000, guid: 82f3999481bf2bb468b7238726593bd3, type: 3}
+  ghostContr: {fileID: 0}
+  countLockResets: 0
+  maxLockResets: 20
   harddrop: 0
   LockDelayEnable: 0
   zombieContr: 1
@@ -154,10 +157,12 @@ SpriteRenderer:
   m_CastShadows: 0
   m_ReceiveShadows: 0
   m_DynamicOccludee: 1
+  m_StaticShadowCaster: 0
   m_MotionVectors: 1
   m_LightProbeUsage: 1
   m_ReflectionProbeUsage: 1
   m_RayTracingMode: 0
+  m_RayTraceProcedural: 0
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
@@ -184,7 +189,7 @@ SpriteRenderer:
   m_SortingOrder: 10
   m_Sprite: {fileID: 2681808194031769357, guid: b770af1905bee2d48aa30980c1323ecf,
     type: 3}
-  m_Color: {r: 1, g: 0.94509804, b: 1, a: 1}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0
