@@ -26,7 +26,7 @@ public class TileController : MonoBehaviour {
 
     public Sprite originalSpr, hoverSpr, disableSpr;
 
-    SpriteRenderer spriteRenderer;
+    public SpriteRenderer spriteRenderer;
     public PieceController pieceController;
     public int tileIndex;
 

@@ -330,7 +330,7 @@ public class MenuEngine : MonoBehaviour
             int rpclvl = GameEngine.instance.level < 2100 ? (GameEngine.instance.curSect + 1) * 100 : 2100;
             var activity = new Discord.Activity {
                 Details = curBoard != null ? "Level " + GameEngine.instance.level + " | " + rpclvl + (GameEngine.instance.level > 800 ? ". Struggling." : string.Empty) : null,
-                State = !Application.genuine ? "The game is tampered" : framerate > 2600 ? "Suspiciously high framerate" : framerate < 10 ? "Suspiciously low framerate" : IntentionalGameOver ? "Exiting..." : GameOver ? "Topped out" : curBoard != null && GameEngine.instance.paused && GameEngine.instance.FrameStep ? "Currently playing (Framestepping)" : curBoard != null && GameEngine.instance.paused && !GameEngine.instance.FrameStep ? "Paused" : curBoard != null ? "Currently playing" : quitting ? "Quitting" : menu == 1 ? "Currently in settings menu" :"Currently in main menu",
+                State = !Application.genuine ? "The game is tampered" : framerate > 2600 ? "Suspiciously high framerate" : framerate < 10 ? "Suspiciously low framerate" : IntentionalGameOver ? "Exiting..." : GameOver ? "Topped out" : curBoard != null && GameEngine.instance.paused && !GameEngine.instance.FrameStep ? "Paused" : curBoard != null && GameEngine.instance.replay.mode ? "Currently replaying" : curBoard != null && GameEngine.instance.paused && GameEngine.instance.FrameStep ? "Currently playing (Framestepping)" : curBoard != null ? "Currently playing" : quitting ? "Quitting" : menu == 1 ? "Currently in settings menu" :"Currently in main menu",
                 Assets = {
                     LargeImage = "icon"
                 }
@@ -366,7 +366,7 @@ public class MenuEngine : MonoBehaviour
         if (GameOver)
         {
             GameEngine.instance.readyGoIndicator.sprite = null;
-            GameEngine.instance.gameAudio.Stop();
+            GameEngine.instance.gameMusic.Stop();
             if(frames%10==9 && frames<400)BoardController.instance.DestroyLine(frames/10);
             if(frames<400)BoardController.instance.DecayLine(frames/10, 0.1f);
             frames++;
@@ -675,10 +675,12 @@ public class MenuEngine : MonoBehaviour
             GameEngine.instance.nextSecLv.text = "100";
             GameEngine.instance.levelTextRender.text = "0";
             GameEngine.instance.ending = false;
+            GameEngine.instance.sectionTime = new int[21];
             Destroy(curBoard);
-            GameEngine.instance.gameAudio.Stop();
-            GameEngine.instance.gameAudio.clip = GameEngine.instance.bgm_1p_lv[0];
-            GameEngine.instance.gameAudio.volume = 1f;
+            GameEngine.instance.gameMusic.Stop();
+            GameEngine.instance.gameMusic.clip = GameEngine.instance.bgm_1p_lv[0];
+            GameEngine.instance.gameMusic.volume = 1f;
+            GameEngine.instance.tileInvisTime = -1;
             if (!mainMenuMusic.isPlaying)mainMenuMusic.Play();
             frames++;
             // if (SceneManager.GetActiveScene().name != "MenuScene")SceneManager.LoadScene("MenuScene");

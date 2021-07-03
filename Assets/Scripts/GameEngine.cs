@@ -24,11 +24,22 @@ using TMPro;
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
-
+public enum sectionState {checking, cool, regret, missed}
 public enum RotationSystems {SRS, ARS}
 public class GameEngine : MonoBehaviour
 {
-    public int time, rollTime, rollTimeLimit = 11000, notifDelay;
+    public int time, rollTime, rollTimeLimit = 11000, notifDelay, sectionlasttime, coolprevtime;
+    public int[] sectionTime = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+    public sectionState[] cools = new sectionState[21];
+    /** Section COOL criteria Time */
+	public static int[] tableTimeCool =
+	{
+		5200, 5200, 4900, 4500, 4500, 4200, 4200, 3800, 3800, 3800, 3300, 3300, 3300, 2800, 2800, 2200, 1800, 1400, 900, 600, -1
+	};
+    public static int[] tableTimeRegret = 
+    {
+        9000, 7500, 7500, 6800, 6000, 6000, 5000, 5000, 500, 5000, 4500, 4500, 4500, 4000, 4000, 3400, 3000, 2600, 1700, 800, -1
+    };
     public int level;
     public int endingLevel = 2100;
     public int curSect, sectAfter20g;
@@ -36,10 +47,10 @@ public class GameEngine : MonoBehaviour
     public int comboCount, comboKeepCounter;
     public AudioClip[] comboSE;
     private double musicTime;
-    public AudioSource gameAudio;
+    public AudioSource gameAudio, gameMusic;
     public AudioClip[] bgm_1p_lv;
     public string audioPath;
-    public AudioClip readySE, goSE, gradeUp, excellent;
+    public AudioClip readySE, goSE, gradeUp, excellent, coolSE, regretSE;
     public int bgmlv = 1;
     public double gradePoints, statGradePoints, gradePointRequirement;
     private int virtualBasePoint;
@@ -51,9 +62,7 @@ public class GameEngine : MonoBehaviour
     public Sprite readySprite, goSprite;
     public int nextPieces, nextibmblocks;
     public RotationSystems RS;
-    public bool TLS;
-    public bool tSpin;
-    public bool ending;
+    public bool TLS, tSpin, ending, coolchecked, previouscool;
     public bool lineFreezingMechanic;
     public double LockDelay = 50;    
     public double DAS = 15;
@@ -73,11 +82,53 @@ public class GameEngine : MonoBehaviour
 
     public bool paused, FrameStep, framestepped;
     public bool[] Inputs;
-    public bool[] HoldInputs;
+    public int tileInvisTime = -1;
     public Vector2 movement;
 
     public ReplayRecord replay;
 
+    bool cool, cooldisplayed;
+	private void checkCool() {
+		// COOL check
+		if((level % 100 >= 70) && (coolchecked == false && level < 2001)) {
+			int section = level / 100;
+
+			if( (sectionTime[section] <= tableTimeCool[section]) &&
+				((previouscool == false) || ((previouscool == true) && (sectionTime[section] <= coolprevtime + 60))) )
+			{
+				cool = true;
+				cools[section] = sectionState.cool;
+			}
+			else cools[section] = sectionState.missed;
+			coolprevtime = sectionTime[section];
+			coolchecked = true;
+		}
+
+		// COOLиЎЁз¤є
+		if((level % 100 >= 82) && (cool == true) && (cooldisplayed == false)) {
+			gameAudio.PlayOneShot(coolSE);
+			// cooldispframe = 180;
+			cooldisplayed = true;
+			virtualBasePoint += 600;
+		}
+	}
+
+	/**
+	 * REGRETгЃ® check
+	 * @param engine GameEngine
+	 * @param levelb Line clearе‰ЌгЃ® level
+	 */
+	private void checkRegret(int levelb) {
+		int section = levelb / 100;
+		if(sectionlasttime > tableTimeRegret[section]) {
+
+			virtualBasePoint -= 600;
+
+			// regretdispframe = 180;
+			gameAudio.PlayOneShot(regretSE);
+			cools[section] = sectionState.regret;
+		}
+	}
 
 	/** Line clear時に入る段位 point */
 	static int[] tableGradePoint = {10, 30, 60, 120, 180, 240, 300, 400, 520, 640, 780, 920, 1060, 1200, 1500, 1800, 2100, 2400, 3000, 4000, 5500, 7500, 10000};
@@ -133,6 +184,8 @@ public class GameEngine : MonoBehaviour
         if(level > endingLevel) level = endingLevel;
         if(level/100 > curSect)
         {
+            sectionlasttime = sectionTime[curSect];
+            checkRegret(level - lvlLineIncrement[lines-1]);
             curSect++;
             if (curSect > (endingLevel/100) - 1)
             {
@@ -162,6 +215,17 @@ public class GameEngine : MonoBehaviour
             {
                 gravity = gravity * 4;
             }
+            // COOLг‚’еЏ–гЃЈгЃ¦гЃџг‚‰
+            if(cool == true) {
+                previouscool = true;
+
+            } else {
+                previouscool = false;
+            }
+
+            cool = false;
+            coolchecked = false;
+            cooldisplayed = false;
         }
         if (spin)
         {
@@ -227,24 +291,24 @@ public class GameEngine : MonoBehaviour
     private IEnumerator LoadLevelMusic(int lv)
     {
         WWW request;
-        if(lv < 6) request = GetAudioFromFile(audioPath, "BGM_1p_lv"+(lv+1)+".wav");
-        else request = GetAudioFromFile(audioPath, "BGM_ending2.wav");
+        if(lv < 6) request = GetAudioFromFile(audioPath, "lv"+(lv+1)+".wav");
+        else request = GetAudioFromFile(audioPath, "ending.wav");
         Debug.Log(request);
         yield return request;
 
         bgm_1p_lv[lv] = request.GetAudioClip();
-        bgm_1p_lv[lv].name = "BGM_" + (lv < 6 ? "1p_lv"+(lv+1)+"" : "ending2");
-        if (lv == 0) gameAudio.clip = bgm_1p_lv[0];
+        bgm_1p_lv[lv].name = (lv < 6 ? "lv"+(lv+1)+"" : "ending");
+        if (lv == 0) gameMusic.clip = bgm_1p_lv[0];
     }
     AudioClip MMmusic;
     private IEnumerator LoadMainMenuMusic()
     {
-        WWW request = GetAudioFromFile(audioPath, "BGM_player_data.wav");
+        WWW request = GetAudioFromFile(audioPath, "menu.wav");
         Debug.Log(request);
         yield return request;
 
         MMmusic = request.GetAudioClip();
-        MMmusic.name = ("BGM_player_data");
+        MMmusic.name = ("menu");
         MenuEngine.instance.mainMenuMusic.clip = MMmusic;
         MenuEngine.instance.mainMenuMusic.Play();
     }
@@ -261,51 +325,51 @@ public class GameEngine : MonoBehaviour
     {
 	    if (tableBGMFadeout[bgmlv-1] != -1 && level >= tableBGMFadeout[bgmlv-1])
         {
-            gameAudio.volume -= (Time.deltaTime / 3);
+            gameMusic.volume -= (Time.deltaTime / 3);
         }
     }
     void ChangeBGM()
     {
-        if (tableBGMChange[bgmlv-1] != -1 && level >= tableBGMChange[bgmlv-1]) { bgmlv += 1; gameAudio.volume = 1; gameAudio.Stop(); gameAudio.clip = bgm_1p_lv[bgmlv-1]; if(bgmlv < 7)gameAudio.Play();}
+        if (tableBGMChange[bgmlv-1] != -1 && level >= tableBGMChange[bgmlv-1]) { bgmlv += 1; gameMusic.volume = 1; gameMusic.Stop(); gameMusic.clip = bgm_1p_lv[bgmlv-1]; if(bgmlv < 7)gameMusic.Play();}
     }
     public void OnMovement(InputAction.CallbackContext value)
     {
         if (!replay.mode)
         {
             movement = value.ReadValue<Vector2>();
-            if (value.ReadValue<Vector2>().y > 0.5) {Inputs[0] = true; HoldInputs[0] = true;}
-            else {Inputs[0] = false; HoldInputs[0] = false;}
+            if (value.ReadValue<Vector2>().y > 0.5) {Inputs[0] = true;}
+            else {Inputs[0] = false;}
         }
     }
     public void OnCounterclockwise(InputAction.CallbackContext value)
     {
         if (!replay.mode){
-        if (value.performed) {HoldInputs[1] = true; Inputs[1] = true;}
-        else {HoldInputs[1] = false; Inputs[1] = false;}}
+        if (value.performed) Inputs[1] = true;
+        else Inputs[1] = false;}
     }
     public void OnClockwise(InputAction.CallbackContext value)
     {
         if (!replay.mode){
-        if (value.performed) {HoldInputs[2] = true; Inputs[2] = true;}
-        else {HoldInputs[2] = false; Inputs[2] = false;}}
+        if (value.performed) Inputs[2] = true;
+        else Inputs[2] = false;}
     }
     public void OnClockwise2(InputAction.CallbackContext value)
     {
         if (!replay.mode){
-        if (value.performed) {HoldInputs[6] = true; Inputs[6] = true;}
-        else {HoldInputs[6] = false; Inputs[6] = false;}}
+        if (value.performed) Inputs[6] = true;
+        else Inputs[6] = false;}
     }
     public void OnUpsideDown(InputAction.CallbackContext value)
     {
         if (!replay.mode){
-        if (value.performed) {HoldInputs[3] = true; Inputs[3] = true;}
-        else {HoldInputs[3] = false; Inputs[3] = false;}}
+        if (value.performed) Inputs[3] = true;
+        else Inputs[3] = false;}
     }
     public void OnHold(InputAction.CallbackContext value)
     {
         if (!replay.mode){
-        if (value.performed) {HoldInputs[4] = true; Inputs[4] = true;}
-        else {HoldInputs[4] = false; Inputs[4] = false;}}
+        if (value.performed) Inputs[4] = true;
+        else Inputs[4] = false;}
     }
     public void OnPause(InputAction.CallbackContext value)
     {
@@ -320,8 +384,8 @@ public class GameEngine : MonoBehaviour
         {
             Inputs[7] = true;
         }
-        if (value.performed) HoldInputs[7] = true;
-        else HoldInputs[7] = false;
+        // if (value.performed) HoldInputs[7] = true;
+        // else HoldInputs[7] = false;
     }
     public string timeCount(int time)
     {
@@ -334,9 +398,9 @@ public class GameEngine : MonoBehaviour
     // Update is called once per frame
     void FixedUpdate()
     {
-        
+        checkCool();
         if(level > endingLevel) level = endingLevel;
-        if(time == 1 || (AREf == -1 && ending)) gameAudio.Play();
+        if(time == 1 || (AREf == -1 && ending)) gameMusic.Play();
         if (ending) MenuEngine.instance.supposedToBeAPartOfBoard[6].SetActive(true);
         else MenuEngine.instance.supposedToBeAPartOfBoard[6].SetActive(false);
         // musicTime += Time.deltaTime;
@@ -376,13 +440,19 @@ public class GameEngine : MonoBehaviour
                 Debug.Log(whichline);
                 BoardController.instance.DestroyLine(whichline);
             }
+            
+            if(ending)tileInvisTime = 20 - (rollTime / (400/6*10));
             if (AREf == (int)ARE - 399) gameAudio.PlayOneShot(excellent);
             if(AREf >= 0 && readyGoIndicator.sprite == null && rollTime < rollTimeLimit)time++;
             if(AREf >= 0 && readyGoIndicator.sprite == null && ending && rollTime < rollTimeLimit)rollTime++;
             int nextsecint = level < endingLevel ? (curSect + 1) * 100 : endingLevel;
             levelTextRender.text = level.ToString();
             if(curSect < 21)nextSecLv.text = nextsecint.ToString();
-            if(!ending)timeCounter.text = timeCount(time);
+            if(!ending)
+            {
+                timeCounter.text = timeCount(time);
+                if(AREf >= 0 && readyGoIndicator.sprite == null && rollTime < rollTimeLimit)sectionTime[curSect]++;
+            }
             rollTimeCounter.text = timeCount(rollTimeLimit - rollTime);
             framestepped = true;
             // for (int i = 0; i < 7; i++)

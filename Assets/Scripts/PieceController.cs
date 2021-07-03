@@ -39,6 +39,7 @@ public class PieceController : MonoBehaviour {
     public bool LockDelayEnable;
     public bool zombieContr;
     public int LockDelayf;
+    public int hideTilesPerUpdates;
 
 
     public TileController[] tiles;
@@ -69,11 +70,20 @@ public class PieceController : MonoBehaviour {
 
     private void FixedUpdate()
     {
+        hideTilesPerUpdates = GameEngine.instance.tileInvisTime;
+        if (hideTilesPerUpdates > 0 && GameEngine.instance.framestepped && fullyLocked)
+        {
+            float percentage = 1f/hideTilesPerUpdates;
+            for (int i = 0; i < tiles.Length; i++)
+            {
+                if(tiles[i] != null)tiles[i].spriteRenderer.color -= new Color(0f,0f,0f, percentage);
+            }
+        }
         if(GameEngine.instance.framestepped)
         {
-            if (LockDelayEnable == false && PiecesController.instance.piecemovementlocked == false)  {if(!CanMovePiece(Vector2Int.down) && fullyLocked == false)  {LockDelayf = 0;  LockDelayEnable = true;} else LockDelayEnable = false;}
+            if (!LockDelayEnable && !PiecesController.instance.piecemovementlocked)  {if(!CanMovePiece(Vector2Int.down) && !fullyLocked)  {LockDelayf = 0;  LockDelayEnable = true;} else LockDelayEnable = false;}
         
-            if(LockDelayEnable == true && harddrop == false && fullyLocked == false)
+            if(LockDelayEnable && !harddrop && !fullyLocked)
             {
                 if(LockDelayf == 0)
                 {

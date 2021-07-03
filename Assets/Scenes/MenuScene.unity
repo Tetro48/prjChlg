@@ -287,7 +287,7 @@ RectTransform:
   m_Children:
   - {fileID: 964451471}
   m_Father: {fileID: 1564083146}
-  m_RootOrder: 7
+  m_RootOrder: 8
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
@@ -2291,6 +2291,133 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 567196872}
   m_CullTransparentMesh: 1
+--- !u!1 &598923771
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 598923773}
+  - component: {fileID: 598923772}
+  m_Layer: 0
+  m_Name: Audio
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!82 &598923772
+AudioSource:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 598923771}
+  m_Enabled: 1
+  serializedVersion: 4
+  OutputAudioMixerGroup: {fileID: 0}
+  m_audioClip: {fileID: 0}
+  m_PlayOnAwake: 0
+  m_Volume: 1
+  m_Pitch: 1
+  Loop: 0
+  Mute: 0
+  Spatialize: 0
+  SpatializePostEffects: 0
+  Priority: 128
+  DopplerLevel: 1
+  MinDistance: 1
+  MaxDistance: 500
+  Pan2D: 0
+  rolloffMode: 0
+  BypassEffects: 0
+  BypassListenerEffects: 0
+  BypassReverbZones: 0
+  rolloffCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 1
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  panLevelCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  spreadCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  reverbZoneMixCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+--- !u!4 &598923773
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 598923771}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: -263.08258, y: -510.9564, z: -302.09833}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 1564083146}
+  m_RootOrder: 6
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &700577873
 GameObject:
   m_ObjectHideFlags: 0
@@ -5017,8 +5144,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 40.1, y: 3.8}
-  m_SizeDelta: {x: 200, y: 30}
+  m_AnchoredPosition: {x: -1.1059, y: 3.8}
+  m_SizeDelta: {x: 282.41, y: 30}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1370771948
 MonoBehaviour:
@@ -5648,7 +5775,7 @@ Transform:
   m_LocalScale: {x: 3.5, y: 3.5, z: 1}
   m_Children: []
   m_Father: {fileID: 1564083146}
-  m_RootOrder: 6
+  m_RootOrder: 7
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1472854205
 GameObject:
@@ -7347,6 +7474,7 @@ Transform:
   - {fileID: 365276323}
   - {fileID: 2026157543}
   - {fileID: 700577875}
+  - {fileID: 598923773}
   - {fileID: 1412896479}
   - {fileID: 92879173}
   - {fileID: 7634439044656010102}
@@ -7465,6 +7593,10 @@ MonoBehaviour:
   rollTime: 0
   rollTimeLimit: 11000
   notifDelay: 0
+  sectionlasttime: 0
+  coolprevtime: 0
+  sectionTime: 000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+  cools: 000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
   level: 0
   endingLevel: 2100
   curSect: 0
@@ -7492,7 +7624,8 @@ MonoBehaviour:
   - {fileID: 8300000, guid: d590bdc1a1a2e74499f52808a922c1a5, type: 3}
   - {fileID: 8300000, guid: abfed3a6d6fd5f843b31405748e638fa, type: 3}
   - {fileID: 8300000, guid: 99e4999b31fd7404092792f3ce2286a0, type: 3}
-  gameAudio: {fileID: 700577874}
+  gameAudio: {fileID: 598923772}
+  gameMusic: {fileID: 700577874}
   bgm_1p_lv:
   - {fileID: 0}
   - {fileID: 0}
@@ -7506,6 +7639,8 @@ MonoBehaviour:
   goSE: {fileID: 8300000, guid: 2885c310a4a07e54bbacb3206de59165, type: 3}
   gradeUp: {fileID: 8300000, guid: 8a0c52dbcf0f044428acb5814bf7ce28, type: 3}
   excellent: {fileID: 8300000, guid: 1e918a8204fc65649a8051b1c23e7412, type: 3}
+  coolSE: {fileID: 8300000, guid: 9c9b1d36a0e3ad94db29833c1d846d2d, type: 3}
+  regretSE: {fileID: 8300000, guid: d8190f04ff9e3a8438a94bb8a2ba6707, type: 3}
   bgmlv: 1
   gradePoints: 0
   statGradePoints: 0
@@ -7548,6 +7683,8 @@ MonoBehaviour:
   TLS: 0
   tSpin: 0
   ending: 0
+  coolchecked: 0
+  previouscool: 0
   lineFreezingMechanic: 0
   LockDelay: 30
   DAS: 15
@@ -11813,7 +11950,7 @@ RectTransform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 1564083146}
-  m_RootOrder: 8
+  m_RootOrder: 9
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
