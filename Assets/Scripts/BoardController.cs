@@ -88,13 +88,13 @@ public class BoardController : MonoBehaviour {
     public void TopoutWarning()
     {
         int tilesToWarn = 0;
-        for (int y = 16; y < gridSizeY; y++)
+        for (int y = 15; y < gridSizeY; y++)
         {
             for (int x = 0; x < gridSizeX; x++)
             {
                 if (fullGrid[x,y].isOccupied)
                 {
-                    tilesToWarn += y-15;
+                    tilesToWarn += y-14;
                 }
             }
         }
@@ -184,15 +184,13 @@ public class BoardController : MonoBehaviour {
         gameAudio.PlayOneShot(audioLineClone);
         if (PiecesController.instance.curPieceController != null) if(!PiecesController.instance.curPieceController.isPieceLocked()) if (PiecesController.instance.curPieceController.LockDelayEnable) PiecesController.instance.curPieceController.MovePiece(Vector2Int.up);
     }
+    /// <summary>
+    /// Destroys a line of tiles. Coded to also handle empty grid unit.
+    /// </summary>
     public void DestroyLine(int line)
     {
         for (int i = 0; i < gridSizeX; i++)
         {
-            // if (line < 0)
-            // {
-            //     Debug.LogError("Out of bounds!");
-            //     break;
-            // }
             if(fullGrid[i,line].isOccupied){PieceController curPC = fullGrid[i, line].tileOnGridUnit.GetComponent<TileController>().pieceController;
             curPC.tiles[fullGrid[i, line].tileOnGridUnit.GetComponent<TileController>().tileIndex] = null;
             Destroy(fullGrid[i, line].tileOnGridUnit);
@@ -202,6 +200,11 @@ public class BoardController : MonoBehaviour {
             fullGrid[i,line].isOccupied = false;
         }
     }
+    /// <summary>
+    /// Reduces line of tiles' alpha color by percentage.
+    /// Note: Typing 1.0f float percentage will set a line of tiles invisible. 
+    /// </summary>
+    /// <param name="percentage">Decrease a line of tiles' alpha color by percentage.</param>
     public void DecayLine(int line, float percentage)
     {
         for (int i = 0; i < gridSizeX; i++)
@@ -209,9 +212,31 @@ public class BoardController : MonoBehaviour {
             DecayTile(new Vector2Int(i, line), percentage);
         }
     }
+    /// <summary>
+    /// Reduces tile's alpha color by percentage. 
+    /// Note: Typing 1.0f float percentage will set a tile invisible. 
+    /// </summary>
+    /// <param name="percentage">Decrease tile's alpha color by percentage.</param>
     public void DecayTile(Vector2Int coords, float percentage)
     {
         if(fullGrid[coords.x, coords.y].isOccupied == true)fullGrid[coords.x, coords.y].tileOnGridUnit.GetComponent<SpriteRenderer>().color -= new Color(0f,0f,0f,percentage);
+    }
+    /// <summary>
+    /// Resets a line of tiles' alpha color.
+    /// </summary>
+    public void ResetLineTransparency(int line)
+    {
+        for (int i = 0; i < gridSizeX; i++)
+        {
+            ResetTileTransparency(new Vector2Int(i, line));
+        }
+    }
+    /// <summary>
+    /// Self explanatory.
+    /// </summary>
+    public void ResetTileTransparency(Vector2Int coords)
+    {
+        if(fullGrid[coords.x, coords.y].isOccupied == true)fullGrid[coords.x, coords.y].tileOnGridUnit.GetComponent<SpriteRenderer>().color = new Color(1f,1f,1f,1f);
     }
 
     /// <summary>

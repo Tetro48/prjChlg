@@ -20,11 +20,11 @@ using TMPro;
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
+public enum replayModeType {write, read, none}
 
 public class ReplayRecord : MonoBehaviour
 {
-    // read if true, write if false
-    public bool mode;
+    public replayModeType mode;
     public int frames;
     public List<float[]> movementVector;
     public List<bool[]> inputs;
@@ -49,12 +49,14 @@ public class ReplayRecord : MonoBehaviour
     }
     public void SwitchMode()
     {
-        mode = !mode;
-        textMode.text = "Replay mode: " + (mode ? "ON" : "OFF");
-        if(!mode)
+        mode++;
+        mode = (replayModeType)((int)mode%3);
+        textMode.text = "Replay type: " + (mode == replayModeType.write ? "Write" : mode == replayModeType.read ? "Read" : "OFF");
+        if(mode != replayModeType.read)
         {
             inputs.RemoveRange(frames,inputs.Count-frames);
             movementVector.RemoveRange(frames,movementVector.Count-frames);
+            Time.timeScale = 1.0f;
         }
     }
     public void Reset()
@@ -69,7 +71,7 @@ public class ReplayRecord : MonoBehaviour
     }
     void FixedUpdate()
     {
-        if (!mode)
+        if (mode == replayModeType.write && GameEngine.instance.AREf > (int)GameEngine.instance.ARE -401)
         {
             switches[0] = GameEngine.instance.lineFreezingMechanic;
             if(MenuEngine.instance.curBoard != null && GameEngine.instance.framestepped)

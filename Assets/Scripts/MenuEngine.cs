@@ -41,7 +41,7 @@ public class MenuEngine : MonoBehaviour
     public bool GameOver = false;
     public bool IntentionalGameOver = false;
     public bool starting;
-    public bool pressedSettingsMenu, pressedInputsMenu;
+    public bool pressedSubMenu;
     public bool pressedBack;
 
     public string[] gradeStringConversion = {"9","8","7","6","5","4","3","2","1","S1","S2","S3","S4","S5","S6","S7","S8","S9","GM"};
@@ -104,12 +104,18 @@ public class MenuEngine : MonoBehaviour
     {
         if(!starting && !startGame) {startGame = true;  NotificationEngine.instance.InstantiateNotification(notifLangString[(int)language, 15], Color.white);}
     }
-    public void Settings() { if (!starting && !pressedSettingsMenu) {pressedSettingsMenu = true; menu++;} }
+    public void SubMenu(int subMenuContext)
+    {
+        if (!starting && !pressedSubMenu) 
+        {
+            pressedSubMenu = true; 
+            menu = subMenuContext + 1;
+        }
+    }
     
-    public void Inputs() { if (!starting && !pressedInputsMenu && !pressedSettingsMenu && !pressedBack) {pressedInputsMenu = true; menu++;} }
     public void Back()
     {
-        if (!pressedBack && !pressedSettingsMenu && !pressedInputsMenu)
+        if (!pressedBack && !pressedSubMenu)
         {
             pressedBack = true;
             menu--;
@@ -173,39 +179,39 @@ public class MenuEngine : MonoBehaviour
         GameObject[] gameoverseobjs = GameObject.FindGameObjectsWithTag("GameOverSE");
         GameObject[] buttonseobjs = GameObject.FindGameObjectsWithTag("ButtonSE");
 
-        if(canvasobjs.Length > 1)
-        {
-            for (int i = 0; i < canvasobjs.Length; i++)
-            {
-                if (i % 2 == 1) Destroy(canvasobjs[i/2+1]);
-            }
-        }
-        if(gameoverseobjs.Length > 1)
-        {
-            for (int i = 0; i < gameoverseobjs.Length; i++)
-            {
-                if (i % 2 == 1) Destroy(gameoverseobjs[i/2+1]);
-            }
-        }
-        if(buttonseobjs.Length > 1)
-        {
-            for (int i = 0; i < buttonseobjs.Length; i++)
-            {
-                if (i % 2 == 1) Destroy(buttonseobjs[i/2+1]);
-            }
-        }
-        if (objs.Length > 1)
-        {
-            for (int i = 0; i < objs.Length; i++)
-            {
-                if (i % 2 == 1) Destroy(objs[i/2+1]);
-            }
-        }
+        // if(canvasobjs.Length > 1)
+        // {
+        //     for (int i = 0; i < canvasobjs.Length; i++)
+        //     {
+        //         if (i % 2 == 1) Destroy(canvasobjs[i/2+1]);
+        //     }
+        // }
+        // if(gameoverseobjs.Length > 1)
+        // {
+        //     for (int i = 0; i < gameoverseobjs.Length; i++)
+        //     {
+        //         if (i % 2 == 1) Destroy(gameoverseobjs[i/2+1]);
+        //     }
+        // }
+        // if(buttonseobjs.Length > 1)
+        // {
+        //     for (int i = 0; i < buttonseobjs.Length; i++)
+        //     {
+        //         if (i % 2 == 1) Destroy(buttonseobjs[i/2+1]);
+        //     }
+        // }
+        // if (objs.Length > 1)
+        // {
+        //     for (int i = 0; i < objs.Length; i++)
+        //     {
+        //         if (i % 2 == 1) Destroy(objs[i/2+1]);
+        //     }
+        // }
 
-        DontDestroyOnLoad(objs[0]);
-        DontDestroyOnLoad(canvasobjs[0]);
-        DontDestroyOnLoad(gameoverseobjs[0]);
-        DontDestroyOnLoad(buttonseobjs[0]);
+        // DontDestroyOnLoad(objs[0]);
+        // DontDestroyOnLoad(canvasobjs[0]);
+        // DontDestroyOnLoad(gameoverseobjs[0]);
+        // DontDestroyOnLoad(buttonseobjs[0]);
         // imgbg.SetActive(true);
         imgprjchlg.SetActive(true);
         if (platformCompat())
@@ -247,7 +253,7 @@ public class MenuEngine : MonoBehaviour
             reswidth = (float)(Screen.width / 1920.0);
             settingsMenuGUI[0].SetActive(false);
             settingsMenuGUIpart[0].SetActive(false);
-            if(Application.platform != RuntimePlatform.Android && Application.platform != RuntimePlatform.IPhonePlayer)mainMenuGUI[2].SetActive(false);
+            if(!Application.isMobilePlatform)mainMenuGUI[2].SetActive(false);
         }
         starting = true;
         if (Application.systemLanguage == SystemLanguage.Russian)
@@ -304,9 +310,9 @@ public class MenuEngine : MonoBehaviour
     // rough framerate measurement
     void Update()
     {
-        double rawframetime = Time.deltaTime;
+        double rawframetime = Time.deltaTime / Time.timeScale;
         frameratebuffer.Add(rawframetime);
-        if (frameratebuffer.Count > 100)
+        if (frameratebuffer.Count > 10)
         {
             frameratebuffer.RemoveAt(0);
         }
@@ -330,7 +336,7 @@ public class MenuEngine : MonoBehaviour
             int rpclvl = GameEngine.instance.level < 2100 ? (GameEngine.instance.curSect + 1) * 100 : 2100;
             var activity = new Discord.Activity {
                 Details = curBoard != null ? "Level " + GameEngine.instance.level + " | " + rpclvl + (GameEngine.instance.level > 800 ? ". Struggling." : string.Empty) : null,
-                State = !Application.genuine ? "The game is tampered" : framerate > 2600 ? "Suspiciously high framerate" : framerate < 10 ? "Suspiciously low framerate" : IntentionalGameOver ? "Exiting..." : GameOver ? "Topped out" : curBoard != null && GameEngine.instance.paused && !GameEngine.instance.FrameStep ? "Paused" : curBoard != null && GameEngine.instance.replay.mode ? "Currently replaying" : curBoard != null && GameEngine.instance.paused && GameEngine.instance.FrameStep ? "Currently playing (Framestepping)" : curBoard != null ? "Currently playing" : quitting ? "Quitting" : menu == 1 ? "Currently in settings menu" :"Currently in main menu",
+                State = !Application.genuineCheckAvailable ? "The game is tampered" : framerate > 2600 ? "Suspiciously smooth" : framerate < 10 ? "Performance issues" : IntentionalGameOver ? "Exiting..." : GameOver ? "Topped out" : curBoard != null && GameEngine.instance.paused && !GameEngine.instance.FrameStep ? "Paused" : curBoard != null && GameEngine.instance.replay.mode != replayModeType.read ? "Currently replaying" : curBoard != null && GameEngine.instance.paused && GameEngine.instance.FrameStep ? "Currently playing (Framestepping)" : curBoard != null ? "Currently playing" : quitting ? "Quitting" : menu == 1 ? "Currently in settings menu" :"Currently in main menu",
                 Assets = {
                     LargeImage = "icon"
                 }
@@ -415,14 +421,14 @@ public class MenuEngine : MonoBehaviour
                     starting = true;
                     this.transform.position = Vector3.zero;
                     BackgroundController.bginstance.TriggerBackgroundChange(0);
-                    if (!GameEngine.instance.replay.mode)
+                    if (GameEngine.instance.replay.mode == replayModeType.write)
                     {
-                        GameEngine.instance.replay.SaveReplay("1");
+                        GameEngine.instance.replay.SaveReplay(DateTime.Now.ToString("MM-dd-yyyy-HH-mm-ss"));
                     }
                 }
             }
         }
-        if (quitting || pressedSettingsMenu || startGame)
+        if (quitting || (pressedSubMenu && menu == 1) || startGame)
         {
             frames++;
             if (frames == 1)
@@ -445,7 +451,7 @@ public class MenuEngine : MonoBehaviour
                 if (frames == MMf + 11)
                 {
                     GameEngine.instance.replay.Reset();
-                    if (GameEngine.instance.replay.mode)
+                    if (GameEngine.instance.replay.mode == replayModeType.read)
                     {
                         GameEngine.instance.replay.LoadReplay("1");
                     }
@@ -492,7 +498,7 @@ public class MenuEngine : MonoBehaviour
                     PiecesController.instance.UpdatePieceBag();
                 }
             }
-            if (pressedSettingsMenu && frames > MMSf && menu == 1)
+            if (pressedSubMenu && frames > MMSf && menu == 1)
             {
                 if(frames % 8 == 0)
                 {
@@ -517,7 +523,7 @@ public class MenuEngine : MonoBehaviour
                 }
                 else
                 {
-                    pressedSettingsMenu = false;
+                    pressedSubMenu = false;
                     mainMenu.SetActive(false);
                     frames = 0;
                 }
@@ -567,7 +573,7 @@ public class MenuEngine : MonoBehaviour
                     frames = 0;
                 }
             }
-            if (menu == 1)
+            if (inputsMenu.activeSelf)
             {
                 if (frames == 1)
                 {
@@ -604,7 +610,7 @@ public class MenuEngine : MonoBehaviour
                 }
             }
         }
-        if (pressedInputsMenu)
+        if ((pressedSubMenu && menu == 2))
         {
             frames++;
             if (frames == 1)
@@ -636,7 +642,7 @@ public class MenuEngine : MonoBehaviour
             }
             else
             {
-                pressedInputsMenu = false;
+                pressedSubMenu = false;
                 settingsMenu.SetActive(false);
                 frames = 0;
             }

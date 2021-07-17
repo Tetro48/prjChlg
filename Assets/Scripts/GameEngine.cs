@@ -85,6 +85,8 @@ public class GameEngine : MonoBehaviour
     public int tileInvisTime = -1;
     public Vector2 movement;
 
+    public bool debugMode;
+
     public ReplayRecord replay;
 
     bool cool, cooldisplayed;
@@ -334,40 +336,47 @@ public class GameEngine : MonoBehaviour
     }
     public void OnMovement(InputAction.CallbackContext value)
     {
-        if (!replay.mode)
+        if (replay.mode != replayModeType.read)
         {
             movement = value.ReadValue<Vector2>();
             if (value.ReadValue<Vector2>().y > 0.5) {Inputs[0] = true;}
             else {Inputs[0] = false;}
         }
+        else if (value.performed)
+        {
+            if (value.ReadValue<Vector2>().x > 0.5 && Time.timeScale < 100)
+                Time.timeScale += 1.0f;
+            if (value.ReadValue<Vector2>().x < -0.5 && Time.timeScale > 1)
+                Time.timeScale -= 1.0f;
+        }
     }
     public void OnCounterclockwise(InputAction.CallbackContext value)
     {
-        if (!replay.mode){
+        if (replay.mode != replayModeType.read){
         if (value.performed) Inputs[1] = true;
         else Inputs[1] = false;}
     }
     public void OnClockwise(InputAction.CallbackContext value)
     {
-        if (!replay.mode){
+        if (replay.mode != replayModeType.read){
         if (value.performed) Inputs[2] = true;
         else Inputs[2] = false;}
     }
     public void OnClockwise2(InputAction.CallbackContext value)
     {
-        if (!replay.mode){
+        if (replay.mode != replayModeType.read){
         if (value.performed) Inputs[6] = true;
         else Inputs[6] = false;}
     }
     public void OnUpsideDown(InputAction.CallbackContext value)
     {
-        if (!replay.mode){
+        if (replay.mode != replayModeType.read){
         if (value.performed) Inputs[3] = true;
         else Inputs[3] = false;}
     }
     public void OnHold(InputAction.CallbackContext value)
     {
-        if (!replay.mode){
+        if (replay.mode != replayModeType.read){
         if (value.performed) Inputs[4] = true;
         else Inputs[4] = false;}
     }
@@ -395,6 +404,7 @@ public class GameEngine : MonoBehaviour
     {
         BoardParticleSystem.instance.SummonFirework(new Vector2(0f, 10f), new Vector2(10f,10f));
     }
+    bool showinvis = false;
     // Update is called once per frame
     void FixedUpdate()
     {
@@ -404,8 +414,6 @@ public class GameEngine : MonoBehaviour
         if (ending) MenuEngine.instance.supposedToBeAPartOfBoard[6].SetActive(true);
         else MenuEngine.instance.supposedToBeAPartOfBoard[6].SetActive(false);
         // musicTime += Time.deltaTime;
-        FadeoutBGM();
-        ChangeBGM();
         if(notifDelay > 0)notifDelay--;
         if(MenuEngine.instance.curBoard != null){int pieceCountHoldRed = PiecesController.instance.pieceHold == 28 ? -1 : -2;
         if(time > 0)ppsCounter.text = Math.Floor(((double)(PiecesController.instance.pieces + pieceCountHoldRed) / ((double)time/100))*100)/100 + " pieces/second";}
@@ -413,12 +421,15 @@ public class GameEngine : MonoBehaviour
         // if (Input.GetKey(KeyCode.A)) Inputs[3] = true;
         // if (Input.GetKey(KeyCode.C)) Inputs[4] = true;
         // if (Input.GetKeyDown(KeyCode.P) && MenuEngine.instance.curBoard != null) paused = !paused;
-        if (Input.GetKeyDown(KeyCode.F)) SpawnFireworks();
-        if (Input.GetKeyDown(KeyCode.D)) level = curSect*100+99;
-        if (Input.GetKeyDown(KeyCode.H)) {gradePoints += gradePointRequirement; statGradePoints += gradePointRequirement;}
+        if (Input.GetKeyDown(KeyCode.W) && debugMode) {for (int y = 0; y < BoardController.instance.gridSizeY; y++) BoardController.instance.ResetLineTransparency(y); showinvis = !showinvis;}
+        if (Input.GetKeyDown(KeyCode.F) && debugMode) SpawnFireworks();
+        if (Input.GetKeyDown(KeyCode.D) && debugMode) level = curSect*100+99;
+        if (Input.GetKeyDown(KeyCode.H) && debugMode) {gradePoints += gradePointRequirement; statGradePoints += gradePointRequirement;}
         if((paused == false || (FrameStep == true && Inputs[7])) && MenuEngine.instance.GameOver == false)
         {
-            if (replay.mode)
+            FadeoutBGM();
+            ChangeBGM();
+            if (replay.mode == replayModeType.read && AREf > (int)ARE - 401)
             {
                 Vector2 tempmov;
                 tempmov.x = replay.movementVector[replay.frames][0];
@@ -434,17 +445,42 @@ public class GameEngine : MonoBehaviour
                 Inputs[6] = replay.inputs[replay.frames][6];
                 lineFreezingMechanic = replay.switches[0];
             }
-            if (level >= endingLevel && AREf < (int)ARE)
+            if (level >= endingLevel && AREf < (int)ARE && AREf > (int)ARE - 400)
             {
                 int whichline = ((AREf - (int)ARE)+400)/10;
                 Debug.Log(whichline);
                 BoardController.instance.DestroyLine(whichline);
             }
             
-            if(ending)tileInvisTime = 20 - (rollTime / (400/6*10));
+            if(ending && !showinvis)tileInvisTime = 20 - (rollTime / (400/6*10));
+            else tileInvisTime = -1;
             if (AREf == (int)ARE - 399) gameAudio.PlayOneShot(excellent);
             if(AREf >= 0 && readyGoIndicator.sprite == null && rollTime < rollTimeLimit)time++;
-            if(AREf >= 0 && readyGoIndicator.sprite == null && ending && rollTime < rollTimeLimit)rollTime++;
+            if(AREf >= 0 && readyGoIndicator.sprite == null && ending && rollTime < rollTimeLimit)
+            {
+                rollTime++;
+                if(rollTime >= rollTimeLimit)
+                {
+                    AREf = (int)ARE - 1000;
+                    Destroy(PiecesController.instance.piecesInGame[PiecesController.instance.piecesInGame.Count-1]);
+                    PiecesController.instance.UpdatePieceBag();
+                }
+            }
+            if (AREf == (int)ARE - 401)
+            {
+
+                MenuEngine.instance.GameOver = true;
+            }
+            if(AREf < (int)ARE - 401)
+            {
+                if(AREf % 10 == 0) SpawnFireworks();
+                if(AREf % 50 == 0 && grade < 18)
+                {
+                    grade++;
+                    gradeIndicator.sprite = gradeSprites[grade];
+                    gameAudio.PlayOneShot(gradeUp);
+                }
+            }
             int nextsecint = level < endingLevel ? (curSect + 1) * 100 : endingLevel;
             levelTextRender.text = level.ToString();
             if(curSect < 21)nextSecLv.text = nextsecint.ToString();
@@ -496,7 +532,7 @@ public class GameEngine : MonoBehaviour
         if (notifDelay == 0) 
         {
             NotificationEngine.instance.InstantiateNotification(MenuEngine.instance.notifLangString[(int)MenuEngine.instance.language, 14], Color.white);
-            NotificationEngine.instance.InstantiateNotification(""+ Math.Floor(gradePoints), Color.white);
+            NotificationEngine.instance.InstantiateNotification(Math.Floor(gradePoints).ToString(), Color.white);
             NotificationEngine.instance.InstantiateNotification("/" + Math.Floor(gradePointRequirement), Color.white);
             notifDelay = 200;
         }

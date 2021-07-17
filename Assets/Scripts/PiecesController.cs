@@ -88,7 +88,7 @@ public class PiecesController : MonoBehaviour {
     {
         instance = this;
         
-        if(!GameEngine.instance.replay.mode)
+        if(GameEngine.instance.replay.mode != replayModeType.read)
         {
             bag = new List<int>();
             for (int i = 0; i < 16; i++)
@@ -273,7 +273,7 @@ public class PiecesController : MonoBehaviour {
                 executedHold = false;
             }
         }
-        if (pieces % 7 == 0 && !GameEngine.instance.replay.mode)
+        if (pieces % 7 == 0 && GameEngine.instance.replay.mode != replayModeType.read)
         {
             List<int> bagshuff = new List<int>(){0,1,2,3,4,5,6};
             Shuffle(bagshuff);

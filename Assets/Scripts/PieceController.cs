@@ -575,7 +575,7 @@ public class PieceController : MonoBehaviour {
         }
         if (MenuEngine.instance.GameOver == false)
         {
-            if (Input.GetKey(KeyCode.E))
+            if (Input.GetKey(KeyCode.E) && GameEngine.instance.debugMode)
             {
                 int incrementbyfrozenlines = GameEngine.instance.lineFreezingMechanic ? GameEngine.instance.linesFrozen[GameEngine.instance.curSect] : 0;
                 BoardController.instance.FillLine(0+incrementbyfrozenlines);
