@@ -4,23 +4,15 @@ An opensource challenging Tetris game. This game is not intended for complete ne
 
 # Keyboard Controls
 
-Left: Left arrow
-***
-Right: Right arrow
-***
-Softdrop: Down arrow
-***
-Harddrop: Up arrow
-***
-Button 1 (CW): X
-***
-Button 2 (CCW): Z
-***
-Button 3 (CW): Space
-***
-Button 4 (UD, 180): A
-***
-Button 5 (Hold): C
+- Left: Left arrow
+- Right: Right arrow
+- Softdrop: Down arrow
+- Harddrop: Up arrow
+- Button 1 (CW): X
+- Button 2 (CCW): Z
+- Button 3 (CW): Space
+- Button 4 (UD, 180): A
+- Button 5 (Hold): C
 
 # Unavailable features
 Line freezing mechanic: Stops line clearing up to set amount in height.
