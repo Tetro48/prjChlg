@@ -20,11 +20,11 @@ using TMPro;
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
-public enum replayModeType {write, read, none}
+public enum ReplayModeType { write, read, none }
 
 public class ReplayRecord : MonoBehaviour
 {
-    public replayModeType mode;
+    public ReplayModeType mode;
     public int frames;
     public List<float[]> movementVector;
     public List<bool[]> inputs;
@@ -50,9 +50,9 @@ public class ReplayRecord : MonoBehaviour
     public void SwitchMode()
     {
         mode++;
-        mode = (replayModeType)((int)mode%3);
-        textMode.text = "Replay type: " + (mode == replayModeType.write ? "Write" : mode == replayModeType.read ? "Read" : "OFF");
-        if(mode != replayModeType.read)
+        mode = (ReplayModeType)((int)mode % 3);
+        textMode.text = "Replay type: " + (mode == ReplayModeType.write ? "Write" : mode == ReplayModeType.read ? "Read" : "OFF");
+        if(mode != ReplayModeType.read)
         {
             inputs.RemoveRange(frames,inputs.Count-frames);
             movementVector.RemoveRange(frames,movementVector.Count-frames);
@@ -71,7 +71,7 @@ public class ReplayRecord : MonoBehaviour
     }
     void FixedUpdate()
     {
-        if (mode == replayModeType.write && GameEngine.instance.AREf > (int)GameEngine.instance.ARE -401)
+        if (mode == ReplayModeType.write && GameEngine.instance.AREf > (int)GameEngine.instance.ARE -401)
         {
             switches[0] = GameEngine.instance.lineFreezingMechanic;
             if(MenuEngine.instance.curBoard != null && GameEngine.instance.framestepped)
@@ -81,7 +81,7 @@ public class ReplayRecord : MonoBehaviour
                 tempmov[1] = GameEngine.instance.movement.y;
                 movementVector.Add(tempmov);
                 bool[] localinputs = new bool[8];
-                localinputs[7] = false;
+                localinputs[7] = false; //why would a creator do something like this?? It's... just a waste of space and CPU!
                 
                 localinputs[0] = GameEngine.instance.Inputs[0];
                 localinputs[1] = GameEngine.instance.Inputs[1];

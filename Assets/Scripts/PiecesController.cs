@@ -88,7 +88,7 @@ public class PiecesController : MonoBehaviour {
     {
         instance = this;
         
-        if(GameEngine.instance.replay.mode != replayModeType.read)
+        if(GameEngine.instance.replay.mode != ReplayModeType.read)
         {
             bag = new List<int>();
             for (int i = 0; i < 16; i++)
@@ -273,7 +273,7 @@ public class PiecesController : MonoBehaviour {
                 executedHold = false;
             }
         }
-        if (pieces % 7 == 0 && GameEngine.instance.replay.mode != replayModeType.read)
+        if (pieces % 7 == 0 && GameEngine.instance.replay.mode != ReplayModeType.read)
         {
             List<int> bagshuff = new List<int>(){0,1,2,3,4,5,6};
             Shuffle(bagshuff);
@@ -390,12 +390,12 @@ public class PiecesController : MonoBehaviour {
         {
             GameEngine.instance.lineClonePiecesLeft = GameEngine.instance.lineClonePerPiece[GameEngine.instance.curSect];
         }
-        
+
         DAStuning = (int)GameEngine.instance.DAS;
-        if(GameEngine.instance.framestepped && !MenuEngine.instance.GameOver)
+        if (GameEngine.instance.framestepped && !MenuEngine.instance.GameOver)
         {
             frames++;
-            if(piecemovementlocked == false)gravityTiles = gravityTiles + GameEngine.instance.gravity;
+            if(piecemovementlocked == false)gravityTiles += GameEngine.instance.gravity;
             if (nextpiecequeued == true)
             {
                 GameEngine.instance.AREf++;
@@ -485,7 +485,7 @@ public class PiecesController : MonoBehaviour {
                 }
                 ExecuteHold();
             }
-            if ((((GameEngine.instance.Inputs[2] && !PrevInputs[2]) || (GameEngine.instance.Inputs[6] && !PrevInputs[6])) || IRSCW) && !piecemovementlocked)
+            if (((GameEngine.instance.Inputs[2] && !PrevInputs[2]) || (GameEngine.instance.Inputs[6] && !PrevInputs[6]) || IRSCW) && !piecemovementlocked)
             {
                 curPieceController.RotatePiece(true, true, false);
                 if (IRSCW)
@@ -509,8 +509,8 @@ public class PiecesController : MonoBehaviour {
                     gameAudio.PlayOneShot(audioIRS);
                 }
             }
-            if(IARS && !piecemovementlocked) curPieceController.RotatePiece(true, false, true);
-            
+            if (IARS && !piecemovementlocked) curPieceController.RotatePiece(true, false, true);
+
 
             // if (Input.GetKeyDown(KeyCode.Alpha0))
             // {
@@ -540,13 +540,13 @@ public class PiecesController : MonoBehaviour {
             // {
             //     SpawnDebug(6);
             // }
-            if(!curPieceController.CanMovePiece(Vector2Int.zero) && !piecemovementlocked)   curPieceController.SendPieceToFloor();
+            if (curPieceController != null) if (!curPieceController.CanMovePiece(Vector2Int.zero) && !piecemovementlocked) curPieceController.SendPieceToFloor();
             for (int i = 0; i < (int)Math.Floor(gravityTiles); i++)
             {
                 if(piecemovementlocked == false)MoveCurPiece(Vector2Int.down);
             }
             gravityTiles -= (float)Math.Floor(gravityTiles);
-            if (((GameEngine.instance.Inputs[0]) && !PrevInputs[0]) && !piecemovementlocked)
+            if (GameEngine.instance.Inputs[0] && !PrevInputs[0] && !piecemovementlocked)
             {
                 curPieceController.SendPieceToFloor();
             }
@@ -554,7 +554,7 @@ public class PiecesController : MonoBehaviour {
             {
                 PrevInputs[i] = GameEngine.instance.Inputs[i];
             }
-            if(!piecemovementlocked || PrevInputs[0] == true)PrevInputs[0] = GameEngine.instance.Inputs[0];
+            if (!piecemovementlocked || PrevInputs[0]) PrevInputs[0] = GameEngine.instance.Inputs[0];
         }
     }
 

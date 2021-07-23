@@ -65,17 +65,17 @@ public class MenuEngine : MonoBehaviour
     Resolution[] resolutions;
     public float reswidth;
 
-    public String[,] mainMenuLangString = 
+    public String[,] mainMenuLangString =
     {
         {"Play!", "Settings", "Quit"},
         {"Играть!", "Настройки", "Выйти"},
-        {"Purei!", "Settingu", "Shu-ryo- suru"},
+        {"プレイ!", "セッチング", "終了する"},
 
     }, settingsLangString = 
     {
         {"Resolution:", "Inputs", "Rotation Systems", "Custom Mode settings", "Preferences settings", "Tuning", "< Back"},
         {"Разрешение:", "Вводы", "Системы вращения", "Настройки режима", "Настройки предпотчении", "Тьюнинг", "< Назад"},
-        {"Kaizo-do", "Nyu-ryoku", "Kaiten shisutemu", "Kasutmumo-do no settei", "Purifarensu settei", "Chu-ningu", "< Bakku"},
+        {"解像度", "入力", "回転システム", "カスタムモードの設定", "プリファレンス設定", "チューニング", "< バック"},
 
     }, inputsLangString = 
     {
@@ -88,7 +88,7 @@ public class MenuEngine : MonoBehaviour
         //
         {"Singles: ", "Doubles: ", "Triples: ", "Tetrises: ", "lines: ", "Total ", "Pieces: ", "Grade: ", "Total grade score:", "Level: ", "Gravity: ", "Time: ", "500 level part complete!", "Controller is swapped", "Grade score: ", "Starting up!"},
         {"Одиночные: ", "Двойные: ", "Тройные: ", "Тетрисы: ", "линии: ", "Всего ", "Фигур: ", "Оценка: ", "Общий счет оценки:", "Уровень: ", "Гравитация: ", "Время: ", "Достигнуто часть 500 уровней!", "Контроллер заменен", "Счет оценки: ", "Начинаем!"},
-        {"", "", "", "", "", "", "", "", "", "", "", "", "", "", "", ""},
+        {"シングル：", "ダブル：", "トリプル", "テトリス：", "行：", "合計", "ピース", "成績：", "総合成績スコア", "レベル：", "時間", "", "", "", "", ""},
     };
     Language previousLang;
     public void QuitGame()
@@ -279,6 +279,11 @@ public class MenuEngine : MonoBehaviour
     }
     public void UpdateLang()
     {
+        if(language == Language.日本語)
+        {
+            NotificationEngine.instance.InstantiateNotification("Notice! Japanese translation is not perfect.");
+            NotificationEngine.instance.InstantiateNotification("通知！ 日本語の翻訳は完璧ではありません。");
+        }
         for (int mmguiIndex = 0; mmguiIndex < mainMenuGUI.Length; mmguiIndex++)
         {
             mainMenuGUIText[mmguiIndex].text = mainMenuLangString[(int)language, mmguiIndex];
@@ -334,9 +339,10 @@ public class MenuEngine : MonoBehaviour
         {
             var activityManager = discord.GetActivityManager();
             int rpclvl = GameEngine.instance.level < 2100 ? (GameEngine.instance.curSect + 1) * 100 : 2100;
-            var activity = new Discord.Activity {
-                Details = curBoard != null ? "Level " + GameEngine.instance.level + " | " + rpclvl + (GameEngine.instance.level > 800 ? ". Struggling." : string.Empty) : null,
-                State = !Application.genuineCheckAvailable ? "The game is tampered" : framerate > 2600 ? "Suspiciously smooth" : framerate < 10 ? "Performance issues" : IntentionalGameOver ? "Exiting..." : GameOver ? "Topped out" : curBoard != null && GameEngine.instance.paused && !GameEngine.instance.FrameStep ? "Paused" : curBoard != null && GameEngine.instance.replay.mode != replayModeType.read ? "Currently replaying" : curBoard != null && GameEngine.instance.paused && GameEngine.instance.FrameStep ? "Currently playing (Framestepping)" : curBoard != null ? "Currently playing" : quitting ? "Quitting" : menu == 1 ? "Currently in settings menu" :"Currently in main menu",
+            var activity = new Activity
+            {
+                Details = GameEngine.instance.ending ? "Roll time left: " + GameEngine.instance.rollTimeCounter.text : curBoard != null ? "Level " + GameEngine.instance.level + " | " + rpclvl + (GameEngine.instance.level > 800 ? ". Struggling." : string.Empty) : null,
+                State = !Application.genuineCheckAvailable ? "The game is tampered" : framerate > 2600 ? "Suspiciously smooth" : framerate < 10 ? "Performance issues" : IntentionalGameOver ? "Exiting..." : GameOver ? "Topped out" : curBoard != null && GameEngine.instance.paused && !GameEngine.instance.FrameStep ? "Paused" : curBoard != null && GameEngine.instance.replay.mode == ReplayModeType.read ? "Currently replaying" : curBoard != null && GameEngine.instance.paused && GameEngine.instance.FrameStep ? "Currently playing (Framestepping)" : curBoard != null ? "Currently playing" : quitting ? "Quitting" : menu == 1 ? "Currently in settings menu" :"Currently in main menu",
                 Assets = {
                     LargeImage = "icon"
                 }
@@ -421,7 +427,7 @@ public class MenuEngine : MonoBehaviour
                     starting = true;
                     this.transform.position = Vector3.zero;
                     BackgroundController.bginstance.TriggerBackgroundChange(0);
-                    if (GameEngine.instance.replay.mode == replayModeType.write)
+                    if (GameEngine.instance.replay.mode == ReplayModeType.write)
                     {
                         GameEngine.instance.replay.SaveReplay(DateTime.Now.ToString("MM-dd-yyyy-HH-mm-ss"));
                     }
@@ -451,7 +457,7 @@ public class MenuEngine : MonoBehaviour
                 if (frames == MMf + 11)
                 {
                     GameEngine.instance.replay.Reset();
-                    if (GameEngine.instance.replay.mode == replayModeType.read)
+                    if (GameEngine.instance.replay.mode == ReplayModeType.read)
                     {
                         GameEngine.instance.replay.LoadReplay("1");
                     }

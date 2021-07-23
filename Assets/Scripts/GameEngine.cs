@@ -26,6 +26,10 @@ using TMPro;
 */
 public enum sectionState {checking, cool, regret, missed}
 public enum RotationSystems {SRS, ARS}
+/// <summary>
+/// This script does A LOT of stuff that you might not want to mess up with.
+/// This script is also quite congested. It's not easy to read stuff in it.
+/// </summary>
 public class GameEngine : MonoBehaviour
 {
     public int time, rollTime, rollTimeLimit = 11000, notifDelay, sectionlasttime, coolprevtime;
@@ -85,6 +89,9 @@ public class GameEngine : MonoBehaviour
     public int tileInvisTime = -1;
     public Vector2 movement;
 
+    /// <summary>
+    /// This variable is for debugging and... some cheating purposes.
+    /// </summary>
     public bool debugMode;
 
     public ReplayRecord replay;
@@ -336,7 +343,7 @@ public class GameEngine : MonoBehaviour
     }
     public void OnMovement(InputAction.CallbackContext value)
     {
-        if (replay.mode != replayModeType.read)
+        if (replay.mode != ReplayModeType.read)
         {
             movement = value.ReadValue<Vector2>();
             if (value.ReadValue<Vector2>().y > 0.5) {Inputs[0] = true;}
@@ -352,31 +359,31 @@ public class GameEngine : MonoBehaviour
     }
     public void OnCounterclockwise(InputAction.CallbackContext value)
     {
-        if (replay.mode != replayModeType.read){
+        if (replay.mode != ReplayModeType.read){
         if (value.performed) Inputs[1] = true;
         else Inputs[1] = false;}
     }
     public void OnClockwise(InputAction.CallbackContext value)
     {
-        if (replay.mode != replayModeType.read){
+        if (replay.mode != ReplayModeType.read){
         if (value.performed) Inputs[2] = true;
         else Inputs[2] = false;}
     }
     public void OnClockwise2(InputAction.CallbackContext value)
     {
-        if (replay.mode != replayModeType.read){
+        if (replay.mode != ReplayModeType.read){
         if (value.performed) Inputs[6] = true;
         else Inputs[6] = false;}
     }
     public void OnUpsideDown(InputAction.CallbackContext value)
     {
-        if (replay.mode != replayModeType.read){
+        if (replay.mode != ReplayModeType.read){
         if (value.performed) Inputs[3] = true;
         else Inputs[3] = false;}
     }
     public void OnHold(InputAction.CallbackContext value)
     {
-        if (replay.mode != replayModeType.read){
+        if (replay.mode != ReplayModeType.read){
         if (value.performed) Inputs[4] = true;
         else Inputs[4] = false;}
     }
@@ -429,7 +436,7 @@ public class GameEngine : MonoBehaviour
         {
             FadeoutBGM();
             ChangeBGM();
-            if (replay.mode == replayModeType.read && AREf > (int)ARE - 401)
+            if (replay.mode == ReplayModeType.read && AREf > (int)ARE - 401)
             {
                 Vector2 tempmov;
                 tempmov.x = replay.movementVector[replay.frames][0];

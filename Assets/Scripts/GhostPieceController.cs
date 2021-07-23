@@ -18,7 +18,7 @@ public class GhostPieceController : MonoBehaviour
         float transparency = 0.3f;
         for (int i = 0; i < tiles.Length; i++)
         {
-            tiles[i].GetComponent<SpriteRenderer>().color = new Color(1f,1f,1f,transparency);
+            tiles[i].GetComponent<SpriteRenderer>().color = new Color(1f, 1f, 1f, transparency);
         }
     }
 
@@ -55,9 +55,9 @@ public class GhostPieceController : MonoBehaviour
         setOn = false;
         while (CanMoveGhostPiece(movement) && !setOn)
         {
-            for (int i = 0; i < tiles.Length; i++)
+            foreach (GameObject tile in tiles)
             {
-                tiles[i].transform.position += new Vector3(movement.x, movement.y, 0f);
+                tile.transform.position += new Vector3(movement.x, movement.y, 0f);
                 if (!CanMoveGhostPiece(Vector2Int.down)) setOn = true;
             }
         }

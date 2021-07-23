@@ -263,9 +263,9 @@ public class PieceController : MonoBehaviour {
     /// <returns></returns>
     public bool CanMovePiece(Vector2Int movement)
     {
-        for (int i = 0; i < tiles.Length; i++)
+        foreach (TileController tile in tiles)
         {
-            if (!tiles[i].CanTileMove(movement + tiles[i].coordinates))
+            if (!tile.CanTileMove(movement + tile.coordinates))
             {
                 return false;
             }
@@ -353,7 +353,7 @@ public class PieceController : MonoBehaviour {
             // }
         }
 
-        for(int i = 0; i< tiles.Length; i++)
+        for (int i = 0; i < tiles.Length; i++)
         {
             tiles[i].MoveTile(movement);
             LockDelayf = 0;

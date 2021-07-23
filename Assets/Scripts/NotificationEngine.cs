@@ -31,7 +31,7 @@ public class NotificationEngine : MonoBehaviour
     public List<int> notifAnimFrames;
     
 
-    public void InstantiateNotification(string text, Color color)
+    public void InstantiateNotification(string text, Color color = default)
     {
         Debug.Log(text);
         MenuEngine.instance.audioSource.PlayOneShot(notifyAudio);
