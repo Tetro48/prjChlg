@@ -66,9 +66,9 @@ public class BoardParticleSystem : MonoBehaviour
     {
         MenuEngine.instance.audioSource.PlayOneShot(fireworkSoundEffects[Random.Range(0, fireworkSoundEffects.Length-1)]);
         GameObject newFirework = Instantiate(fireworkPrefab, transform);
-        newFirework.transform.position = new Vector3(UnityEngine.Random.Range(coordinates.x, coordinates.x + borderSize.x), UnityEngine.Random.Range(coordinates.y, coordinates.y + borderSize.y), 0.0f);
+        newFirework.transform.position = new Vector3(Random.Range(coordinates.x, coordinates.x + borderSize.x), Random.Range(coordinates.y, coordinates.y + borderSize.y), 0.0f);
         ParticleSystem particlesModify = newFirework.GetComponent<ParticleSystem>();
-        particlesModify.startColor = new Color(UnityEngine.Random.Range(0f,1f), Random.Range(0f,1f), Random.Range(0f,1f),1f);
+        particlesModify.startColor = new Color(Random.Range(0f,1f), Random.Range(0f,1f), Random.Range(0f,1f),1f);
         particlesModify.Play();
     }
     public void SummonParticles(Vector2Int coords, int tileTexture)
