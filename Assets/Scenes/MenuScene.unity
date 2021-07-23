@@ -1894,7 +1894,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   prefab: {fileID: 2088307756936549190, guid: cb6c968b4f0d353409ff6199cbb50b79, type: 3}
-  notifyAudio: {fileID: 8300000, guid: 9b2b040c593b2a94cade4bd29e44b45d, type: 3}
+  notifyAudio: {fileID: 8300000, guid: 8547ff4dea933e841a962612086b3313, type: 3}
   textNotification: []
   notificationInstance: []
   notifAnimFrames: 
@@ -3380,7 +3380,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0.5}
   m_AnchorMax: {x: 0, y: 0.5}
-  m_AnchoredPosition: {x: 5.05, y: -0.22}
+  m_AnchoredPosition: {x: 4.805, y: -0.22}
   m_SizeDelta: {x: 10, y: 2.5}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!212 &964451472
@@ -7271,7 +7271,6 @@ MonoBehaviour:
   IntentionalGameOver: 0
   starting: 0
   pressedSubMenu: 0
-  pressedInputsMenu: 0
   pressedBack: 0
   gradeStringConversion:
   - 9
@@ -7713,6 +7712,7 @@ MonoBehaviour:
   Inputs: 0000000000000000
   tileInvisTime: -1
   movement: {x: 0, y: 0}
+  debugMode: 0
   replay: {fileID: 1564083150}
   linesFrozen: 00000000000000000000000006000000040000000000000000000000000000000800000000000000000000000c00000010000000000000000000000000000000130000000000000000000000000000000a0000000e000000
 --- !u!114 &1564083149

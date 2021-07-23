@@ -540,7 +540,7 @@ public class PiecesController : MonoBehaviour {
             // {
             //     SpawnDebug(6);
             // }
-            if (curPieceController != null) if (!curPieceController.CanMovePiece(Vector2Int.zero) && !piecemovementlocked) curPieceController.SendPieceToFloor();
+            if (!curPieceController.CanMovePiece(Vector2Int.zero) && !piecemovementlocked) curPieceController.SendPieceToFloor();
             for (int i = 0; i < (int)Math.Floor(gravityTiles); i++)
             {
                 if(piecemovementlocked == false)MoveCurPiece(Vector2Int.down);
