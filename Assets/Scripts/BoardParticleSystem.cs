@@ -75,7 +75,7 @@ public class BoardParticleSystem : MonoBehaviour
     {
         // Any parameters we assign in emitParams will override the current system's when we call Emit.
         // Here we will override the start color and size.
-        Debug.Log("X: " + coords.x + ", Y: " + coords.y + ", Tile Texture: " + tileTexture);
+        if(GameEngine.debugMode) Debug.Log("X: " + coords.x + ", Y: " + coords.y + ", Tile Texture: " + tileTexture);
         if(tileTexture < 14)
         {
             // particleEmitters.Stop();

@@ -33,7 +33,7 @@ public class NotificationEngine : MonoBehaviour
 
     public void InstantiateNotification(string text, Color color = default)
     {
-        Debug.Log(text);
+        if(GameEngine.debugMode) Debug.Log(text);
         MenuEngine.instance.audioSource.PlayOneShot(notifyAudio);
         GameObject notifInstantiate = GameObject.Instantiate(prefab, transform);
         if(notificationInstance.Count > 0) for (int i = 0; i < notificationInstance.Count; i++)

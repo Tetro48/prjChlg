@@ -48,7 +48,7 @@ public static class ReplayScript
         }
         else
         {
-            Debug.LogError("File is not initialized!");
+            Debug.LogError("Replay file is not there! Path: " + path);
             return null;
         }
     }

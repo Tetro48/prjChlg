@@ -233,7 +233,7 @@ public class PieceController : MonoBehaviour {
         curTileCoords = curTileCoords.OrderBy(x => x.x).ThenByDescending(x => x.y).ToList();
         foreach(Vector2Int v2i in curTileCoords)
         {
-            Debug.Log("CurtIle is " + v2i.ToString());
+            if(GameEngine.debugMode) Debug.Log("CurtIle is " + v2i.ToString());
         }
         Vector2Int[] curCoords = curTileCoords.ToArray();
         return curCoords;
@@ -286,7 +286,7 @@ public class PieceController : MonoBehaviour {
                 return true;
             }
         }
-        Debug.Log("no tiles left");
+        if(GameEngine.debugMode) Debug.Log("no tiles left");
         PiecesController.instance.RemovePiece(gameObject);
         return false;
     }
@@ -443,7 +443,7 @@ public class PieceController : MonoBehaviour {
         if (!canOffset)
         {
             RotatePiece(!clockwise, /*rotIndex == 2 ? true :*/ false, true);
-            Debug.Log("Couldn't apply 180 offset");
+            if(GameEngine.debugMode) Debug.Log("Couldn't apply 180 offset");
         }
         if (GameEngine.instance.level < 100 || GameEngine.instance.TLS) ghostContr.UpdateGhostPiece();
     }
@@ -568,14 +568,14 @@ public class PieceController : MonoBehaviour {
         {
             if (!tiles[i].SetTile())
             {
-                Debug.Log("GAME OVER!");
+                if(GameEngine.debugMode) Debug.Log("GAME OVER!");
                 MenuEngine.instance.GameOver = true;
                 PiecesController.instance.GameOver();
             }
         }
         if (MenuEngine.instance.GameOver == false)
         {
-            if (Input.GetKey(KeyCode.E) && GameEngine.instance.debugMode)
+            if (Input.GetKey(KeyCode.E) && GameEngine.debugMode)
             {
                 int incrementbyfrozenlines = GameEngine.instance.lineFreezingMechanic ? GameEngine.instance.linesFrozen[GameEngine.instance.curSect] : 0;
                 BoardController.instance.FillLine(0+incrementbyfrozenlines);

@@ -349,7 +349,7 @@ public class BoardController : MonoBehaviour {
                 consecutiveLineClears++;
                 if (consecutiveLineClears == 4)
                 {
-                    Debug.Log("<color=red>T</color>" +
+                    if(GameEngine.debugMode) Debug.Log("<color=red>T</color>" +
                               "<color=orange>E</color>" +
                               "<color=yellow>T</color>" +
                               "<color=lime>R</color>" +
@@ -462,7 +462,7 @@ public class BoardController : MonoBehaviour {
         int linesFrozen = GameEngine.instance.lineFreezingMechanic ? GameEngine.instance.linesFrozen[GameEngine.instance.curSect] : 0;
         if(lineToClear < linesFrozen || lineToClear > gridSizeY)
         {
-            Debug.LogError("Error: Cannot Clear Line: " + lineToClear);
+            if(GameEngine.debugMode) Debug.LogError("Error: Cannot Clear Line: " + lineToClear);
             return;
         }
         for(int x = 0; x < gridSizeX; x++)
@@ -536,7 +536,7 @@ public class BoardController : MonoBehaviour {
                 }
             }
         }
-        Debug.Log("there are " + unavaiablePieces.Count + " Unavailable pieces");
+        if(GameEngine.debugMode) Debug.Log("there are " + unavaiablePieces.Count + " Unavailable pieces");
         return unavaiablePieces;
     }
 

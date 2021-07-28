@@ -97,7 +97,7 @@ public class PiecesController : MonoBehaviour {
                 
                 List<int> bagshuff = new List<int>(){0,1,2,3,4,5,6};
                 Shuffle(bagshuff);
-                Debug.Log(bagshuff);
+                if(GameEngine.debugMode) Debug.Log(bagshuff);
                 for (int j = 0; j < 7; j++)
                 {
                     bag.Add(bagshuff[j]);
@@ -269,7 +269,7 @@ public class PiecesController : MonoBehaviour {
                     nextpiecequeued = true;
                 }
                 bagPieceRetrieved = true;
-                Debug.Log("Next random num: " + bag[pieces]);
+                if(GameEngine.debugMode) Debug.Log("Next random num: " + bag[pieces]);
                 executedHold = false;
             }
         }
@@ -277,7 +277,7 @@ public class PiecesController : MonoBehaviour {
         {
             List<int> bagshuff = new List<int>(){0,1,2,3,4,5,6};
             Shuffle(bagshuff);
-            Debug.Log(bagshuff);
+            if(GameEngine.debugMode) Debug.Log(bagshuff);
             for (int j = 0; j < 7; j++)
             {
                 bag.Add(bagshuff[j]);

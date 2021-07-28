@@ -24,7 +24,11 @@ using TMPro;
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
-public enum sectionState {checking, cool, regret, missed}
+
+/// <summary>
+/// Section states. It can't be both cool and regret in this implementation.
+/// </summary>
+public enum SectionState {checking, cool, regret, missed}
 public enum RotationSystems {SRS, ARS}
 /// <summary>
 /// This script does A LOT of stuff that you might not want to mess up with.
@@ -33,66 +37,121 @@ public enum RotationSystems {SRS, ARS}
 public class GameEngine : MonoBehaviour
 {
     public int time, rollTime, rollTimeLimit = 11000, notifDelay, sectionlasttime, coolprevtime;
+
     public int[] sectionTime = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
-    public sectionState[] cools = new sectionState[21];
-    /** Section COOL criteria Time */
+
+    public SectionState[] cools = new SectionState[21];
+
+    /// <summary>
+    /// Section COOL criteria Time 
+    /// </summary>
 	public static int[] tableTimeCool =
 	{
 		5200, 5200, 4900, 4500, 4500, 4200, 4200, 3800, 3800, 3800, 3300, 3300, 3300, 2800, 2800, 2200, 1800, 1400, 900, 600, -1
 	};
+
+    /// <summary>
+    /// Section REGRET criteria Time 
+    /// </summary>
     public static int[] tableTimeRegret = 
     {
         9000, 7500, 7500, 6800, 6000, 6000, 5000, 5000, 500, 5000, 4500, 4500, 4500, 4000, 4000, 3400, 3000, 2600, 1700, 800, -1
     };
+
     public int level;
+
     public int endingLevel = 2100;
+
     public int curSect, sectAfter20g;
+
     // Number of combos | Keeping combo
     public int comboCount, comboKeepCounter;
+
     public AudioClip[] comboSE;
+
     private double musicTime;
+
     public AudioSource gameAudio, gameMusic;
+
     public AudioClip[] bgm_1p_lv;
+
     public string audioPath;
+
     public AudioClip readySE, goSE, gradeUp, excellent, coolSE, regretSE;
+
     public int bgmlv = 1;
+
     public double gradePoints, statGradePoints, gradePointRequirement;
+
     private int virtualBasePoint;
+
     public TextMeshPro levelTextRender, nextSecLv, timeCounter, rollTimeCounter, ppsCounter;
+
     public static GameEngine instance;
+
     public SpriteRenderer readyGoIndicator, gradeIndicator;
+
     public Sprite[] gradeSprites;
+
     public int grade;
+
     public Sprite readySprite, goSprite;
+
     public int nextPieces, nextibmblocks;
+
     public RotationSystems RS;
+
     public bool TLS, tSpin, ending, coolchecked, previouscool;
+
     public bool lineFreezingMechanic;
-    public double LockDelay = 50;    
+
+    [Range(0, 1000)]
+    public double LockDelay = 50;
+
+    [Range(0, 1000)]
     public double DAS = 15;
+
+    [Range(0, 1000)]
     public double SDF = 6;
+
+    [Range(0, 1000)]
     public double ARE = 41.66666666666666;
+
     public int AREf = 42 - 300;
+
+    [Range(0, 1000)]
     public double AREline = 16.66666666666666666;
+
     public int lineDelayf = 0;
+
+    [Range(0, 1000)]
     public double lineDelay = 25;
+
+    [Range(0, 60)]
     public float gravity = 3/64f;
+
     public int singles, doubles, triples, tetrises, pentrises, sixtrises, septrises, octrises;
+
     public int totalLines;
+
     public int[] lineClonePerPiece = {2147483647,2147483647,20,20,20,20,20,20,20,20,16,16,16,8,8,6,5,4,3,2,2,2};
+
     public int lineClonePiecesLeft = 20;
 
     public float percentage = 0.8f;
 
     public bool paused, FrameStep, framestepped;
+
     public bool[] Inputs;
+
     public int tileInvisTime = -1;
+
     public Vector2 movement;
 
     /// <summary>
     /// This variable is for debugging and... some cheating purposes.
     /// </summary>
-    public bool debugMode;
+    public static bool debugMode;
 
     public ReplayRecord replay;
 
@@ -106,9 +165,9 @@ public class GameEngine : MonoBehaviour
 				((previouscool == false) || ((previouscool == true) && (sectionTime[section] <= coolprevtime + 60))) )
 			{
 				cool = true;
-				cools[section] = sectionState.cool;
+				cools[section] = SectionState.cool;
 			}
-			else cools[section] = sectionState.missed;
+			else cools[section] = SectionState.missed;
 			coolprevtime = sectionTime[section];
 			coolchecked = true;
 		}
@@ -135,7 +194,7 @@ public class GameEngine : MonoBehaviour
 
 			// regretdispframe = 180;
 			gameAudio.PlayOneShot(regretSE);
-			cools[section] = sectionState.regret;
+			cools[section] = SectionState.regret;
 		}
 	}
 
@@ -170,6 +229,7 @@ public class GameEngine : MonoBehaviour
 		{1.0f,1.5f,1.8f,2.0f,2.2f,2.3f,2.4f,2.5f,2.6f,3.0f},
 	};
     static int[] lvlLineIncrement = {1, 3, 6, 10, 15, 21, 28, 36, 48, 70, 88, 90, 90, 90, 90, 90, 90, 90, 90, 90, 90, 90, 90};
+
     public int[] linesFrozen = {0, 0, 0, 6, 4, 0, 0, 0, 8, 0, 0, 12, 16, 0, 0, 0, 19, 0, 0, 0, 10, 14};
     public void LineClears(int lines, bool spin)
     {
@@ -209,20 +269,20 @@ public class GameEngine : MonoBehaviour
             if(curSect % 5 == 0) NotificationEngine.instance.InstantiateNotification(MenuEngine.instance.notifLangString[(int)MenuEngine.instance.language, 12],Color.white);
             if (gravity >= 12.5)
             {
-                ARE = (double)(ARE * percentage);
-                AREline = (double)(AREline * percentage);
-                lineDelay = (double)(lineDelay * percentage);
-                LockDelay = (double)(LockDelay * percentage);
+                ARE *= percentage;
+                AREline *= percentage;
+                lineDelay *= percentage;
+                LockDelay *= percentage;
                 sectAfter20g++;
                 if(LockDelay < 1)
                 {
                     LockDelay = 1.000001d;
                 }
-                if (gravity < 19.99999) gravity = gravity * 4;
+                if (gravity < 19.99999) gravity *= 4;
             }
             else
             {
-                gravity = gravity * 4;
+                gravity *= 4;
             }
             // COOLг‚’еЏ–гЃЈгЃ¦гЃџг‚‰
             if(cool == true) {
@@ -238,47 +298,47 @@ public class GameEngine : MonoBehaviour
         }
         if (spin)
         {
-            if(lines == 1)virtualBasePoint += 10;
-            if(lines == 2)virtualBasePoint += 20;
-            if(lines == 3)virtualBasePoint += 30;
-            if(lines == 4)virtualBasePoint += 50;
-            if(lines == 5)virtualBasePoint += 70;
-            if(lines >= 6)virtualBasePoint += (100 + (lines-6)*40);
+            if (lines == 1) virtualBasePoint += 10;
+            if (lines == 2) virtualBasePoint += 20;
+            if (lines == 3) virtualBasePoint += 30;
+            if (lines == 4) virtualBasePoint += 50;
+            if (lines == 5) virtualBasePoint += 70;
+            if (lines >= 6) virtualBasePoint += 100 + (lines - 6) * 40;
         }
 		int basepoint = tableGradePoint[lines - 1];
         basepoint += virtualBasePoint;
         virtualBasePoint = 0;
 
         int indexcombo = comboCount - 1;
-        if(indexcombo < 0) indexcombo = 0;
-        if(indexcombo > 9) indexcombo = 9;
+        if (indexcombo < 0) indexcombo = 0;
+        if (indexcombo > 9) indexcombo = 9;
         float combobonus = tableGradeComboBonus[lines - 1, indexcombo];
 	
 		int levelbonus = 1 + (level / 250);
 	
-		float point = (basepoint * combobonus) * levelbonus;
-        if(sectAfter20g >= 21) point *= 10;
-        else if(sectAfter20g > 19) point *= 5;
-        else if(sectAfter20g > 18) point *= 2;
+		float point = basepoint * combobonus * levelbonus;
+        if (sectAfter20g >= 21) point *= 10;
+        else if (sectAfter20g > 19) point *= 5;
+        else if (sectAfter20g > 18) point *= 2;
 		gradePoints += point;
 		statGradePoints += point;
-        while(gradePoints >= gradePointRequirement)
+        while (gradePoints >= gradePointRequirement)
         {
 			gradePoints -= gradePointRequirement;
-            if(grade<18)grade++;
+            if (grade < 18) grade++;
             gradeIndicator.sprite = gradeSprites[grade];
             gameAudio.PlayOneShot(gradeUp);
-            gradePointRequirement *= Math.Abs(1 + ((Math.Abs(Math.Floor((double)level /100)+1)/4)));
+            gradePointRequirement *= Math.Abs(1 + (Math.Abs(Math.Floor((double)level / 100) + 1) / 4));
         }
         totalLines += lines;
-        if(lines == 1) singles++;
-        if(lines == 2) doubles++;
-        if(lines == 3) triples++;
-        if(lines == 4) tetrises++;
-        if(lines == 5) pentrises++;
-        if(lines == 6) sixtrises++;
-        if(lines == 7) septrises++;
-        if(lines > 7) octrises++;
+        if (lines == 1) singles++;
+        if (lines == 2) doubles++;
+        if (lines == 3) triples++;
+        if (lines == 4) tetrises++;
+        if (lines == 5) pentrises++;
+        if (lines == 6) sixtrises++;
+        if (lines == 7) septrises++;
+        if (lines > 7) octrises++;
     }
 
     // // Start is called before the first frame update
@@ -290,7 +350,7 @@ public class GameEngine : MonoBehaviour
         // DontDestroyOnLoad(this);
         instance = this;
         audioPath = "file:///" + Application.persistentDataPath + "/BGM/";
-        Debug.Log(audioPath);
+        if(GameEngine.debugMode) Debug.Log(audioPath);
         for (int i = 0; i < 7; i++)
         {
             StartCoroutine(LoadLevelMusic(i));
@@ -299,10 +359,11 @@ public class GameEngine : MonoBehaviour
     }
     private IEnumerator LoadLevelMusic(int lv)
     {
+        
         WWW request;
         if(lv < 6) request = GetAudioFromFile(audioPath, "lv"+(lv+1)+".wav");
         else request = GetAudioFromFile(audioPath, "ending.wav");
-        Debug.Log(request);
+        if(GameEngine.debugMode) Debug.Log(request);
         yield return request;
 
         bgm_1p_lv[lv] = request.GetAudioClip();
@@ -313,7 +374,7 @@ public class GameEngine : MonoBehaviour
     private IEnumerator LoadMainMenuMusic()
     {
         WWW request = GetAudioFromFile(audioPath, "menu.wav");
-        Debug.Log(request);
+        if(GameEngine.debugMode) Debug.Log(request);
         yield return request;
 
         MMmusic = request.GetAudioClip();
@@ -455,7 +516,7 @@ public class GameEngine : MonoBehaviour
             if (level >= endingLevel && AREf < (int)ARE && AREf > (int)ARE - 400)
             {
                 int whichline = ((AREf - (int)ARE)+400)/10;
-                Debug.Log(whichline);
+                if(GameEngine.debugMode) Debug.Log(whichline);
                 BoardController.instance.DestroyLine(whichline);
             }
             

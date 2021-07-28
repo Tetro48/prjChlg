@@ -161,11 +161,11 @@ public class MenuEngine : MonoBehaviour
     }
     void indicatorActivity(bool set, int upTo)
     {
-        Debug.Log(supposedToBeAPartOfBoard.Length);
+        if(GameEngine.debugMode) Debug.Log(supposedToBeAPartOfBoard.Length);
         int length = supposedToBeAPartOfBoard.Length < upTo ? supposedToBeAPartOfBoard.Length : upTo;
         for (int i = 0; i < length; i++)
         {
-            Debug.Log("ind:"+i);
+            if(GameEngine.debugMode) Debug.Log("ind:"+i);
             supposedToBeAPartOfBoard[i].SetActive(set);
         }
     }
@@ -276,6 +276,18 @@ public class MenuEngine : MonoBehaviour
         posI = inputsMovement.position;
         posI.x -= (float)(500.0 * reswidth);
         inputsMovement.position = posI;
+        posRS = rotationSystemsMovement.position;
+        posRS.x -= (float)(500.0 * reswidth);
+        rotationSystemsMovement.position = posRS;
+        posCMS = customModeSettingsMovement.position;
+        posCMS.x -= (float)(500.0 * reswidth);
+        customModeSettingsMovement.position = posCMS;
+        posP = preferencesMovement.position;
+        posP.x -= (float)(500.0 * reswidth);
+        preferencesMovement.position = posP;
+        posT = tuningMovement.position;
+        posT.x -= (float)(500.0 * reswidth);
+        tuningMovement.position = posT;
     }
     public void UpdateLang()
     {
@@ -338,11 +350,17 @@ public class MenuEngine : MonoBehaviour
         if (platformCompat())
         {
             var activityManager = discord.GetActivityManager();
-            int rpclvl = GameEngine.instance.level < 2100 ? (GameEngine.instance.curSect + 1) * 100 : 2100;
+            int rpclvl = GameEngine.instance.level < GameEngine.instance.endingLevel ? (GameEngine.instance.curSect + 1) * 100 : GameEngine.instance.endingLevel;
             var activity = new Activity
             {
-                Details = GameEngine.instance.ending ? "Roll time left: " + GameEngine.instance.rollTimeCounter.text : curBoard != null ? "Level " + GameEngine.instance.level + " | " + rpclvl + (GameEngine.instance.level > 800 ? ". Struggling." : string.Empty) : null,
-                State = !Application.genuineCheckAvailable ? "The game is tampered" : framerate > 2600 ? "Suspiciously smooth" : framerate < 10 ? "Performance issues" : IntentionalGameOver ? "Exiting..." : GameOver ? "Topped out" : curBoard != null && GameEngine.instance.paused && !GameEngine.instance.FrameStep ? "Paused" : curBoard != null && GameEngine.instance.replay.mode == ReplayModeType.read ? "Currently replaying" : curBoard != null && GameEngine.instance.paused && GameEngine.instance.FrameStep ? "Currently playing (Framestepping)" : curBoard != null ? "Currently playing" : quitting ? "Quitting" : menu == 1 ? "Currently in settings menu" :"Currently in main menu",
+                Details = GameEngine.instance.ending ? "Roll time left: " + GameEngine.instance.rollTimeCounter.text 
+                : curBoard != null ? "Level " + GameEngine.instance.level + " | " + rpclvl + (GameEngine.instance.level > 800 ? ". Struggling." : string.Empty) : null,
+
+                State = !Application.genuineCheckAvailable ? "The game is tampered" : framerate > 2600 ? "Suspiciously smooth" : framerate < 10 ? "Performance issues" 
+                : IntentionalGameOver ? "Exiting..." : GameOver ? "Topped out" : curBoard != null && GameEngine.instance.paused && !GameEngine.instance.FrameStep ? "Paused" 
+                : curBoard != null && GameEngine.instance.replay.mode == ReplayModeType.read ? "Currently replaying" 
+                : curBoard != null && GameEngine.instance.paused && GameEngine.instance.FrameStep ? "Currently playing (Framestepping)" 
+                : curBoard != null ? "Currently playing" : quitting ? "Quitting" : menu == 1 ? "Currently in settings menu" : "Currently in main menu",
                 Assets = {
                     LargeImage = "icon"
                 }
@@ -351,15 +369,25 @@ public class MenuEngine : MonoBehaviour
             });
             if(drpcSwitch)discord.RunCallbacks();
         }
+        // Dealing with varied lengths.
         var MMf = mainMenuGUI.Length * 8;
         var SBf = settingsMenuGUI.Length * 8;
         var IPf = inputsMenuGUI.Length * 8;
+        var RSf = rotationSystemsMenuGUI.Length * 8;
+        var CMSf = customModeSettingsMenuGUI.Length * 8;
+        var PRf = preferencesMenuGUI.Length * 8;
+        var TUf = tuningMenuGUI.Length * 8;
         var SBVf = settingsGUIMovement.Length * 8;
-        var MMSBf = (MMf + SBf);
-        var SBIPf = (SBf + IPf);
-        var MMSf = (MMf + 50);
-        var MMSCf = (MMSf + SBf);
-        var MMSCVf = (MMSf + SBVf);
+        var MMSBf = MMf + SBf;
+        var SBIPf = SBf + IPf;
+        var SBRSf = SBf + RSf;
+        var SBCMSf = SBf + CMSf;
+        var SBPRf = SBf + PRf;
+        var SBTUf = SBf + TUf;
+        var MMSf = MMf + 50;
+        var MMSCf = MMSf + SBf;
+        var MMSCVf = MMSf + SBVf;
+
         if(curBoard == null && Input.GetKeyDown(KeyCode.Escape))
         {
             if (menu > 0)
@@ -615,84 +643,125 @@ public class MenuEngine : MonoBehaviour
                     frames = 0;
                 }
             }
-        }
-        if ((pressedSubMenu && menu == 2))
-        {
-            frames++;
-            if (frames == 1)
+            if (rotationSystemsMenu.activeSelf)
             {
-                inputsMenu.SetActive(true);
-                audioSource.PlayOneShot(clip);
-            }
-            else if(frames % 8 == 0)
-            {
-                audioSource.PlayOneShot(clip);
-            }
-            if (frames < SBf + 1)
-            {
-                posSGUI[(frames-1)/8] = settingsGUIMovement[(frames-1)/8].position;
-                posSGUI[(frames-1)/8].x -= (float)(62.5 * reswidth);
-                settingsGUIMovement[(frames-1)/8].position = posSGUI[(frames-1)/8];
-                if(frames < settingsMenuGUIpart.Length * 8 +1)
+                if (frames == 1)
                 {
-                    posSGUIP[(frames-1)/8] = settingsGUIPartMovement[(frames-1)/8].position;
-                    posSGUIP[(frames-1)/8].x -= (float)(125.0 * reswidth);
-                    settingsGUIPartMovement[(frames-1)/8].position = posSGUIP[(frames-1)/8];
+                    settingsMenu.SetActive(true);
+                    audioSource.PlayOneShot(clip);
+                }
+                else if (frames % 8 == 0)
+                {
+                    audioSource.PlayOneShot(clip);
+                }
+                if (frames < RSf + 1)
+                {
+                    posRSGUI[(frames - 1) / 8] = rotationSystemsGUIMovement[(frames - 1) / 8].position;
+                    posRSGUI[(frames - 1) / 8].x -= (float)(62.5 * reswidth);
+                    rotationSystemsGUIMovement[(frames - 1) / 8].position = posRSGUI[(frames - 1) / 8];
+                }
+                else if (frames < SBRSf + 1)
+                {
+                    posSGUI[((frames - 1) - RSf) / 8] = settingsGUIMovement[((frames - 1) - RSf) / 8].position;
+                    posSGUI[((frames - 1) - RSf) / 8].x += (float)(62.5 * reswidth);
+                    settingsGUIMovement[((frames - 1) - RSf) / 8].position = posSGUI[((frames - 1) - RSf) / 8];
+                    if (frames < settingsMenuGUIpart.Length * 8 + 1 + RSf)
+                    {
+                        posSGUIP[((frames - 1) - RSf) / 8] = settingsGUIPartMovement[((frames - 1) - RSf) / 8].position;
+                        posSGUIP[((frames - 1) - RSf) / 8].x += (float)(125.0 * reswidth);
+                        settingsGUIPartMovement[((frames - 1) - RSf) / 8].position = posSGUIP[((frames - 1) - RSf) / 8];
+                    }
+                }
+                else
+                {
+                    inputsMenu.SetActive(false);
+                    pressedBack = false;
+                    frames = 0;
                 }
             }
-            else if (frames < SBIPf + 1)
+        }
+        if (pressedSubMenu)
+        {
+            // Inputs menu
+            if (menu == 2)
             {
-                posIGUI[((frames-1) - SBf)/8] = inputsGUIMovement[((frames-1) - SBf)/8].position;
-                posIGUI[((frames-1) - SBf)/8].x += (float)(62.5 * reswidth);
-                inputsGUIMovement[((frames-1) - SBf)/8].position = posIGUI[((frames-1) - SBf)/8];
+                frames++;
+                if (frames == 1)
+                {
+                    inputsMenu.SetActive(true);
+                    audioSource.PlayOneShot(clip);
+                }
+                else if (frames % 8 == 0)
+                {
+                    audioSource.PlayOneShot(clip);
+                }
+                if (frames < SBf + 1)
+                {
+                    posSGUI[(frames - 1) / 8] = settingsGUIMovement[(frames - 1) / 8].position;
+                    posSGUI[(frames - 1) / 8].x -= (float)(62.5 * reswidth);
+                    settingsGUIMovement[(frames - 1) / 8].position = posSGUI[(frames - 1) / 8];
+                    if (frames < settingsMenuGUIpart.Length * 8 + 1)
+                    {
+                        posSGUIP[(frames - 1) / 8] = settingsGUIPartMovement[(frames - 1) / 8].position;
+                        posSGUIP[(frames - 1) / 8].x -= (float)(125.0 * reswidth);
+                        settingsGUIPartMovement[(frames - 1) / 8].position = posSGUIP[(frames - 1) / 8];
+                    }
+                }
+                else if (frames < SBIPf + 1)
+                {
+                    posIGUI[((frames - 1) - SBf) / 8] = inputsGUIMovement[((frames - 1) - SBf) / 8].position;
+                    posIGUI[((frames - 1) - SBf) / 8].x += (float)(62.5 * reswidth);
+                    inputsGUIMovement[((frames - 1) - SBf) / 8].position = posIGUI[((frames - 1) - SBf) / 8];
+                }
+                else
+                {
+                    pressedSubMenu = false;
+                    settingsMenu.SetActive(false);
+                    frames = 0;
+                }
             }
-            else
+
+            // Rotation Systems menu
+            if (menu == 3)
             {
-                pressedSubMenu = false;
-                settingsMenu.SetActive(false);
-                frames = 0;
+                frames++;
+                if (frames == 1)
+                {
+                    inputsMenu.SetActive(true);
+                    audioSource.PlayOneShot(clip);
+                }
+                else if (frames % 8 == 0)
+                {
+                    audioSource.PlayOneShot(clip);
+                }
+                if (frames < SBf + 1)
+                {
+                    posSGUI[(frames - 1) / 8] = settingsGUIMovement[(frames - 1) / 8].position;
+                    posSGUI[(frames - 1) / 8].x -= (float)(62.5 * reswidth);
+                    settingsGUIMovement[(frames - 1) / 8].position = posSGUI[(frames - 1) / 8];
+                    if (frames < settingsMenuGUIpart.Length * 8 + 1)
+                    {
+                        posSGUIP[(frames - 1) / 8] = settingsGUIPartMovement[(frames - 1) / 8].position;
+                        posSGUIP[(frames - 1) / 8].x -= (float)(125.0 * reswidth);
+                        settingsGUIPartMovement[(frames - 1) / 8].position = posSGUIP[(frames - 1) / 8];
+                    }
+                }
+                else if (frames < SBRSf + 1)
+                {
+                    posRSGUI[((frames - 1) - SBf) / 8] = rotationSystemsGUIMovement[((frames - 1) - SBf) / 8].position;
+                    posRSGUI[((frames - 1) - SBf) / 8].x += (float)(62.5 * reswidth);
+                    rotationSystemsGUIMovement[((frames - 1) - SBf) / 8].position = posRSGUI[((frames - 1) - SBf) / 8];
+                }
+                else
+                {
+                    pressedSubMenu = false;
+                    settingsMenu.SetActive(false);
+                    frames = 0;
+                }
             }
         }
         if (starting)
         {
-            GameEngine.instance.time = 0;
-            GameEngine.instance.rollTime = 0;
-            GameEngine.instance.level = 0;
-            GameEngine.instance.curSect = 0;
-            GameEngine.instance.sectAfter20g = 0;
-            GameEngine.instance.ARE = 41.66666666666666;
-            GameEngine.instance.AREf = 42 - 300;
-            GameEngine.instance.paused = true;
-            GameEngine.instance.DAS = 25;
-            GameEngine.instance.AREline = 16.66666666666666666;
-            GameEngine.instance.nextibmblocks = 0;
-            GameEngine.instance.LockDelay = 50;
-            GameEngine.instance.lineDelayf = 0;
-            GameEngine.instance.lineDelay = 25;
-            GameEngine.instance.gravity = 3/64f;
-            GameEngine.instance.singles = 0;
-            GameEngine.instance.doubles = 0;
-            GameEngine.instance.triples = 0;
-            GameEngine.instance.tetrises = 0;
-            GameEngine.instance.pentrises = 0;
-            GameEngine.instance.sixtrises = 0;
-            GameEngine.instance.septrises = 0;
-            GameEngine.instance.octrises = 0;
-            GameEngine.instance.totalLines = 0;
-            GameEngine.instance.lineClonePiecesLeft = 2147483647;
-            GameEngine.instance.grade = 0;
-            GameEngine.instance.gradeIndicator.sprite = GameEngine.instance.gradeSprites[0];
-            GameEngine.instance.bgmlv = 1;
-            GameEngine.instance.timeCounter.text = "00:00:00";
-            GameEngine.instance.nextSecLv.text = "100";
-            GameEngine.instance.levelTextRender.text = "0";
-            GameEngine.instance.ending = false;
-            GameEngine.instance.sectionTime = new int[21];
-            Destroy(curBoard);
-            GameEngine.instance.gameMusic.Stop();
-            GameEngine.instance.gameMusic.clip = GameEngine.instance.bgm_1p_lv[0];
-            GameEngine.instance.gameMusic.volume = 1f;
-            GameEngine.instance.tileInvisTime = -1;
             if (!mainMenuMusic.isPlaying)mainMenuMusic.Play();
             frames++;
             // if (SceneManager.GetActiveScene().name != "MenuScene")SceneManager.LoadScene("MenuScene");
@@ -702,6 +771,44 @@ public class MenuEngine : MonoBehaviour
             mainMenu.SetActive(true);
             if (frames == 1)
             {
+                GameEngine.instance.time = 0;
+                GameEngine.instance.rollTime = 0;
+                GameEngine.instance.level = 0;
+                GameEngine.instance.curSect = 0;
+                GameEngine.instance.sectAfter20g = 0;
+                GameEngine.instance.ARE = 41.66666666666666;
+                GameEngine.instance.AREf = 42 - 300;
+                GameEngine.instance.paused = true;
+                GameEngine.instance.DAS = 25;
+                GameEngine.instance.AREline = 16.66666666666666666;
+                GameEngine.instance.nextibmblocks = 0;
+                GameEngine.instance.LockDelay = 50;
+                GameEngine.instance.lineDelayf = 0;
+                GameEngine.instance.lineDelay = 25;
+                GameEngine.instance.gravity = 3 / 64f;
+                GameEngine.instance.singles = 0;
+                GameEngine.instance.doubles = 0;
+                GameEngine.instance.triples = 0;
+                GameEngine.instance.tetrises = 0;
+                GameEngine.instance.pentrises = 0;
+                GameEngine.instance.sixtrises = 0;
+                GameEngine.instance.septrises = 0;
+                GameEngine.instance.octrises = 0;
+                GameEngine.instance.totalLines = 0;
+                GameEngine.instance.lineClonePiecesLeft = 2147483647;
+                GameEngine.instance.grade = 0;
+                GameEngine.instance.gradeIndicator.sprite = GameEngine.instance.gradeSprites[0];
+                GameEngine.instance.bgmlv = 1;
+                GameEngine.instance.timeCounter.text = "00:00:00";
+                GameEngine.instance.nextSecLv.text = "100";
+                GameEngine.instance.levelTextRender.text = "0";
+                GameEngine.instance.ending = false;
+                GameEngine.instance.sectionTime = new int[21];
+                Destroy(curBoard);
+                GameEngine.instance.gameMusic.Stop();
+                GameEngine.instance.gameMusic.clip = GameEngine.instance.bgm_1p_lv[0];
+                GameEngine.instance.gameMusic.volume = 1f;
+                GameEngine.instance.tileInvisTime = -1;
                 // mainMenu.SetActive(true);
                 audioSource.PlayOneShot(clip);
             }
