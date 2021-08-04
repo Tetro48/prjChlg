@@ -30,12 +30,6 @@ public class BoardParticleSystem : MonoBehaviour
     public AudioClip[] fireworkSoundEffects;
     public List<GameObject> fireworkInstances, tileParticleInstances;
     public List<int> fireworkTime, tileParticleTime;
-    // Start is called before the first frame update
-    void Start()
-    {
-        instance = this;
-        grid = new Color[BoardController.instance.gridSizeX, BoardController.instance.gridSizeY];
-    }
 
     // Update is called once per frame
     void FixedUpdate()

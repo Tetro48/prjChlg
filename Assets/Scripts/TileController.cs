@@ -45,7 +45,7 @@ public class TileController : MonoBehaviour {
         originalSpr = spriteRenderer.sprite;
         pieceController = myPC;
         tileIndex = index;
-        // if (!BoardController.instance.IsPosEmpty(coordinates))
+        // if (!pieceController.board.boardController.IsPosEmpty(coordinates))
         // {
         //     myPC.SetPiece();
         // }
@@ -82,11 +82,11 @@ public class TileController : MonoBehaviour {
     /// <returns>True if the tile can be moved there. False if the tile cannot be moved there</returns>
     public bool CanTileMove(Vector2Int endPos)
     {
-        if (!BoardController.instance.IsInBounds(endPos))
+        if (!pieceController.board.boardController.IsInBounds(endPos))
         {
             return false;
         }
-        if (!BoardController.instance.IsPosEmpty(endPos))
+        if (!pieceController.board.boardController.IsPosEmpty(endPos))
         {
             return false;
         }
@@ -111,7 +111,7 @@ public class TileController : MonoBehaviour {
     {
         coordinates = newPos;
         Vector3 newV3Pos = new Vector3(newPos.x, newPos.y);
-        gameObject.transform.position = newV3Pos;
+        gameObject.transform.localPosition = newV3Pos;
     }
 
     /// <summary>
@@ -121,9 +121,9 @@ public class TileController : MonoBehaviour {
     public bool SetTile()
     {
 
-        if (coordinates.y >= 24 || !BoardController.instance.IsPosEmpty(coordinates) || coordinates.x >= 10) {BoardController.instance.OccupyPos(coordinates, gameObject); return false;}
+        if (coordinates.y >= 24 || !pieceController.board.boardController.IsPosEmpty(coordinates) || coordinates.x >= 10) {pieceController.board.boardController.OccupyPos(coordinates, gameObject); return false;}
 
-        BoardController.instance.OccupyPos(coordinates, gameObject);
+        pieceController.board.boardController.OccupyPos(coordinates, gameObject);
         return true; // when if statement up here is false, that line of code is ignored.                     ⬆ is a reason why return true; will not execute when if statement is false.
     }
     /// <summary>
@@ -137,7 +137,7 @@ public class TileController : MonoBehaviour {
             return false;
         }
 
-        BoardController.instance.OccupyPos(coordinates, gameObject);
+        pieceController.board.boardController.OccupyPos(coordinates, gameObject);
         return true;
     }
 

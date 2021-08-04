@@ -24,7 +24,9 @@ using UnityEngine;
 
 public class BoardController : MonoBehaviour {
 
-    public static BoardController instance;
+    public NetworkBoard networkBoard;
+
+    public int playerID;
 
     public GameObject gridUnitPrefab;
     public int gridSizeX, gridSizeY;
@@ -44,11 +46,6 @@ public class BoardController : MonoBehaviour {
 
     GridUnit[,] fullGrid;
 
-    private void Awake()
-    {
-        instance = this;
-    }
-
     private void Start()
     {
         CreateGrid();
@@ -61,7 +58,7 @@ public class BoardController : MonoBehaviour {
         {
             if (allClearFireworkTime[fire] % 20 == 0)
             {
-                GameEngine.instance.SpawnFireworks();
+                networkBoard.SpawnFireworks();
             }
             if (allClearFireworkTime[fire] == 200)
             {
@@ -69,7 +66,7 @@ public class BoardController : MonoBehaviour {
             }
             allClearFireworkTime[fire]++;
         }
-        if(GameEngine.instance.framestepped && !MenuEngine.instance.GameOver)
+        if(networkBoard.framestepped && !networkBoard.GameOver)
         {
             if(linecleared == true)
             {
@@ -79,8 +76,8 @@ public class BoardController : MonoBehaviour {
             else if(ldldy.Count > 0 && arereseted == false)
             {
                 arereseted = true;
-                GameEngine.instance.lineDelayf = 0;
-                if(GameEngine.instance.level < 2099)GameEngine.instance.AREf = (int)Math.Floor(GameEngine.instance.ARE - GameEngine.instance.AREline);
+                networkBoard.lineDelayf = 0;
+                if(networkBoard.level < 2099)networkBoard.AREf = (int)Math.Floor(networkBoard.ARE - networkBoard.AREline);
             }
         }
     }
@@ -98,7 +95,7 @@ public class BoardController : MonoBehaviour {
                 }
             }
         }
-        if (tilesToWarn > 18 && !MenuEngine.instance.GameOver)
+        if (tilesToWarn > 18 && !networkBoard.GameOver)
         {
             gameAudio.loop = true;
             if(!gameAudio.isPlaying)gameAudio.Play();
@@ -109,8 +106,8 @@ public class BoardController : MonoBehaviour {
     }
     private void LineClear(List<int> linesToClear)
     {
-        GameEngine.instance.lineDelayf++;
-        if(GameEngine.instance.lineDelayf >= (int)Math.Floor(GameEngine.instance.lineDelay) && GameEngine.instance.lineDelay >= 1)
+        networkBoard.lineDelayf++;
+        if(networkBoard.lineDelayf >= (int)Math.Floor(networkBoard.lineDelay) && networkBoard.lineDelay >= 1)
         {
             gameAudio.PlayOneShot(audioLineFall);
             linecleared = false;
@@ -152,7 +149,7 @@ public class BoardController : MonoBehaviour {
             {
                 GameObject clonedTile = GameObject.Instantiate(tileClone, transform);
                 PieceController tileContr = clonedTile.GetComponent<PieceController>();
-                if(GameEngine.instance.sectAfter20g > 1) tileContr.tiles[0].GetComponent<SpriteRenderer>().sprite = boneblock;
+                if(networkBoard.sectAfter20g > 1) tileContr.tiles[0].GetComponent<SpriteRenderer>().sprite = boneblock;
                 tileContr.tiles[0].UpdatePosition(new Vector2Int(x,line));
                 tileContr.tiles[0].SetTileUp();
                 PiecesController.instance.piecesInGame.Add(clonedTile);
@@ -173,7 +170,7 @@ public class BoardController : MonoBehaviour {
                     {
                         GameObject clonedTile = GameObject.Instantiate(tileClone, transform);
                         PieceController tileContr = clonedTile.GetComponent<PieceController>();
-                        if(GameEngine.instance.sectAfter20g > 1) tileContr.tiles[0].GetComponent<SpriteRenderer>().sprite = boneblock;
+                        if(networkBoard.sectAfter20g > 1) tileContr.tiles[0].GetComponent<SpriteRenderer>().sprite = boneblock;
                         tileContr.tiles[0].UpdatePosition(new Vector2Int(x,y));
                         tileContr.tiles[0].SetTileUp();
                         PiecesController.instance.piecesInGame.Add(clonedTile);
@@ -332,7 +329,7 @@ public class BoardController : MonoBehaviour {
         //If this count get  to four lines, that is a Tetris line clear.
         int consecutiveLineClears = 0;
 
-        int linesFrozen = GameEngine.instance.lineFreezingMechanic ? GameEngine.instance.linesFrozen[GameEngine.instance.curSect] : 0;
+        int linesFrozen = networkBoard.lineFreezingMechanic ? networkBoard.linesFrozen[networkBoard.curSect] : 0;
         for(int y = linesFrozen; y < gridSizeY; y++)
         {
             bool lineClear = true;
@@ -366,23 +363,23 @@ public class BoardController : MonoBehaviour {
         {
             linecleared = true;
             ldldy = linesToClear;
-            bool tspinned = GameEngine.instance.tSpin;
+            bool tspinned = networkBoard.tSpin;
             if (tspinned)
             {
                 int limitedTSSEcount = linesToClear.Count > audioTSpinClear.Length ? audioTSpinClear.Length-1 : linesToClear.Count-1;
                 gameAudio.PlayOneShot(audioTSpinClear[limitedTSSEcount]);
-                GameEngine.instance.tSpin = false;
+                networkBoard.tSpin = false;
             }
             else
             {
                 int limitedSEcount = linesToClear.Count > audioLineClear.Length ? audioLineClear.Length-1 : linesToClear.Count-1;
                 gameAudio.PlayOneShot(audioLineClear[limitedSEcount]);
             }
-            GameEngine.instance.LineClears(linesToClear.Count, tspinned);
+            networkBoard.LineClears(linesToClear.Count, tspinned);
             CheckAllClear();
 
             // PiecesController.instance.lineDelayf++;
-            if(GameEngine.instance.lineDelay < 1)
+            if(networkBoard.lineDelay < 1)
             {
                 gameAudio.PlayOneShot(audioLineFall);
                 linecleared = false;
@@ -459,7 +456,7 @@ public class BoardController : MonoBehaviour {
     /// <param name="lineToClear">Index of the line to be cleared</param>
     void ClearLine(int lineToClear)
     {
-        int linesFrozen = GameEngine.instance.lineFreezingMechanic ? GameEngine.instance.linesFrozen[GameEngine.instance.curSect] : 0;
+        int linesFrozen = networkBoard.lineFreezingMechanic ? networkBoard.linesFrozen[networkBoard.curSect] : 0;
         if(lineToClear < linesFrozen || lineToClear > gridSizeY)
         {
             if(GameEngine.debugMode) Debug.LogError("Error: Cannot Clear Line: " + lineToClear);
@@ -552,10 +549,10 @@ public class GridUnit
     public GridUnit(GameObject newGameObject, Transform boardParent, int x, int y)
     {
         gameObject = GameObject.Instantiate(newGameObject, boardParent);
-        if(y<20) gameObject.GetComponent<SpriteRenderer>().sprite = null;
+        if(y>19) gameObject.GetComponent<SpriteRenderer>().sprite = null;
         location = new Vector2Int(x, y);
         isOccupied = false;
 
-        gameObject.transform.position = new Vector3(location.x, location.y);
+        gameObject.transform.localPosition = new Vector3(location.x, location.y);
     }
 }

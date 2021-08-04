@@ -102,7 +102,8 @@ MonoBehaviour:
   originalSpr: {fileID: 0}
   hoverSpr: {fileID: 21300016, guid: f50d0011e407351439c303c9abbe916e, type: 3}
   disableSpr: {fileID: 21300018, guid: f50d0011e407351439c303c9abbe916e, type: 3}
-  pieceController: {fileID: 0}
+  spriteRenderer: {fileID: 0}
+  pieceController: {fileID: 114736791834091324}
   tileIndex: 0
 --- !u!61 &61810690106093598
 BoxCollider2D:
@@ -232,7 +233,8 @@ MonoBehaviour:
   originalSpr: {fileID: 0}
   hoverSpr: {fileID: 21300016, guid: f50d0011e407351439c303c9abbe916e, type: 3}
   disableSpr: {fileID: 21300018, guid: f50d0011e407351439c303c9abbe916e, type: 3}
-  pieceController: {fileID: 0}
+  spriteRenderer: {fileID: 0}
+  pieceController: {fileID: 114736791834091324}
   tileIndex: 0
 --- !u!61 &61993168141157884
 BoxCollider2D:
@@ -362,7 +364,8 @@ MonoBehaviour:
   originalSpr: {fileID: 0}
   hoverSpr: {fileID: 21300016, guid: f50d0011e407351439c303c9abbe916e, type: 3}
   disableSpr: {fileID: 21300018, guid: f50d0011e407351439c303c9abbe916e, type: 3}
-  pieceController: {fileID: 0}
+  spriteRenderer: {fileID: 0}
+  pieceController: {fileID: 114736791834091324}
   tileIndex: 0
 --- !u!61 &61150994679042334
 BoxCollider2D:
@@ -499,6 +502,7 @@ MonoBehaviour:
   - {fileID: 5979445688713675732, guid: b770af1905bee2d48aa30980c1323ecf, type: 3}
   - {fileID: -1675130016021582584, guid: b770af1905bee2d48aa30980c1323ecf, type: 3}
   - {fileID: 9142261289523433945, guid: b770af1905bee2d48aa30980c1323ecf, type: 3}
+  board: {fileID: 0}
   setDelayTime: 5
   isDisabledFromSacrifice: 0
   audioPieceLock: {fileID: 8300000, guid: f77ceeac82370c74ab7ba4f850219b6c, type: 3}
@@ -510,6 +514,7 @@ MonoBehaviour:
   LockDelayEnable: 0
   zombieContr: 0
   LockDelayf: 0
+  hideTilesPerUpdates: 0
   tiles: []
 --- !u!1 &1957771924503588
 GameObject:
@@ -613,7 +618,8 @@ MonoBehaviour:
   originalSpr: {fileID: 0}
   hoverSpr: {fileID: 21300016, guid: f50d0011e407351439c303c9abbe916e, type: 3}
   disableSpr: {fileID: 21300018, guid: f50d0011e407351439c303c9abbe916e, type: 3}
-  pieceController: {fileID: 0}
+  spriteRenderer: {fileID: 0}
+  pieceController: {fileID: 114736791834091324}
   tileIndex: 0
 --- !u!61 &61849885103803530
 BoxCollider2D:
@@ -907,6 +913,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 62e17d9b338fa1d46b811e69d9bcfb1c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  networkBoard: {fileID: 0}
   tileset: {fileID: 1819566748919856}
   tiles:
   - {fileID: 982109100685623819}

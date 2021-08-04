@@ -4,6 +4,7 @@ using UnityEngine;
 
 public class GhostPieceController : MonoBehaviour
 {
+    public NetworkBoard networkBoard;
     public GameObject tileset;
     public GameObject[] tiles;
     public GameObject[] textureReading;
@@ -11,10 +12,11 @@ public class GhostPieceController : MonoBehaviour
     public bool visibility;
     SpriteRenderer sprRnd;
 
-    void Awake()
+    public void Initiate()
     {
         sprRnd = GetComponent<SpriteRenderer>();
-        if (GameEngine.instance.level < 100 || GameEngine.instance.TLS) visibility = true;
+        networkBoard = tiles[0].GetComponent<TileController>().pieceController.board;
+        if (networkBoard.level < 100 || networkBoard.TLS) visibility = true;
         float transparency = 0.3f;
         for (int i = 0; i < tiles.Length; i++)
         {
@@ -29,11 +31,11 @@ public class GhostPieceController : MonoBehaviour
     /// <returns>True if the tile can be moved there. False if the tile cannot be moved there</returns>
     public bool CanGhostTileMove(Vector2Int endPos)
     {
-        if (!BoardController.instance.IsInBounds(endPos))
+        if (!networkBoard.boardController.IsInBounds(endPos))
         {
             return false;
         }
-        if (!BoardController.instance.IsPosEmpty(endPos))
+        if (!networkBoard.boardController.IsPosEmpty(endPos))
         {
             return false;
         }

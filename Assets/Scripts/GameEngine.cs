@@ -479,130 +479,128 @@ public class GameEngine : MonoBehaviour
         checkCool();
         if(level > endingLevel) level = endingLevel;
         if(time == 1 || (AREf == -1 && ending)) gameMusic.Play();
-        if (ending) MenuEngine.instance.supposedToBeAPartOfBoard[6].SetActive(true);
-        else MenuEngine.instance.supposedToBeAPartOfBoard[6].SetActive(false);
-        // musicTime += Time.deltaTime;
-        if(notifDelay > 0)notifDelay--;
-        if(MenuEngine.instance.curBoard != null){int pieceCountHoldRed = PiecesController.instance.pieceHold == 28 ? -1 : -2;
-        if(time > 0)ppsCounter.text = Math.Floor(((double)(PiecesController.instance.pieces + pieceCountHoldRed) / ((double)time/100))*100)/100 + " pieces/second";}
-        // if (Input.GetKey(KeyCode.X) || Input.GetKey(KeyCode.Space)) Inputs[2] = true;
-        // if (Input.GetKey(KeyCode.A)) Inputs[3] = true;
-        // if (Input.GetKey(KeyCode.C)) Inputs[4] = true;
-        // if (Input.GetKeyDown(KeyCode.P) && MenuEngine.instance.curBoard != null) paused = !paused;
-        if (Input.GetKeyDown(KeyCode.W) && debugMode) {for (int y = 0; y < BoardController.instance.gridSizeY; y++) BoardController.instance.ResetLineTransparency(y); showinvis = !showinvis;}
-        if (Input.GetKeyDown(KeyCode.F) && debugMode) SpawnFireworks();
-        if (Input.GetKeyDown(KeyCode.D) && debugMode) level = curSect*100+99;
-        if (Input.GetKeyDown(KeyCode.H) && debugMode) {gradePoints += gradePointRequirement; statGradePoints += gradePointRequirement;}
-        if((paused == false || (FrameStep == true && Inputs[7])) && MenuEngine.instance.GameOver == false)
-        {
-            FadeoutBGM();
-            ChangeBGM();
-            if (replay.mode == ReplayModeType.read && AREf > (int)ARE - 401)
-            {
-                Vector2 tempmov;
-                tempmov.x = replay.movementVector[replay.frames][0];
-                tempmov.y = replay.movementVector[replay.frames][1];
-                movement = tempmov;
-                // Inputs = replay.inputs[replay.frames];
-                Inputs[0] = replay.inputs[replay.frames][0];
-                Inputs[1] = replay.inputs[replay.frames][1];
-                Inputs[2] = replay.inputs[replay.frames][2];
-                Inputs[3] = replay.inputs[replay.frames][3];
-                Inputs[4] = replay.inputs[replay.frames][4];
-                Inputs[5] = replay.inputs[replay.frames][5];
-                Inputs[6] = replay.inputs[replay.frames][6];
-                lineFreezingMechanic = replay.switches[0];
-            }
-            if (level >= endingLevel && AREf < (int)ARE && AREf > (int)ARE - 400)
-            {
-                int whichline = ((AREf - (int)ARE)+400)/10;
-                if(GameEngine.debugMode) Debug.Log(whichline);
-                BoardController.instance.DestroyLine(whichline);
-            }
+        // // musicTime += Time.deltaTime;
+        // if(notifDelay > 0)notifDelay--;
+        // if(MenuEngine.instance.curBoard != null){int pieceCountHoldRed = PiecesController.instance.pieceHold == 28 ? -1 : -2;
+        // if(time > 0)ppsCounter.text = Math.Floor(((double)(PiecesController.instance.pieces + pieceCountHoldRed) / ((double)time/100))*100)/100 + " pieces/second";}
+        // // if (Input.GetKey(KeyCode.X) || Input.GetKey(KeyCode.Space)) Inputs[2] = true;
+        // // if (Input.GetKey(KeyCode.A)) Inputs[3] = true;
+        // // if (Input.GetKey(KeyCode.C)) Inputs[4] = true;
+        // // if (Input.GetKeyDown(KeyCode.P) && MenuEngine.instance.curBoard != null) paused = !paused;
+        // if (Input.GetKeyDown(KeyCode.W) && debugMode) {for (int y = 0; y < BoardController.instance.gridSizeY; y++) BoardController.instance.ResetLineTransparency(y); showinvis = !showinvis;}
+        // if (Input.GetKeyDown(KeyCode.F) && debugMode) SpawnFireworks();
+        // if (Input.GetKeyDown(KeyCode.D) && debugMode) level = curSect*100+99;
+        // if (Input.GetKeyDown(KeyCode.H) && debugMode) {gradePoints += gradePointRequirement; statGradePoints += gradePointRequirement;}
+        // if((paused == false || (FrameStep == true && Inputs[7])) && MenuEngine.instance.GameOver == false)
+        // {
+        //     FadeoutBGM();
+        //     ChangeBGM();
+        //     if (replay.mode == ReplayModeType.read && AREf > (int)ARE - 401)
+        //     {
+        //         // Vector2 tempmov;
+        //         // tempmov.x = replay.movementVector[replay.frames][0];
+        //         // tempmov.y = replay.movementVector[replay.frames][1];
+        //         // movement = tempmov;
+        //         // // Inputs = replay.inputs[replay.frames];
+        //         // Inputs[0] = replay.inputs[replay.frames][0];
+        //         // Inputs[1] = replay.inputs[replay.frames][1];
+        //         // Inputs[2] = replay.inputs[replay.frames][2];
+        //         // Inputs[3] = replay.inputs[replay.frames][3];
+        //         // Inputs[4] = replay.inputs[replay.frames][4];
+        //         // Inputs[5] = replay.inputs[replay.frames][5];
+        //         // Inputs[6] = replay.inputs[replay.frames][6];
+        //         // lineFreezingMechanic = replay.switches[0];
+        //     }
+        //     if (level >= endingLevel && AREf < (int)ARE && AREf > (int)ARE - 400)
+        //     {
+        //         int whichline = ((AREf - (int)ARE)+400)/10;
+        //         if(GameEngine.debugMode) Debug.Log(whichline);
+        //         BoardController.instance.DestroyLine(whichline);
+        //     }
             
-            if(ending && !showinvis)tileInvisTime = 20 - (rollTime / (400/6*10));
-            else tileInvisTime = -1;
-            if (AREf == (int)ARE - 399) gameAudio.PlayOneShot(excellent);
-            if(AREf >= 0 && readyGoIndicator.sprite == null && rollTime < rollTimeLimit)time++;
-            if(AREf >= 0 && readyGoIndicator.sprite == null && ending && rollTime < rollTimeLimit)
-            {
-                rollTime++;
-                if(rollTime >= rollTimeLimit)
-                {
-                    AREf = (int)ARE - 1000;
-                    Destroy(PiecesController.instance.piecesInGame[PiecesController.instance.piecesInGame.Count-1]);
-                    PiecesController.instance.UpdatePieceBag();
-                }
-            }
-            if (AREf == (int)ARE - 401)
-            {
+        //     if(ending && !showinvis)tileInvisTime = 20 - (rollTime / (400/6*10));
+        //     else tileInvisTime = -1;
+        //     if (AREf == (int)ARE - 399) gameAudio.PlayOneShot(excellent);
+        //     if(AREf >= 0 && readyGoIndicator.sprite == null && rollTime < rollTimeLimit)time++;
+        //     if(AREf >= 0 && readyGoIndicator.sprite == null && ending && rollTime < rollTimeLimit)
+        //     {
+        //         rollTime++;
+        //         if(rollTime >= rollTimeLimit)
+        //         {
+        //             AREf = (int)ARE - 1000;
+        //             Destroy(PiecesController.instance.piecesInGame[PiecesController.instance.piecesInGame.Count-1]);
+        //             PiecesController.instance.UpdatePieceBag();
+        //         }
+        //     }
+        //     if (AREf == (int)ARE - 401)
+        //     {
 
-                MenuEngine.instance.GameOver = true;
-            }
-            if(AREf < (int)ARE - 401)
-            {
-                if(AREf % 10 == 0) SpawnFireworks();
-                if(AREf % 50 == 0 && grade < 18)
-                {
-                    grade++;
-                    gradeIndicator.sprite = gradeSprites[grade];
-                    gameAudio.PlayOneShot(gradeUp);
-                }
-            }
-            int nextsecint = level < endingLevel ? (curSect + 1) * 100 : endingLevel;
-            levelTextRender.text = level.ToString();
-            if(curSect < 21)nextSecLv.text = nextsecint.ToString();
-            if(!ending)
-            {
-                timeCounter.text = timeCount(time);
-                if(AREf >= 0 && readyGoIndicator.sprite == null && rollTime < rollTimeLimit)sectionTime[curSect]++;
-            }
-            rollTimeCounter.text = timeCount(rollTimeLimit - rollTime);
-            framestepped = true;
-            // for (int i = 0; i < 7; i++)
-            // {
-            //     // if(Inputs[i]>0)Inputs[i]--;
-            //     // if(FrameHoldInputs[i]>0)FrameHoldInputs[i]--;
-            //     // HoldInputs[i] = FrameHoldInputs[i] > 0;
-            // } 
-            if (comboKeepCounter == 0)
-            {
-                comboCount = 0;
-            }
-        }
-        else if (paused == true)
-        {
-            framestepped = false;
-        }
-        Inputs[7] = false;
-        if(AREf == (int)ARE - 200 && level < 100) {gameAudio.PlayOneShot(readySE); readyGoIndicator.sprite = readySprite;}
-        if(AREf == (int)ARE - 100 && level < 100) {gameAudio.PlayOneShot(goSE); readyGoIndicator.sprite = goSprite;}
-        if(AREf == (int)ARE - 1 && level < 100) readyGoIndicator.sprite = null;
-        if (sectAfter20g < 1) DAS = 25;
-        else if (sectAfter20g < 5) DAS = 15;
-        else if (sectAfter20g < 9) DAS = 10;
-        else if (sectAfter20g < 13) DAS = 3;
-        else DAS = 1;
+        //         MenuEngine.instance.GameOver = true;
+        //     }
+        //     if(AREf < (int)ARE - 401)
+        //     {
+        //         if(AREf % 10 == 0) SpawnFireworks();
+        //         if(AREf % 50 == 0 && grade < 18)
+        //         {
+        //             grade++;
+        //             gradeIndicator.sprite = gradeSprites[grade];
+        //             gameAudio.PlayOneShot(gradeUp);
+        //         }
+        //     }
+        //     int nextsecint = level < endingLevel ? (curSect + 1) * 100 : endingLevel;
+        //     levelTextRender.text = level.ToString();
+        //     if(curSect < 21)nextSecLv.text = nextsecint.ToString();
+        //     if(!ending)
+        //     {
+        //         timeCounter.text = timeCount(time);
+        //         if(AREf >= 0 && readyGoIndicator.sprite == null && rollTime < rollTimeLimit)sectionTime[curSect]++;
+        //     }
+        //     rollTimeCounter.text = timeCount(rollTimeLimit - rollTime);
+        //     framestepped = true;
+        //     // for (int i = 0; i < 7; i++)
+        //     // {
+        //     //     // if(Inputs[i]>0)Inputs[i]--;
+        //     //     // if(FrameHoldInputs[i]>0)FrameHoldInputs[i]--;
+        //     //     // HoldInputs[i] = FrameHoldInputs[i] > 0;
+        //     // } 
+        //     if (comboKeepCounter == 0)
+        //     {
+        //         comboCount = 0;
+        //     }
+        // }
+        // else if (paused == true)
+        // {
+        //     framestepped = false;
+        // }
+        // Inputs[7] = false;
+        // if(AREf == (int)ARE - 200 && level < 100) {gameAudio.PlayOneShot(readySE); readyGoIndicator.sprite = readySprite;}
+        // if(AREf == (int)ARE - 100 && level < 100) {gameAudio.PlayOneShot(goSE); readyGoIndicator.sprite = goSprite;}
+        // if(AREf == (int)ARE - 1 && level < 100) readyGoIndicator.sprite = null;
+        // if (sectAfter20g < 1) DAS = 25;
+        // else if (sectAfter20g < 5) DAS = 15;
+        // else if (sectAfter20g < 9) DAS = 10;
+        // else if (sectAfter20g < 13) DAS = 3;
+        // else DAS = 1;
     }
-    public void DisconnectGameOver()
-    {
-        if (MenuEngine.instance.curBoard != null) MenuEngine.instance.GameOver = true;
-    }
-    public void ControllerSwap() 
-    {
-        if (MenuEngine.instance.curBoard != null && notifDelay == 0) 
-        {
-            NotificationEngine.instance.InstantiateNotification(MenuEngine.instance.notifLangString[(int)MenuEngine.instance.language, 13], Color.white); notifDelay = 300;
-        } 
-    }
-    public void ShowGradeScore() 
-    {
-        if (notifDelay == 0) 
-        {
-            NotificationEngine.instance.InstantiateNotification(MenuEngine.instance.notifLangString[(int)MenuEngine.instance.language, 14], Color.white);
-            NotificationEngine.instance.InstantiateNotification(Math.Floor(gradePoints).ToString(), Color.white);
-            NotificationEngine.instance.InstantiateNotification("/" + Math.Floor(gradePointRequirement), Color.white);
-            notifDelay = 200;
-        }
-    }
+    // public void DisconnectGameOver()
+    // {
+    //     if (MenuEngine.instance.curBoard != null) MenuEngine.instance.GameOver = true;
+    // }
+    // public void ControllerSwap() 
+    // {
+    //     if (MenuEngine.instance.curBoard != null && notifDelay == 0) 
+    //     {
+    //         NotificationEngine.instance.InstantiateNotification(MenuEngine.instance.notifLangString[(int)MenuEngine.instance.language, 13], Color.white); notifDelay = 300;
+    //     } 
+    // }
+    // public void ShowGradeScore() 
+    // {
+    //     if (notifDelay == 0) 
+    //     {
+    //         NotificationEngine.instance.InstantiateNotification(MenuEngine.instance.notifLangString[(int)MenuEngine.instance.language, 14], Color.white);
+    //         NotificationEngine.instance.InstantiateNotification(Math.Floor(gradePoints).ToString(), Color.white);
+    //         NotificationEngine.instance.InstantiateNotification("/" + Math.Floor(gradePointRequirement), Color.white);
+    //         notifDelay = 200;
+    //     }
+    // }
 }

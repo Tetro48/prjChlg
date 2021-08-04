@@ -24,12 +24,14 @@ public enum ReplayModeType { write, read, none }
 
 public class ReplayRecord : MonoBehaviour
 {
+    public static ReplayRecord instance;
     public ReplayModeType mode;
     public int frames;
-    public List<float[]> movementVector;
-    public List<bool[]> inputs;
-    public List<int> bag;
-    public bool[] switches;
+    public int boards;
+    public List<List<float[]>> movementVector;
+    public List<List<bool[]>> inputs;
+    public List<bool[]> switches;
+    public List<List<int>> bag;
     [SerializeField] TextMeshProUGUI textMode;
 
     public void SaveReplay(string name)
@@ -40,10 +42,14 @@ public class ReplayRecord : MonoBehaviour
     {
         ReplayVars data = ReplayScript.LoadReplay(name);
 
+        boards = data.boards;
         movementVector = data.movementVector;
         inputs = data.inputs;
         switches = data.switches;
-        GameEngine.instance.lineFreezingMechanic = switches[0];
+        for (int i = 0; i < MenuEngine.players.Count; i++)
+        {
+            MenuEngine.playersComponent[i].lineFreezingMechanic = switches[i][0];
+        }
         bag = data.bag;
         frames = 0;
     }
@@ -61,37 +67,26 @@ public class ReplayRecord : MonoBehaviour
     }
     public void Reset()
     {
-        movementVector = new List<float[]>();
-        inputs = new List<bool[]>();
-        bag = new List<int>();
+        boards = new int();
+        movementVector = new List<List<float[]>>();
+        inputs = new List<List<bool[]>>();
+        bag = new List<List<int>>();
+        switches = new List<bool[]>();
     }
     void Awake()
     {
+        instance = this;
         Reset();
     }
     void FixedUpdate()
     {
         if (mode == ReplayModeType.write && GameEngine.instance.AREf > (int)GameEngine.instance.ARE -401)
         {
-            switches[0] = GameEngine.instance.lineFreezingMechanic;
-            if(MenuEngine.instance.curBoard != null && GameEngine.instance.framestepped)
+            for (int i = 0; i < MenuEngine.players.Count; i++)
             {
-                float[] tempmov = new float[2];
-                tempmov[0] = GameEngine.instance.movement.x;
-                tempmov[1] = GameEngine.instance.movement.y;
-                movementVector.Add(tempmov);
-                bool[] localinputs = new bool[8];
-                localinputs[7] = false; //why would a creator do something like this?? It's... just a waste of space and CPU!
-                
-                localinputs[0] = GameEngine.instance.Inputs[0];
-                localinputs[1] = GameEngine.instance.Inputs[1];
-                localinputs[2] = GameEngine.instance.Inputs[2];
-                localinputs[3] = GameEngine.instance.Inputs[3];
-                localinputs[4] = GameEngine.instance.Inputs[4];
-                localinputs[5] = GameEngine.instance.Inputs[5];
-                localinputs[6] = GameEngine.instance.Inputs[6];
-                inputs.Add(localinputs);
-                bag = PiecesController.instance.bag;
+                switches[i][0] = MenuEngine.playersComponent[i].lineFreezingMechanic;
+                bool[] localInputs = new bool[7];
+
             }
         }
         else if(MenuEngine.instance.curBoard != null && GameEngine.instance.framestepped) 

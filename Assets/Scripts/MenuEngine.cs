@@ -32,6 +32,9 @@ public enum Language {English, Русский, 日本語};
 public class MenuEngine : MonoBehaviour
 {
     public Language language;
+    public static List<GameObject> players;
+    public static List<NetworkBoard> playersComponent;
+    public NetworkBoard yourPlayer;
     public Discord.Discord discord;
     public static MenuEngine instance;
     public int frames = 0;
@@ -91,6 +94,11 @@ public class MenuEngine : MonoBehaviour
         {"シングル：", "ダブル：", "トリプル", "テトリス：", "行：", "合計", "ピース", "成績：", "総合成績スコア", "レベル：", "時間", "", "", "", "", ""},
     };
     Language previousLang;
+    public void InstantiatePlayer()
+    {
+        GameObject newBoard = Instantiate(inGameBoard, transform);
+        players.Add(newBoard);
+    }
     public void QuitGame()
     {
         if (platformCompat() || Application.platform == RuntimePlatform.Android || Application.platform == RuntimePlatform.IPhonePlayer) quitting = true;
@@ -154,20 +162,12 @@ public class MenuEngine : MonoBehaviour
     public bool alreadystarted;
     void Awake()
     {
+        players = new List<GameObject>();
+        playersComponent = new List<NetworkBoard>();
         if (platformCompat()) discord = new Discord.Discord(836600860976349192, (UInt64)Discord.CreateFlags.Default);
         Application.targetFrameRate = Screen.currentResolution.refreshRate * 4;
         alreadystarted = true;
         instance = this;
-    }
-    void indicatorActivity(bool set, int upTo)
-    {
-        if(GameEngine.debugMode) Debug.Log(supposedToBeAPartOfBoard.Length);
-        int length = supposedToBeAPartOfBoard.Length < upTo ? supposedToBeAPartOfBoard.Length : upTo;
-        for (int i = 0; i < length; i++)
-        {
-            if(GameEngine.debugMode) Debug.Log("ind:"+i);
-            supposedToBeAPartOfBoard[i].SetActive(set);
-        }
     }
     public bool drpcSwitch;
     private int resRefreshrates = 0;
@@ -289,6 +289,26 @@ public class MenuEngine : MonoBehaviour
         posT.x -= (float)(500.0 * reswidth);
         tuningMovement.position = posT;
     }
+    public void ExtractStatsToNotifications(NetworkBoard board)
+    {
+        int pieceCountHoldRed = board.piecesController.pieceHold == 28 ? 0 : -1;
+        if(board.singles > 0) NotificationEngine.instance.InstantiateNotification(notifLangString[(int)language, 0] + board.singles, Color.white); // Singles
+        if(board.doubles > 0) NotificationEngine.instance.InstantiateNotification(notifLangString[(int)language, 1] + board.doubles, Color.white); // Doubles
+        if(board.triples > 0) NotificationEngine.instance.InstantiateNotification(notifLangString[(int)language, 2] + board.triples, Color.white); // Triples
+        if(board.tetrises > 0) NotificationEngine.instance.InstantiateNotification(notifLangString[(int)language, 3] + board.tetrises, Color.white); // Tetrises
+        if(board.pentrises > 0) NotificationEngine.instance.InstantiateNotification("5 " + notifLangString[(int)language, 4] + board.pentrises, Color.white); // 5 lines
+        if(board.sixtrises > 0) NotificationEngine.instance.InstantiateNotification("6 " + notifLangString[(int)language, 4] + board.sixtrises, Color.white); // 6 lines
+        if(board.septrises > 0) NotificationEngine.instance.InstantiateNotification("7 " + notifLangString[(int)language, 4] + board.septrises, Color.white); // 7 lines
+        if(board.octrises > 0) NotificationEngine.instance.InstantiateNotification("8+ " + notifLangString[(int)language, 4] + board.octrises, Color.white); // 8+ lines
+        if(board.totalLines > 0) NotificationEngine.instance.InstantiateNotification(notifLangString[(int)language, 5] + notifLangString[(int)language, 4] + board.totalLines, Color.white); // Total lines
+        if(board.piecesController.pieces > 0) NotificationEngine.instance.InstantiateNotification(notifLangString[(int)language, 6] + (board.piecesController.pieces + pieceCountHoldRed), Color.white); // Pieces
+        NotificationEngine.instance.InstantiateNotification(notifLangString[(int)language, 7] + gradeStringConversion[board.grade], Color.white); // Grade
+        if(board.statGradePoints > 0) {NotificationEngine.instance.InstantiateNotification(notifLangString[(int)language, 8], Color.white); // Total grade score
+        NotificationEngine.instance.InstantiateNotification(Math.Floor(board.statGradePoints).ToString(), Color.white);}
+        NotificationEngine.instance.InstantiateNotification(notifLangString[(int)language, 9] + board.level + "/" + (board.level < 2100 ? (board.curSect + 1) * 100 : 2100), Color.white); // Level
+        NotificationEngine.instance.InstantiateNotification(notifLangString[(int)language, 10] + board.gravity, Color.white); // Gravity
+        NotificationEngine.instance.InstantiateNotification(notifLangString[(int)language, 11] + board.timeCounter.text, Color.white);
+    }
     public void UpdateLang()
     {
         if(language == Language.日本語)
@@ -347,19 +367,19 @@ public class MenuEngine : MonoBehaviour
             previousLang = language;
             UpdateLang();
         }
-        if (platformCompat())
+        if (platformCompat() && yourPlayer != null)
         {
             var activityManager = discord.GetActivityManager();
-            int rpclvl = GameEngine.instance.level < GameEngine.instance.endingLevel ? (GameEngine.instance.curSect + 1) * 100 : GameEngine.instance.endingLevel;
+            int rpclvl = yourPlayer.level < yourPlayer.endingLevel ? (yourPlayer.curSect + 1) * 100 : yourPlayer.endingLevel;
             var activity = new Activity
             {
-                Details = GameEngine.instance.ending ? "Roll time left: " + GameEngine.instance.rollTimeCounter.text 
-                : curBoard != null ? "Level " + GameEngine.instance.level + " | " + rpclvl + (GameEngine.instance.level > 800 ? ". Struggling." : string.Empty) : null,
+                Details = yourPlayer.ending ? "Roll time left: " + yourPlayer.rollTimeCounter.text 
+                : curBoard != null ? "Level " + yourPlayer.level + " | " + rpclvl + (yourPlayer.level > 800 ? ". Struggling." : string.Empty) : null,
 
                 State = !Application.genuineCheckAvailable ? "The game is tampered" : framerate > 2600 ? "Suspiciously smooth" : framerate < 10 ? "Performance issues" 
-                : IntentionalGameOver ? "Exiting..." : GameOver ? "Topped out" : curBoard != null && GameEngine.instance.paused && !GameEngine.instance.FrameStep ? "Paused" 
-                : curBoard != null && GameEngine.instance.replay.mode == ReplayModeType.read ? "Currently replaying" 
-                : curBoard != null && GameEngine.instance.paused && GameEngine.instance.FrameStep ? "Currently playing (Framestepping)" 
+                : yourPlayer.IntentionalGameOver ? "Exiting..." : yourPlayer.GameOver ? "Topped out" : curBoard != null && yourPlayer.paused && !yourPlayer.FrameStep ? "Paused" 
+                : curBoard != null && ReplayRecord.instance.mode == ReplayModeType.read ? "Currently replaying" 
+                : curBoard != null && yourPlayer.paused && yourPlayer.FrameStep ? "Currently playing (Framestepping)" 
                 : curBoard != null ? "Currently playing" : quitting ? "Quitting" : menu == 1 ? "Currently in settings menu" : "Currently in main menu",
                 Assets = {
                     LargeImage = "icon"
@@ -405,10 +425,6 @@ public class MenuEngine : MonoBehaviour
         framerateCounter.text = (Math.Floor((framerate)*100)/100) + " FPS";
         if (GameOver)
         {
-            GameEngine.instance.readyGoIndicator.sprite = null;
-            GameEngine.instance.gameMusic.Stop();
-            if(frames%10==9 && frames<400)BoardController.instance.DestroyLine(frames/10);
-            if(frames<400)BoardController.instance.DecayLine(frames/10, 0.1f);
             frames++;
             if(frames > 300)
             {
@@ -432,23 +448,6 @@ public class MenuEngine : MonoBehaviour
                 }
                 if (frames == 401)
                 {
-                    int pieceCountHoldRed = PiecesController.instance.pieceHold == 28 ? 0 : -1;
-                    if(GameEngine.instance.singles > 0) NotificationEngine.instance.InstantiateNotification(notifLangString[(int)language, 0] + GameEngine.instance.singles, Color.white); // Singles
-                    if(GameEngine.instance.doubles > 0) NotificationEngine.instance.InstantiateNotification(notifLangString[(int)language, 1] + GameEngine.instance.doubles, Color.white); // Doubles
-                    if(GameEngine.instance.triples > 0) NotificationEngine.instance.InstantiateNotification(notifLangString[(int)language, 2] + GameEngine.instance.triples, Color.white); // Triples
-                    if(GameEngine.instance.tetrises > 0) NotificationEngine.instance.InstantiateNotification(notifLangString[(int)language, 3] + GameEngine.instance.tetrises, Color.white); // Tetrises
-                    if(GameEngine.instance.pentrises > 0) NotificationEngine.instance.InstantiateNotification("5 " + notifLangString[(int)language, 4] + GameEngine.instance.pentrises, Color.white); // 5 lines
-                    if(GameEngine.instance.sixtrises > 0) NotificationEngine.instance.InstantiateNotification("6 " + notifLangString[(int)language, 4] + GameEngine.instance.sixtrises, Color.white); // 6 lines
-                    if(GameEngine.instance.septrises > 0) NotificationEngine.instance.InstantiateNotification("7 " + notifLangString[(int)language, 4] + GameEngine.instance.septrises, Color.white); // 7 lines
-                    if(GameEngine.instance.octrises > 0) NotificationEngine.instance.InstantiateNotification("8+ " + notifLangString[(int)language, 4] + GameEngine.instance.octrises, Color.white); // 8+ lines
-                    if(GameEngine.instance.totalLines > 0) NotificationEngine.instance.InstantiateNotification(notifLangString[(int)language, 5] + notifLangString[(int)language, 4] + GameEngine.instance.totalLines, Color.white); // Total lines
-                    if(PiecesController.instance.pieces > 0) NotificationEngine.instance.InstantiateNotification(notifLangString[(int)language, 6] + (PiecesController.instance.pieces + pieceCountHoldRed), Color.white); // Pieces
-                    NotificationEngine.instance.InstantiateNotification(notifLangString[(int)language, 7] + gradeStringConversion[GameEngine.instance.grade], Color.white); // Grade
-                    if(GameEngine.instance.statGradePoints > 0) {NotificationEngine.instance.InstantiateNotification(notifLangString[(int)language, 8], Color.white); // Total grade score
-                    NotificationEngine.instance.InstantiateNotification(Math.Floor(GameEngine.instance.statGradePoints).ToString(), Color.white);}
-                    NotificationEngine.instance.InstantiateNotification(notifLangString[(int)language, 9] + GameEngine.instance.level + "/" + (GameEngine.instance.level < 2100 ? (GameEngine.instance.curSect + 1) * 100 : 2100), Color.white); // Level
-                    NotificationEngine.instance.InstantiateNotification(notifLangString[(int)language, 10] + GameEngine.instance.gravity, Color.white); // Gravity
-                    NotificationEngine.instance.InstantiateNotification(notifLangString[(int)language, 11] + GameEngine.instance.timeCounter.text, Color.white);
                     frames = 0;
                     GameOver = false;
                     IntentionalGameOver = false;
@@ -484,10 +483,10 @@ public class MenuEngine : MonoBehaviour
             {
                 if (frames == MMf + 11)
                 {
-                    GameEngine.instance.replay.Reset();
-                    if (GameEngine.instance.replay.mode == ReplayModeType.read)
+                    ReplayRecord.instance.Reset();
+                    if (ReplayRecord.instance.mode == ReplayModeType.read)
                     {
-                        GameEngine.instance.replay.LoadReplay("1");
+                        ReplayRecord.instance.LoadReplay("1");
                     }
                     mainMenu.SetActive(false);
                     GameEngine.instance.gradePoints = 0;
@@ -496,27 +495,27 @@ public class MenuEngine : MonoBehaviour
                     // SceneManager.LoadScene("GameScene");
                     GameObject board = GameObject.Instantiate(inGameBoard, transform);
                     curBoard = board;
-                    this.transform.position = new Vector3(0.0f, 20f, 0.0f);
-                    indicatorActivity(true, 6);
+                    NetworkBoard netBoard = curBoard.GetComponent<NetworkBoard>();
+                    board.transform.position = new Vector3(0.0f, 20f, 0.0f);
                     mainMenuMusic.Stop();
-                    PiecesController.instance.UpdateShownPieces();
+                    netBoard.piecesController.UpdateShownPieces();
                 }
-                if (frames == MMf + 12)   this.transform.position = new Vector3(0.0f, 18f, 0.0f);
-                if (frames == MMf + 13)   this.transform.position = new Vector3(0.0f, 16f, 0.0f);
-                if (frames == MMf + 14)   this.transform.position = new Vector3(0.0f, 14f, 0.0f);
-                if (frames == MMf + 15)   this.transform.position = new Vector3(0.0f, 12f, 0.0f);
-                if (frames == MMf + 16)   this.transform.position = new Vector3(0.0f, 10f, 0.0f);
-                if (frames == MMf + 17)   this.transform.position = new Vector3(0.0f, 8f, 0.0f);
-                if (frames == MMf + 18)   this.transform.position = new Vector3(0.0f, 6f, 0.0f);
-                if (frames == MMf + 19)   this.transform.position = new Vector3(0.0f, 4f, 0.0f);
-                if (frames == MMf + 20)   this.transform.position = new Vector3(0.0f, 2f, 0.0f);
-                if (frames == MMf + 21)   this.transform.position = new Vector3(0.0f, 0f, 0.0f);
-                if (frames == MMf + 22)   this.transform.position = new Vector3(0.0f, -0.8f, 0.0f);
-                if (frames == MMf + 23)   this.transform.position = new Vector3(0.0f, -1.4f, 0.0f);
-                if (frames == MMf + 24)   this.transform.position = new Vector3(0.0f, -2f, 0.0f);
-                if (frames == MMf + 25)   this.transform.position = new Vector3(0.0f, -1.3f, 0.0f);
-                if (frames == MMf + 26)   this.transform.position = new Vector3(0.0f, -0.7f, 0.0f);
-                if (frames == MMf + 27)   this.transform.position = new Vector3(0.0f, 0f, 0.0f);
+                if (frames == MMf + 12)   curBoard.transform.position = new Vector3(0.0f, 18f, 0.0f);
+                if (frames == MMf + 13)   curBoard.transform.position = new Vector3(0.0f, 16f, 0.0f);
+                if (frames == MMf + 14)   curBoard.transform.position = new Vector3(0.0f, 14f, 0.0f);
+                if (frames == MMf + 15)   curBoard.transform.position = new Vector3(0.0f, 12f, 0.0f);
+                if (frames == MMf + 16)   curBoard.transform.position = new Vector3(0.0f, 10f, 0.0f);
+                if (frames == MMf + 17)   curBoard.transform.position = new Vector3(0.0f, 8f, 0.0f);
+                if (frames == MMf + 18)   curBoard.transform.position = new Vector3(0.0f, 6f, 0.0f);
+                if (frames == MMf + 19)   curBoard.transform.position = new Vector3(0.0f, 4f, 0.0f);
+                if (frames == MMf + 20)   curBoard.transform.position = new Vector3(0.0f, 2f, 0.0f);
+                if (frames == MMf + 21)   curBoard.transform.position = new Vector3(0.0f, 0f, 0.0f);
+                if (frames == MMf + 22)   curBoard.transform.position = new Vector3(0.0f, -0.8f, 0.0f);
+                if (frames == MMf + 23)   curBoard.transform.position = new Vector3(0.0f, -1.4f, 0.0f);
+                if (frames == MMf + 24)   curBoard.transform.position = new Vector3(0.0f, -2f, 0.0f);
+                if (frames == MMf + 25)   curBoard.transform.position = new Vector3(0.0f, -1.3f, 0.0f);
+                if (frames == MMf + 26)   curBoard.transform.position = new Vector3(0.0f, -0.7f, 0.0f);
+                if (frames == MMf + 27)   curBoard.transform.position = new Vector3(0.0f, 0f, 0.0f);
                 // if (frames == 23)
                 // {
                 //     SceneManager.UnloadSceneAsync("MenuScene");
@@ -529,7 +528,8 @@ public class MenuEngine : MonoBehaviour
                     // imgbg.SetActive(false);
                     // imgprjchlg.SetActive(false);
                     GameEngine.instance.paused = false;
-                    PiecesController.instance.UpdatePieceBag();
+                    NetworkBoard netBoard = curBoard.GetComponent<NetworkBoard>();
+                    netBoard.piecesController.UpdatePieceBag();
                 }
             }
             if (pressedSubMenu && frames > MMSf && menu == 1)
@@ -767,7 +767,6 @@ public class MenuEngine : MonoBehaviour
             // if (SceneManager.GetActiveScene().name != "MenuScene")SceneManager.LoadScene("MenuScene");
             // imgbg.SetActive(true);
             // imgprjchlg.SetActive(true);
-            indicatorActivity(false, 7);
             mainMenu.SetActive(true);
             if (frames == 1)
             {

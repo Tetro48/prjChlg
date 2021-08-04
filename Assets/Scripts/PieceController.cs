@@ -29,6 +29,8 @@ public class PieceController : MonoBehaviour {
     public PieceType curType;
     public Sprite[] tileSprites;
 
+    public NetworkBoard board;
+
     public int rotationIndex { get; private set; }
     public int setDelayTime;
     public bool isDisabledFromSacrifice;
@@ -50,9 +52,9 @@ public class PieceController : MonoBehaviour {
     /// <summary>
     /// Called as soon as the piece is initialized. Initialiezes some necessary values.
     /// </summary>
-    private void Awake()
+    private void Initiate()
     {
-        spawnLocation = PiecesController.instance.spawnPos;
+        spawnLocation = board.piecesController.spawnPos;
         rotationIndex = 0;
 
         tiles = new TileController[4];
@@ -70,8 +72,8 @@ public class PieceController : MonoBehaviour {
 
     private void FixedUpdate()
     {
-        hideTilesPerUpdates = GameEngine.instance.tileInvisTime;
-        if (hideTilesPerUpdates > 0 && GameEngine.instance.framestepped && fullyLocked)
+        hideTilesPerUpdates = board.tileInvisTime;
+        if (hideTilesPerUpdates > 0 && board.framestepped && fullyLocked)
         {
             float percentage = 1f/hideTilesPerUpdates;
             for (int i = 0; i < tiles.Length; i++)
@@ -79,18 +81,18 @@ public class PieceController : MonoBehaviour {
                 if(tiles[i] != null)tiles[i].spriteRenderer.color -= new Color(0f,0f,0f, percentage);
             }
         }
-        if(GameEngine.instance.framestepped)
+        if(board.framestepped)
         {
-            if (!LockDelayEnable && !PiecesController.instance.piecemovementlocked)  {if(!CanMovePiece(Vector2Int.down) && !fullyLocked)  {LockDelayf = 0;  LockDelayEnable = true;} else LockDelayEnable = false;}
+            if (!LockDelayEnable && !board.piecesController.piecemovementlocked)  {if(!CanMovePiece(Vector2Int.down) && !fullyLocked)  {LockDelayf = 0;  LockDelayEnable = true;} else LockDelayEnable = false;}
         
             if(LockDelayEnable && !harddrop && !fullyLocked)
             {
                 if(LockDelayf == 0)
                 {
-                    BoardController.instance.gameAudio.PlayOneShot(audioPieceStep);
+                    AudioManager.PlayClip(audioPieceStep);
                 }
                 LockDelayf++;
-                if (LockDelayf >= GameEngine.instance.LockDelay)
+                if (LockDelayf >= board.LockDelay)
                 {
                     LockDelayf = 0;
                     LockDelayEnable = false;
@@ -101,21 +103,24 @@ public class PieceController : MonoBehaviour {
     }
     // private void InitiateLockDelay()
     // {
-    //     if(LockDelayEnable == false && PiecesController.instance.piecemovementlocked == false)  {LockDelayf = 0;  LockDelayEnable = true;}
+    //     if(LockDelayEnable == false && board.piecesController.piecemovementlocked == false)  {LockDelayf = 0;  LockDelayEnable = true;}
     // }
 
     /// <summary>
     /// Moves the attached tiles to form the Tetris piece specified. Also sets the correct color of tile sprite.
     /// </summary>
     /// <param name="newType">Type of tetris piece to be spawned.</param>
-    public void SpawnPiece(PieceType newType)
+    public void SpawnPiece(PieceType newType, PiecesController connector)
     {
+        board = connector.board;
+        Initiate();
+        ghostContr.Initiate();
         isDisabledFromSacrifice = false;
         curType = newType;
-        int increaseByLevel = GameEngine.instance.level >= 600 && GameEngine.instance.nextibmblocks == GameEngine.instance.nextPieces + 1 ? 14 : 0;
-        int RSint = GameEngine.instance.RS == RotationSystems.ARS ? 7 : 0;
+        int increaseByLevel = board.level >= 600 && board.nextibmblocks == board.nextPieces + 1 ? 14 : 0;
+        int RSint = board.RS == RotationSystems.ARS ? 7 : 0;
         int combine = (increaseByLevel + RSint);
-        int result = PiecesController.instance.pieceHold < 28 && !PiecesController.instance.allowHold ? PiecesController.instance.pieceHold - (int)newType : combine;
+        int result = board.piecesController.pieceHold < 28 && !board.piecesController.allowHold ? board.piecesController.pieceHold - (int)newType : combine;
         tiles[0].UpdatePosition(spawnLocation);
 
         switch (curType)
@@ -179,38 +184,6 @@ public class PieceController : MonoBehaviour {
         {
             ti.InitializeTile(this, index);
             index++;
-        }
-    }
-
-    /// <summary>
-    /// Called when the piece is disabled from being sacrificed. Sets tile sprites gray.
-    /// </summary>
-    public void DisablePiece()
-    {
-        isDisabledFromSacrifice = true;
-        for(int i = 0; i < tiles.Length; i++)
-        {
-            if (tiles[i] == null)
-            {
-                continue;
-            }
-            tiles[i].ShowDisabledSprite();
-        }
-    }
-
-    /// <summary>
-    /// Called after sacrifice operation is complete, sets tile sprite color back to original values.
-    /// </summary>
-    public void EnablePiece()
-    {
-        isDisabledFromSacrifice = false;
-        for (int i = 0; i < tiles.Length; i++)
-        {
-            if (tiles[i] == null)
-            {
-                continue;
-            }
-            tiles[i].ShowOriginalSprite();
         }
     }
 
@@ -287,7 +260,7 @@ public class PieceController : MonoBehaviour {
             }
         }
         if(GameEngine.debugMode) Debug.Log("no tiles left");
-        PiecesController.instance.RemovePiece(gameObject);
+        board.piecesController.RemovePiece(gameObject);
         return false;
     }
 
@@ -309,48 +282,6 @@ public class PieceController : MonoBehaviour {
                 }
                 return false;
             }
-            // if(curType == PieceType.O)
-            // {
-            //     // + PiecesController.instance.O_OFFSET_DATA[0,rotationIndex]
-            //     if (!tiles[i].CanTileMove(movement + tiles[i].coordinates + new Vector2Int(0,-1) ))
-            //     {
-            //         if(movement != Vector2Int.down || LockDelayEnable == false)
-            //         {
-            //             // Debug.Log("Cant Go there!");
-            //             if(LockDelayEnable == false)LockDelayf = 0;
-            //             LockDelayEnable = true;
-            //         }
-            //     }
-            // }
-            // else if(curType == PieceType.I)
-            // {
-            //     // + PiecesController.instance.I_OFFSET_DATA[0,rotationIndex]
-            //     if (!tiles[i].CanTileMove(movement + tiles[i].coordinates + new Vector2Int(0,-1) ))
-            //     {
-            //         if(movement != Vector2Int.down || LockDelayEnable == false)
-            //         {
-            //             // Debug.Log("Cant Go there!");
-            //             if(LockDelayEnable == false)LockDelayf = 0;
-            //             LockDelayEnable = true;
-            //         }
-            //     }
-            // }
-            // // + PiecesController.instance.JLSTZ_OFFSET_DATA[0,rotationIndex]
-            // else if (!tiles[i].CanTileMove(movement + tiles[i].coordinates + new Vector2Int(0,-1) ))
-            // {
-            //     if(movement != Vector2Int.down || LockDelayEnable == false)
-            //     {
-            //         // Debug.Log("Cant Go there!");
-            //         if(LockDelayEnable == false)LockDelayf = 0;
-            //         LockDelayEnable = true;
-                    
-            //     }
-            // }
-            // else
-            // {
-            //     LockDelayEnable = false;
-            //     LockDelayf = 0;
-            // }
         }
 
         for (int i = 0; i < tiles.Length; i++)
@@ -360,15 +291,10 @@ public class PieceController : MonoBehaviour {
         }
         if(!CanMovePiece(Vector2Int.down))countLockResets++;
         if(countLockResets >= maxLockResets)LockDelayf = 2147483640;
-        // if (!tiles[0].CanTileMove(Vector2Int.down + tiles[0].coordinates))  if(LockDelayEnable == false && PiecesController.instance.piecemovementlocked == false)  {LockDelayf = 0;  LockDelayEnable = true;}
-        // else if (!tiles[1].CanTileMove(Vector2Int.down + tiles[1].coordinates)) if(LockDelayEnable == false && PiecesController.instance.piecemovementlocked == false)  {LockDelayf = 0;  LockDelayEnable = true;}
-        // else if (!tiles[2].CanTileMove(Vector2Int.down + tiles[2].coordinates)) if(LockDelayEnable == false && PiecesController.instance.piecemovementlocked == false)  {LockDelayf = 0;  LockDelayEnable = true;}
-        // else if (!tiles[3].CanTileMove(Vector2Int.down + tiles[3].coordinates)) if(LockDelayEnable == false && PiecesController.instance.piecemovementlocked == false)  {LockDelayf = 0;  LockDelayEnable = true;}
-        // else LockDelayEnable = false;
-        if (!CanMovePiece(Vector2Int.down) && fullyLocked == false)  {if(LockDelayEnable == false && PiecesController.instance.piecemovementlocked == false)  {LockDelayf = 0;  LockDelayEnable = true;}}
+        if (!CanMovePiece(Vector2Int.down) && fullyLocked == false)  {if(LockDelayEnable == false && board.piecesController.piecemovementlocked == false)  {LockDelayf = 0;  LockDelayEnable = true;}}
         else LockDelayEnable = false;
 
-        if (GameEngine.instance.level < 100 || GameEngine.instance.TLS) ghostContr.UpdateGhostPiece();
+        if (board.level < 100 || board.TLS) ghostContr.UpdateGhostPiece();
         return true;
     }
 
@@ -393,7 +319,7 @@ public class PieceController : MonoBehaviour {
         //     rotationIndex = Mod(rotationIndex, 2);
         // }
 
-        GameEngine.instance.tSpin = (curType == PieceType.T && LockDelayEnable);
+        board.tSpin = (curType == PieceType.T && LockDelayEnable);
 
         for(int i = 0; i < tiles.Length; i++)
         {
@@ -416,7 +342,7 @@ public class PieceController : MonoBehaviour {
         {
             RotatePiece(!clockwise, /*rotIndex == 2 ? true :*/ false, UD);
         }
-        if (GameEngine.instance.level < 100 || GameEngine.instance.TLS) ghostContr.UpdateGhostPiece();
+        if (board.level < 100 || board.TLS) ghostContr.UpdateGhostPiece();
     }
     public void RotatePiece180(bool clockwise, bool shouldOffset)
     {
@@ -445,7 +371,7 @@ public class PieceController : MonoBehaviour {
             RotatePiece(!clockwise, /*rotIndex == 2 ? true :*/ false, true);
             if(GameEngine.debugMode) Debug.Log("Couldn't apply 180 offset");
         }
-        if (GameEngine.instance.level < 100 || GameEngine.instance.TLS) ghostContr.UpdateGhostPiece();
+        if (board.level < 100 || board.TLS) ghostContr.UpdateGhostPiece();
     }
 
     /// <summary>
@@ -471,15 +397,15 @@ public class PieceController : MonoBehaviour {
         
         if(curType == PieceType.O)
         {
-            curOffsetData = PiecesController.instance.O_OFFSET_DATA;
+            curOffsetData = board.piecesController.O_OFFSET_DATA;
         }
         else if(curType == PieceType.I)
         {
-            curOffsetData = PiecesController.instance.I_OFFSET_DATA;
+            curOffsetData = board.piecesController.I_OFFSET_DATA;
         }
         else
         {
-            curOffsetData = PiecesController.instance.JLSTZ_OFFSET_DATA;
+            curOffsetData = board.piecesController.JLSTZ_OFFSET_DATA;
         }
 
         endOffset = Vector2Int.zero;
@@ -518,15 +444,15 @@ public class PieceController : MonoBehaviour {
         
         if(curType == PieceType.O)
         {
-            curOffsetData = PiecesController.instance.O_OFFSET_DATA;
+            curOffsetData = board.piecesController.O_OFFSET_DATA;
         }
         else if(curType == PieceType.I)
         {
-            curOffsetData = PiecesController.instance.I_OFFSET_DATA;
+            curOffsetData = board.piecesController.I_OFFSET_DATA;
         }
         else
         {
-            curOffsetData = PiecesController.instance.JLSTZ_OFFSET_DATA;
+            curOffsetData = board.piecesController.JLSTZ_OFFSET_DATA;
         }
 
         endOffset = Vector2Int.zero;
@@ -561,31 +487,30 @@ public class PieceController : MonoBehaviour {
     /// </summary>
     public void SetPiece()
     {
-        BoardController.instance.gameAudio.PlayOneShot(audioPieceLock);
-        PiecesController.instance.piecemovementlocked = true;
+        AudioManager.PlayClip(audioPieceLock);
+        board.piecesController.piecemovementlocked = true;
         fullyLocked = true;
         for(int i = 0; i < tiles.Length; i++)
         {
             if (!tiles[i].SetTile())
             {
                 if(GameEngine.debugMode) Debug.Log("GAME OVER!");
-                MenuEngine.instance.GameOver = true;
-                PiecesController.instance.GameOver();
+                board.GameOver = true;
+                board.piecesController.GameOver();
             }
         }
-        if (MenuEngine.instance.GameOver == false)
+        if (board.GameOver == false)
         {
             if (Input.GetKey(KeyCode.E) && GameEngine.debugMode)
             {
-                int incrementbyfrozenlines = GameEngine.instance.lineFreezingMechanic ? GameEngine.instance.linesFrozen[GameEngine.instance.curSect] : 0;
-                BoardController.instance.FillLine(0+incrementbyfrozenlines);
-                BoardController.instance.FillLine(1+incrementbyfrozenlines);
-                BoardController.instance.FillLine(2+incrementbyfrozenlines);
-                BoardController.instance.FillLine(3+incrementbyfrozenlines);
+                int incrementbyfrozenlines = board.lineFreezingMechanic ? board.linesFrozen[board.curSect] : 0;
+                board.boardController.FillLine(0+incrementbyfrozenlines);
+                board.boardController.FillLine(1+incrementbyfrozenlines);
+                board.boardController.FillLine(2+incrementbyfrozenlines);
+                board.boardController.FillLine(3+incrementbyfrozenlines);
             }
-            BoardController.instance.CheckLineClears();
-            PiecesController.instance.PieceSet();
-            PiecesController.instance.UpdatePieceBag();
+            board.boardController.CheckLineClears();
+            board.piecesController.UpdatePieceBag();
         }
     }
 
@@ -595,7 +520,7 @@ public class PieceController : MonoBehaviour {
     public void SendPieceToFloor()
     {
         harddrop = true;
-        PiecesController.instance.PrevInputs[0] = true;
+        board.piecesController.PrevInputs[0] = true;
         while (MovePiece(Vector2Int.down)) {}
     }
 }

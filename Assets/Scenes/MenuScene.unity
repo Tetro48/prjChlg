@@ -6433,6 +6433,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1508808737}
   - component: {fileID: 1508808736}
+  - component: {fileID: 1508808738}
   m_Layer: 0
   m_Name: NetworkingInstance
   m_TagString: Untagged
@@ -6457,7 +6458,7 @@ MonoBehaviour:
   LogLevel: 0
   NetworkConfig:
     ProtocolVersion: 0
-    NetworkTransport: {fileID: 0}
+    NetworkTransport: {fileID: 1508808738}
     RegisteredScenes:
     - MenuScene
     AllowRuntimeSceneChanges: 0
@@ -6494,7 +6495,7 @@ MonoBehaviour:
     00000000:
       type: {class: NullableBoolSerializable, ns: MLAPI.Configuration, asm: Unity.Multiplayer.MLAPI.Runtime}
       data:
-        Value: 0
+        Value: 10976051512016791343
 --- !u!4 &1508808737
 Transform:
   m_ObjectHideFlags: 0
@@ -6509,6 +6510,31 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 10
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1508808738
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1508808735}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b84c2d8dfe509a34fb59e2b81f8e1319, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  MessageBufferSize: 5120
+  MaxConnections: 100
+  MaxSentMessageQueueSize: 128
+  ConnectAddress: 127.0.0.1
+  ConnectPort: 7777
+  ServerListenPort: 7777
+  ServerWebsocketListenPort: 8887
+  SupportWebsocket: 0
+  Channels: []
+  UseMLAPIRelay: 1
+  MLAPIRelayAddress: 184.72.104.138
+  MLAPIRelayPort: 8888
+  MessageSendMode: 0
 --- !u!1 &1513619935
 GameObject:
   m_ObjectHideFlags: 0
@@ -7349,6 +7375,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   language: 0
+  yourPlayer: {fileID: 0}
   frames: 0
   menu: 0
   quitting: 0
@@ -7798,7 +7825,6 @@ MonoBehaviour:
   Inputs: 0000000000000000
   tileInvisTime: -1
   movement: {x: 0, y: 0}
-  debugMode: 0
   replay: {fileID: 1564083150}
   linesFrozen: 00000000000000000000000006000000040000000000000000000000000000000800000000000000000000000c00000010000000000000000000000000000000130000000000000000000000000000000a0000000e000000
 --- !u!114 &1564083149
@@ -8014,8 +8040,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   mode: 0
   frames: 0
-  bag: 
-  switches: 00
+  boards: 0
   textMode: {fileID: 1370771948}
 --- !u!1 &1658668931
 GameObject:
