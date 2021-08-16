@@ -41,6 +41,7 @@ public class PieceController : MonoBehaviour {
     public bool LockDelayEnable;
     public bool zombieContr;
     public int LockDelayf;
+    public bool isPieceIsInNextQueue;
     public int hideTilesPerUpdates;
 
 
@@ -52,9 +53,9 @@ public class PieceController : MonoBehaviour {
     /// <summary>
     /// Called as soon as the piece is initialized. Initialiezes some necessary values.
     /// </summary>
-    private void Initiate()
+    private void Initiate(PiecesController connector)
     {
-        spawnLocation = board.piecesController.spawnPos;
+        spawnLocation = connector.spawnPos;
         rotationIndex = 0;
 
         tiles = new TileController[4];
@@ -72,31 +73,34 @@ public class PieceController : MonoBehaviour {
 
     private void FixedUpdate()
     {
-        hideTilesPerUpdates = board.tileInvisTime;
-        if (hideTilesPerUpdates > 0 && board.framestepped && fullyLocked)
+        if(!isPieceIsInNextQueue)
         {
-            float percentage = 1f/hideTilesPerUpdates;
-            for (int i = 0; i < tiles.Length; i++)
+            hideTilesPerUpdates = board.tileInvisTime;
+            if (hideTilesPerUpdates > 0 && board.framestepped && fullyLocked)
             {
-                if(tiles[i] != null)tiles[i].spriteRenderer.color -= new Color(0f,0f,0f, percentage);
-            }
-        }
-        if(board.framestepped)
-        {
-            if (!LockDelayEnable && !board.piecesController.piecemovementlocked)  {if(!CanMovePiece(Vector2Int.down) && !fullyLocked)  {LockDelayf = 0;  LockDelayEnable = true;} else LockDelayEnable = false;}
-        
-            if(LockDelayEnable && !harddrop && !fullyLocked)
-            {
-                if(LockDelayf == 0)
+                float percentage = 1f/hideTilesPerUpdates;
+                for (int i = 0; i < tiles.Length; i++)
                 {
-                    AudioManager.PlayClip(audioPieceStep);
+                    if(tiles[i] != null)tiles[i].spriteRenderer.color -= new Color(0f,0f,0f, percentage);
                 }
-                LockDelayf++;
-                if (LockDelayf >= board.LockDelay)
+            }
+            if(board.framestepped)
+            {
+                if (!LockDelayEnable && !board.piecesController.piecemovementlocked)  {if(!CanMovePiece(Vector2Int.down) && !fullyLocked)  {LockDelayf = 0;  LockDelayEnable = true;} else LockDelayEnable = false;}
+            
+                if(LockDelayEnable && !harddrop && !fullyLocked)
                 {
-                    LockDelayf = 0;
-                    LockDelayEnable = false;
-                    SetPiece();
+                    if(LockDelayf == 0)
+                    {
+                        AudioManager.PlayClip(audioPieceStep);
+                    }
+                    LockDelayf++;
+                    if (LockDelayf >= board.LockDelay)
+                    {
+                        LockDelayf = 0;
+                        LockDelayEnable = false;
+                        SetPiece();
+                    }
                 }
             }
         }
@@ -113,14 +117,14 @@ public class PieceController : MonoBehaviour {
     public void SpawnPiece(PieceType newType, PiecesController connector)
     {
         board = connector.board;
-        Initiate();
-        ghostContr.Initiate();
+        Initiate(connector);
+        ghostContr.Initiate(connector);
         isDisabledFromSacrifice = false;
         curType = newType;
         int increaseByLevel = board.level >= 600 && board.nextibmblocks == board.nextPieces + 1 ? 14 : 0;
         int RSint = board.RS == RotationSystems.ARS ? 7 : 0;
         int combine = (increaseByLevel + RSint);
-        int result = board.piecesController.pieceHold < 28 && !board.piecesController.allowHold ? board.piecesController.pieceHold - (int)newType : combine;
+        int result = combine;
         tiles[0].UpdatePosition(spawnLocation);
 
         switch (curType)

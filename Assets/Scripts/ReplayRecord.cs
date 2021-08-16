@@ -31,7 +31,7 @@ public class ReplayRecord : MonoBehaviour
     public List<List<float[]>> movementVector;
     public List<List<bool[]>> inputs;
     public List<bool[]> switches;
-    public List<List<int>> bag;
+    public static int seed;
     [SerializeField] TextMeshProUGUI textMode;
 
     public void SaveReplay(string name)
@@ -46,11 +46,11 @@ public class ReplayRecord : MonoBehaviour
         movementVector = data.movementVector;
         inputs = data.inputs;
         switches = data.switches;
+        Random.InitState(data.seed);
         for (int i = 0; i < MenuEngine.players.Count; i++)
         {
             MenuEngine.playersComponent[i].lineFreezingMechanic = switches[i][0];
         }
-        bag = data.bag;
         frames = 0;
     }
     public void SwitchMode()
@@ -70,8 +70,9 @@ public class ReplayRecord : MonoBehaviour
         boards = new int();
         movementVector = new List<List<float[]>>();
         inputs = new List<List<bool[]>>();
-        bag = new List<List<int>>();
         switches = new List<bool[]>();
+        seed = new int();
+        
     }
     void Awake()
     {
@@ -80,18 +81,21 @@ public class ReplayRecord : MonoBehaviour
     }
     void FixedUpdate()
     {
-        if (mode == ReplayModeType.write && GameEngine.instance.AREf > (int)GameEngine.instance.ARE -401)
-        {
-            for (int i = 0; i < MenuEngine.players.Count; i++)
-            {
-                switches[i][0] = MenuEngine.playersComponent[i].lineFreezingMechanic;
-                bool[] localInputs = new bool[7];
+        // if (MenuEngine.instance.yourPlayer != null)
+        // {
+        //     if (mode == ReplayModeType.write && MenuEngine.instance.yourPlayer.AREf > (int)MenuEngine.instance.yourPlayer.ARE -401)
+        //     {
+        //         for (int i = 0; i < MenuEngine.players.Count; i++)
+        //         {
+        //             switches[i][0] = MenuEngine.playersComponent[i].lineFreezingMechanic;
+        //             bool[] localInputs = new bool[7];
 
-            }
-        }
-        else if(MenuEngine.instance.curBoard != null && GameEngine.instance.framestepped) 
-        {
-            frames++;
-        }
+        //         }
+        //     }
+        //     else if(MenuEngine.instance.curBoard != null && MenuEngine.instance.yourPlayer.framestepped) 
+        //     {
+        //         frames++;
+        //     }
+        // }
     }
 }

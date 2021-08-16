@@ -12,10 +12,10 @@ public class GhostPieceController : MonoBehaviour
     public bool visibility;
     SpriteRenderer sprRnd;
 
-    public void Initiate()
+    public void Initiate(PiecesController connector)
     {
         sprRnd = GetComponent<SpriteRenderer>();
-        networkBoard = tiles[0].GetComponent<TileController>().pieceController.board;
+        networkBoard = connector.board;
         if (networkBoard.level < 100 || networkBoard.TLS) visibility = true;
         float transparency = 0.3f;
         for (int i = 0; i < tiles.Length; i++)

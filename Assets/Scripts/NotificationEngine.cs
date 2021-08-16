@@ -61,11 +61,11 @@ public class NotificationEngine : MonoBehaviour
             notifAnimFrames[i]++;
             if (notifAnimFrames[i] < 50)
             {
-                notificationInstance[i].transform.position -= new Vector3((256/25)*MenuEngine.instance.reswidth, 0, 0);
+                notificationInstance[i].transform.position -= new Vector3((384/25)*MenuEngine.instance.reswidth, 0, 0);
             }
             if (notifAnimFrames[i] > 449)
             {
-                notificationInstance[i].transform.position += new Vector3((256/25)*MenuEngine.instance.reswidth, 0, 0);
+                notificationInstance[i].transform.position += new Vector3((384/25)*MenuEngine.instance.reswidth, 0, 0);
             }
             if (notifAnimFrames[i] > 500)
             {

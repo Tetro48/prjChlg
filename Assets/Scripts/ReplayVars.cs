@@ -24,10 +24,10 @@ using UnityEngine;
 public class ReplayVars
 {
     public int boards;
+    public int seed;
     public List<List<float[]>> movementVector;
     public List<List<bool[]>> inputs;
     public List<bool[]> switches;
-    public List<List<int>> bag;
     
     public ReplayVars (ReplayRecord replay)
     {
@@ -35,6 +35,6 @@ public class ReplayVars
         movementVector = replay.movementVector;
         inputs = replay.inputs;
         switches = replay.switches;
-        bag = replay.bag;
+        seed = ReplayRecord.seed;
     }
 }
