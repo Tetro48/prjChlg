@@ -4,6 +4,8 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using MLAPI;
+using MLAPI.Messaging;
+using MLAPI.NetworkVariable;
 using TMPro;
 
 /*
@@ -23,6 +25,10 @@ using TMPro;
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
+
+/// <summary>
+/// This handles almost everything GameEngine.cs handled before multiplayer update and a bit more.
+/// </summary>
 public class NetworkBoard : NetworkBehaviour
 {
     public BoardController boardController;
@@ -395,14 +401,53 @@ public class NetworkBoard : NetworkBehaviour
         playerID = MenuEngine.players.Count;
         boardController.playerID = playerID;
         piecesController.playerID = playerID;
-        if(this.NetworkObject.IsOwner) MenuEngine.instance.yourPlayer = this;
-        MenuEngine.players.Add(this.gameObject);
+        if(IsOwner)
+        {
+            MenuEngine.instance.yourPlayer = this;
+            MenuEngine.instance.curBoard = gameObject;
+        }
+        MenuEngine.players.Add(gameObject);
         MenuEngine.playersComponent.Add(this);
     }
 
-    // Update is called once per frame
+    [ClientRpc]
+    void ReceiveInputsClientRpc(ClientRpcParams rpcParams = default)
+    {
+
+    }
+
+    [ServerRpc]
+    void SendInputsServerRpc(ServerRpcParams rpcParams = default)
+    {
+
+    }
+    
     void FixedUpdate()
     {
+        if (IsOwner)
+        {
+            NetworkUpdate();
+        }
+    }
+    // Update is called once per frame
+    void NetworkUpdate()
+    {
+        if (AREf == (-400 + ARE)+1)  transform.position = new Vector3(0.0f, 18f, 0.0f);
+        if (AREf == (-400 + ARE)+2)  transform.position = new Vector3(0.0f, 16f, 0.0f);
+        if (AREf == (-400 + ARE)+3)  transform.position = new Vector3(0.0f, 14f, 0.0f);
+        if (AREf == (-400 + ARE)+4)  transform.position = new Vector3(0.0f, 12f, 0.0f);
+        if (AREf == (-400 + ARE)+5)  transform.position = new Vector3(0.0f, 10f, 0.0f);
+        if (AREf == (-400 + ARE)+6)  transform.position = new Vector3(0.0f, 8f, 0.0f);
+        if (AREf == (-400 + ARE)+7)  transform.position = new Vector3(0.0f, 6f, 0.0f);
+        if (AREf == (-400 + ARE)+8)  transform.position = new Vector3(0.0f, 4f, 0.0f);
+        if (AREf == (-400 + ARE)+9)  transform.position = new Vector3(0.0f, 2f, 0.0f);
+        if (AREf == (-400 + ARE)+10)  transform.position = new Vector3(0.0f, 0f, 0.0f);
+        if (AREf == (-400 + ARE)+11)  transform.position = new Vector3(0.0f, -0.8f, 0.0f);
+        if (AREf == (-400 + ARE)+12)  transform.position = new Vector3(0.0f, -1.4f, 0.0f);
+        if (AREf == (-400 + ARE)+13)  transform.position = new Vector3(0.0f, -2f, 0.0f);
+        if (AREf == (-400 + ARE)+14)  transform.position = new Vector3(0.0f, -1.3f, 0.0f);
+        if (AREf == (-400 + ARE)+15)  transform.position = new Vector3(0.0f, -0.7f, 0.0f);
+        if (AREf == (-400 + ARE)+16)  transform.position = new Vector3(0.0f, 0f, 0.0f);
         if(!GameOver)
         {
             checkCool();
@@ -522,8 +567,8 @@ public class NetworkBoard : NetworkBehaviour
             frames++;
             if(frames > 300)
             {
-                transform.position -= new Vector3(0f, 0.1f, 0f);
-                // boardrot = curBoard.transform.Rotate;
+                transform.localPosition -= new Vector3(0f, 0.005f * (frames*frames*frames), 0f);
+                // boardrot = transform.Rotate;
                 // boardrot.z -= 0.16f;
                 transform.Rotate(new Vector3(0f, 0f, -0.1f - (float)(((frames-300) / 66) * ((frames-400) / 66))));
                 if (frames == 301)
@@ -537,15 +582,26 @@ public class NetworkBoard : NetworkBehaviour
                 if (frames == 401)
                 {
                     MenuEngine.instance.ExtractStatsToNotifications(this);
-                    BackgroundController.bginstance.TriggerBackgroundChange(0);
-                    if (MenuEngine.players.Count < 2)
+                    int aliveplayers = 0;
+                    for (int i = 0; i < MenuEngine.players.Count; i++)
                     {
+                        if (!MenuEngine.playersComponent[i].GameOver)
+                        {
+                            aliveplayers++;
+                        }
+                    }
+                    if (aliveplayers < 1)
+                    {
+                        BackgroundController.bginstance.TriggerBackgroundChange(0);
                         if (ReplayRecord.instance.mode == ReplayModeType.write)
                         {
                             ReplayRecord.instance.SaveReplay(DateTime.Now.ToString("MM-dd-yyyy-HH-mm-ss"));
                         }
+                        MenuEngine.players = new List<GameObject>();
+                        MenuEngine.playersComponent = new List<NetworkBoard>();
                         MenuEngine.instance.starting = true;
                     }
+                    Destroy(gameObject);
                 }
             }
         }

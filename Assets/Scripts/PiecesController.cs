@@ -51,6 +51,17 @@ public class PiecesController : MonoBehaviour {
 
     public AudioSource gameAudio;
     public AudioClip nextpiece1, nextpiece2, nextpiece3, nextpiece4, nextpiece5, nextpiece6, nextpiece7, audioIRS, audioIHS, bell, levelup;
+    [SerializeField]
+    Vector2 relativeHoldPieceCoordinate;
+
+    [SerializeField] 
+    GameObject holdPieceBuffer;
+
+    [SerializeField] 
+    List<Vector2> relativeNextPieceCoordinates;
+
+    [SerializeField] 
+    List<GameObject> nextPiecesBuffer = new List<GameObject>();
     public GameObject[] nextPieceUI;
     public GameObject[] nextIBMWPieceUI;
     public GameObject[] nextARSPieceUI;
@@ -72,6 +83,8 @@ public class PiecesController : MonoBehaviour {
     private bool nextpiecequeued = false;
     private bool audioBellPlayed = false;
     public int pieces;
+
+    public double deadzone = 0.5;
     
 
     GameObject curPiece = null;
@@ -85,29 +98,25 @@ public class PiecesController : MonoBehaviour {
     private void Awake()
     {
         instance = this;
+        // holdPieceBuffer = new GameObject();
         GameObject newPrefab = Instantiate(piecePrefab, transform);
         newPrefab.SetActive(false);
         piecePrefab = newPrefab;
         piecePrefab.GetComponent<PieceController>().board = board;
         
-        if(ReplayRecord.instance.mode != ReplayModeType.read)
+        bag = new List<int>();
+        for (int i = 0; i < 16; i++)
         {
-            bag = new List<int>();
-            for (int i = 0; i < 16; i++)
+            // bag.Add(new List<int> { 0, 1, 2, 3, 4, 5, 6 });
+            
+            List<int> bagshuff = new List<int>(){0,1,2,3,4,5,6};
+            Shuffle(bagshuff);
+            if(GameEngine.debugMode) Debug.Log(bagshuff);
+            foreach (var piece in bagshuff)
             {
-                // bag.Add(new List<int> { 0, 1, 2, 3, 4, 5, 6 });
-                
-                List<int> bagshuff = new List<int>(){0,1,2,3,4,5,6};
-                Shuffle(bagshuff);
-                if(GameEngine.debugMode) Debug.Log(bagshuff);
-                for (int j = 0; j < 7; j++)
-                {
-                    bag.Add(bagshuff[j]);
-                }
+                bag.Add(piece);
             }
         }
-        else bag = ReplayRecord.instance.bag[playerID];
-
         JLSTZ_OFFSET_DATA = new Vector2Int[5, 4];
         JLSTZ_OFFSET_DATA[0, 0] = Vector2Int.zero;
         JLSTZ_OFFSET_DATA[0, 1] = Vector2Int.zero;
@@ -226,6 +235,7 @@ public class PiecesController : MonoBehaviour {
             O_OFFSET_DATA[0, 2] = new Vector2Int(-1, -1);
             O_OFFSET_DATA[0, 3] = Vector2Int.left;
         }
+
     }
 
     /// <summary>
@@ -235,6 +245,11 @@ public class PiecesController : MonoBehaviour {
     {
         piecesInGame = new List<GameObject>();
         availablePieces = new List<GameObject>();
+        nextPiecesBuffer = new List<GameObject>();
+        for (int i = 0; i < board.nextPieces; i++)
+        {
+            SpawnNextPiece(bag[i]);
+        }
     }
 
     bool bagPieceRetrieved;
@@ -275,7 +290,7 @@ public class PiecesController : MonoBehaviour {
                 executedHold = false;
             }
         }
-        if (pieces % 7 == 0 && ReplayRecord.instance.mode != ReplayModeType.read)
+        if (pieces % 7 == 0)
         {
             List<int> bagshuff = new List<int>(){0,1,2,3,4,5,6};
             Shuffle(bagshuff);
@@ -285,55 +300,58 @@ public class PiecesController : MonoBehaviour {
                 bag.Add(bagshuff[j]);
             }
         }
-        if(ReplayRecord.instance.bag[playerID] != null)ReplayRecord.instance.bag[playerID] = bag;
         bagPieceRetrieved = false;
     }
     bool IHSexecuted;
-    public void UpdateShownPieces()
-    {
-        int nxtibmPieces = (board.nextibmblocks > board.nextPieces)  ? board.nextPieces : board.nextibmblocks;
-        for (int i = 0; i < board.nextPieces; i++)
-        {
-            if (board.RS == RotationSystems.SRS)
-            {
-                if(board.level < 600)
-                {
-                    if(pieces > 0)nextPieceUI[i*7+bag[i+pieces-1]].SetActive(false);
-                    nextPieceUI[i*7+bag[i+pieces]].SetActive(true);
-                }
-                else
-                {
-                    if(pieces > 0)nextPieceUI[i*7+bag[i+pieces-1]].SetActive(false);
-                    if(pieces > 0)nextIBMWPieceUI[i*7+bag[i+pieces-1]].SetActive(false);
-                    if(i>= board.nextPieces - nxtibmPieces)nextIBMWPieceUI[i*7+bag[i+pieces]].SetActive(true);
-                    else nextPieceUI[i*7+bag[i+pieces]].SetActive(true);
-                }
-            }
-            else if (board.RS == RotationSystems.ARS)
-            {
-                if(board.level < 600)
-                {
-                    if(pieces > 0)nextARSPieceUI[i*7+bag[i+pieces-1]].SetActive(false);
-                    nextARSPieceUI[i*7+bag[i+pieces]].SetActive(true);
-                }
-                else
-                {
-                    if(pieces > 0)nextARSPieceUI[i*7+bag[i+pieces-1]].SetActive(false);
-                    if(pieces > 0)nextIBMPieceUI[i*7+bag[i+pieces-1]].SetActive(false);
-                    if(i>= board.nextPieces - nxtibmPieces)nextIBMPieceUI[i*7+bag[i+pieces]].SetActive(true);
-                    else nextARSPieceUI[i*7+bag[i+pieces]].SetActive(true);
-                }
-            }
-        }
-        if (pieceHold < 28)holdPieceUI[pieceHold].SetActive(true);
-    }
+    // public void UpdateShownPieces()
+    // {
+    //     int nxtibmPieces = (board.nextibmblocks > board.nextPieces)  ? board.nextPieces : board.nextibmblocks;
+    //     for (int i = 0; i < board.nextPieces; i++)
+    //     {
+    //         if (board.RS == RotationSystems.SRS)
+    //         {
+    //             if(board.level < 600)
+    //             {
+    //                 if(pieces > 0)nextPieceUI[i*7+bag[i+pieces-1]].SetActive(false);
+    //                 nextPieceUI[i*7+bag[i+pieces]].SetActive(true);
+    //             }
+    //             else
+    //             {
+    //                 if(pieces > 0)nextPieceUI[i*7+bag[i+pieces-1]].SetActive(false);
+    //                 if(pieces > 0)nextIBMWPieceUI[i*7+bag[i+pieces-1]].SetActive(false);
+    //                 if(i>= board.nextPieces - nxtibmPieces)nextIBMWPieceUI[i*7+bag[i+pieces]].SetActive(true);
+    //                 else nextPieceUI[i*7+bag[i+pieces]].SetActive(true);
+    //             }
+    //         }
+    //         else if (board.RS == RotationSystems.ARS)
+    //         {
+    //             if(board.level < 600)
+    //             {
+    //                 if(pieces > 0)nextARSPieceUI[i*7+bag[i+pieces-1]].SetActive(false);
+    //                 nextARSPieceUI[i*7+bag[i+pieces]].SetActive(true);
+    //             }
+    //             else
+    //             {
+    //                 if(pieces > 0)nextARSPieceUI[i*7+bag[i+pieces-1]].SetActive(false);
+    //                 if(pieces > 0)nextIBMPieceUI[i*7+bag[i+pieces-1]].SetActive(false);
+    //                 if(i>= board.nextPieces - nxtibmPieces)nextIBMPieceUI[i*7+bag[i+pieces]].SetActive(true);
+    //                 else nextARSPieceUI[i*7+bag[i+pieces]].SetActive(true);
+    //             }
+    //         }
+    //     }
+    //     if (pieceHold < 28)holdPieceUI[pieceHold].SetActive(true);
+    // }
     private void NextPiece()
     {
-        if (allowHold == true && board.level >= 600 && board.nextibmblocks < board.nextPieces + 1)
+        if (allowHold == true)
         {
-            board.nextibmblocks++;
+            SpawnNextPiece(bag[pieces] + relativeNextPieceCoordinates.Count);
+            if (board.level >= 600 && board.nextibmblocks < board.nextPieces + 1)
+            {
+                board.nextibmblocks++;
+            }
         }
-        UpdateShownPieces();
+        // UpdateShownPieces();
         if (!IHSexecuted)
         {
             if(bag[pieces] == 0)
@@ -426,44 +444,47 @@ public class PiecesController : MonoBehaviour {
                 if (board.RS == RotationSystems.ARS) IARS = true;
             }
             else {IRSCCW = false; IRSCW = false; IRSUD = false; IARS = false; IHS = false;}
-            if (board.movement.y < -0.5 && !piecemovementlocked)
+            if (board.movement.y < -deadzone && !piecemovementlocked)
             {
                 gravityTiles += (float)board.gravity * (float)board.SDF * (board.movement.y * -1);
             }
-            if (board.movement.x < -0.5)
+            if(!piecemovementlocked && curPieceController != null)
             {
-                if (DASfl == 0 && !piecemovementlocked) MoveCurPiece(Vector2Int.left);
-                DASfl++;
-                if (DASfl > DAStuning && !piecemovementlocked)
+                if (board.movement.x < -deadzone)
                 {
-                    MoveCurPiece(Vector2Int.left);
-                    if (ARRtuning == 0)
+                    if (DASfl == 0) MoveCurPiece(Vector2Int.left);
+                    DASfl++;
+                    if (DASfl > DAStuning && (ARRtuning == 0 || DASfl % ARRtuning == 0))
                     {
-                        for (int i = 0; i < 10; i++)
+                        MoveCurPiece(Vector2Int.left);
+                        if (ARRtuning == 0)
                         {
-                            MoveCurPiece(Vector2Int.left);
+                            for (int i = 0; i < 10; i++)
+                            {
+                                MoveCurPiece(Vector2Int.left);
+                            }
                         }
                     }
                 }
-            }
-            else DASfl = 0;
-            if (board.movement.x > 0.5)
-            {
-                if (DASfr == 0 && !piecemovementlocked) MoveCurPiece(Vector2Int.right);
-                DASfr++;
-                if (DASfr > DAStuning && !piecemovementlocked)
+                else DASfl = 0;
+                if (board.movement.x > deadzone)
                 {
-                    MoveCurPiece(Vector2Int.right);
-                    if (ARRtuning == 0)
+                    if (DASfr == 0) MoveCurPiece(Vector2Int.right);
+                    DASfr++;
+                    if (DASfr > DAStuning && (ARRtuning == 0 || DASfr % ARRtuning == 0))
                     {
-                        for (int i = 0; i < 10; i++)
+                        MoveCurPiece(Vector2Int.right);
+                        if (ARRtuning == 0)
                         {
-                            MoveCurPiece(Vector2Int.right);
+                            for (int i = 0; i < 10; i++)
+                            {
+                                MoveCurPiece(Vector2Int.right);
+                            }
                         }
                     }
                 }
+                else DASfr = 0;
             }
-            else DASfr = 0;
             // if (Input.GetKeyDown(KeyCode.Return) || Input.GetKeyDown(KeyCode.KeypadEnter))
             // {
             //     if(curPieceController != null)
@@ -542,12 +563,12 @@ public class PiecesController : MonoBehaviour {
             // {
             //     SpawnDebug(6);
             // }
-            if (!curPieceController.CanMovePiece(Vector2Int.zero) && !piecemovementlocked) curPieceController.SendPieceToFloor();
-            for (int i = 0; i < (int)Math.Floor(gravityTiles); i++)
+            if(curPieceController != null) if (!curPieceController.CanMovePiece(Vector2Int.zero) && !piecemovementlocked) curPieceController.SendPieceToFloor();
+            if(piecemovementlocked == false) while (gravityTiles > 0)
             {
-                if(piecemovementlocked == false)MoveCurPiece(Vector2Int.down);
+                MoveCurPiece(Vector2Int.down);
+                gravityTiles -= (float)Math.Floor(gravityTiles);
             }
-            gravityTiles -= (float)Math.Floor(gravityTiles);
             if (board.Inputs[0] && !PrevInputs[0] && !piecemovementlocked)
             {
                 curPieceController.SendPieceToFloor();
@@ -609,27 +630,33 @@ public class PiecesController : MonoBehaviour {
         if(piecemovementlocked == false && allowHold == true)
         {
             allowHold = false;
-            if (pieceHold == 28)
+            // Destroy(piecesInGame[piecesInGame.Count-1]);
+            // piecesInGame.RemoveAt(piecesInGame.Count-1);
+            // SpawnHoldPiece(bag[pieces]);
+            // pieceHold = bag[pieces-1] + increaseByLevel + RSint;
+            if(holdPieceBuffer == null)pieces++;
+            SpawnHoldPiece();
+            NextPiece();
+            executedHold = false;
+        }
+    }
+    public void SpawnNextPiece(int id)
+    {
+        GameObject localGO = GameObject.Instantiate(piecePrefab, transform);
+        localGO.SetActive(true);
+        localGO.GetComponent<PieceController>().ghostContr.gameObject.SetActive(false);
+        localGO.GetComponent<PieceController>().SpawnPiece((PieceType)id, this);
+        localGO.transform.localPosition = relativeNextPieceCoordinates[nextPiecesBuffer.Count];
+        nextPiecesBuffer.Add(localGO);
+        if (nextPiecesBuffer.Count > board.nextPieces)
+        {
+            nextPiecesBuffer.RemoveAt(0);
+            for (int index = 0; index < nextPiecesBuffer.Count; index++)
             {
-                Destroy(piecesInGame[piecesInGame.Count-1]);
-                piecesInGame.RemoveAt(piecesInGame.Count-1);
-                SpawnHoldPiece(bag[pieces]);
-                pieceHold = bag[pieces-1] + increaseByLevel + RSint;
-                pieces++;
-                NextPiece();
-                executedHold = false;
-            }
-            else
-            {
-                Destroy(piecesInGame[piecesInGame.Count-1]);
-                piecesInGame.RemoveAt(piecesInGame.Count-1);
-                holdPieceUI[pieceHold].SetActive(false);
-                SpawnHoldPiece(pieceHold%7);
-                pieceHold = bag[pieces-1] + increaseByLevel + RSint;
-                NextPiece();
-                executedHold = false;
+                nextPiecesBuffer[index].transform.localPosition = relativeNextPieceCoordinates[index];
             }
         }
+
     }
     /// <summary>
     /// Spawns a new Tetris piece.
@@ -645,53 +672,65 @@ public class PiecesController : MonoBehaviour {
         if(board.comboKeepCounter > 0)board.comboKeepCounter--;
         allowHold = true;
         IHSexecuted = false;
-        NextPiece();
-        GameObject localGO = GameObject.Instantiate(piecePrefab, transform);
+        GameObject localGO = nextPiecesBuffer[0];
         curPiece = localGO;
-        curPiece.SetActive(true);
-        PieceType randPiece = (PieceType)id;
+        localGO.GetComponent<PieceController>().ghostContr.gameObject.SetActive(false);
+        NextPiece();
+        // PieceType randPiece = (PieceType)id;
         curPieceController = curPiece.GetComponent<PieceController>();
-        curPieceController.SpawnPiece(randPiece, this);
+        curPieceController.isPieceIsInNextQueue = false;
+        // curPieceController.SpawnPiece(randPiece, this);
         piecemovementlocked = false;
-        
         piecesInGame.Add(localGO);
     }
     /// <summary>
     /// Spawns a new Tetris piece.
     /// </summary>
-    public void SpawnHoldPiece(int id)
+    public void SpawnHoldPiece()
     {
+        bool hadPieceInHold = false;
+        if(holdPieceBuffer != null) hadPieceInHold = true; 
+        curPieceController.isPieceIsInNextQueue = true;
+        if(curPieceController.rotationIndex == 2) curPieceController.RotatePiece180(true, false);
+        if(curPieceController.rotationIndex % 2 == 1) curPieceController.RotatePiece(curPieceController.rotationIndex / 2 == 1, false, false);
+        curPiece.transform.localPosition = relativeHoldPieceCoordinate;
         gravityTiles = 0.0f;
         if (board.gravity >= 19.99999)
         {
             gravityTiles = 22.0f;
         }
-        GameObject localGO = GameObject.Instantiate(piecePrefab, transform);
+        GameObject localGO;
+        if (hadPieceInHold)
+        {
+            localGO = holdPieceBuffer;
+        }
+        else localGO = nextPiecesBuffer[0];
         curPiece = localGO;
         curPiece.SetActive(true);
-        PieceType randPiece = (PieceType)id;
+        // PieceType randPiece = (PieceType)id;
         curPieceController = curPiece.GetComponent<PieceController>();
-        curPieceController.SpawnPiece(randPiece, this);
+        // curPieceController.SpawnPiece(randPiece, this);
         piecemovementlocked = false;
         if ((board.Inputs[2] || board.Inputs[6]) && (!board.Inputs[1]) && (!board.Inputs[3])) {IRSCW = true; IRSCCW = false; IRSUD = false;}
         else if ((!board.Inputs[2] && !board.Inputs[6]) && (board.Inputs[1]) && !(board.Inputs[3])) {IRSCCW = true; IRSCW = false; IRSUD = false;}
         else if ((!board.Inputs[2] && !board.Inputs[6]) && (!board.Inputs[1]) && (board.Inputs[3])) {IRSCCW = false; IRSCW = false; IRSUD = true;}
         else {IRSCCW = false; IRSCW = false; IRSUD = false;}
         if (board.RS == RotationSystems.ARS) IARS = true;
+        holdPieceBuffer = curPieceController.gameObject;
         
         piecesInGame.Add(localGO);
     }
 
-    public void SpawnDebug(int id)
-    {
-        GameObject localGO = GameObject.Instantiate(piecePrefab, transform);
-        curPiece = localGO;
-        PieceType randPiece = (PieceType)id;
-        curPieceController = curPiece.GetComponent<PieceController>();
-        curPieceController.SpawnPiece(randPiece, this);
+    // public void SpawnDebug(int id)
+    // {
+    //     GameObject localGO = GameObject.Instantiate(piecePrefab, transform);
+    //     curPiece = localGO;
+    //     PieceType randPiece = (PieceType)id;
+    //     curPieceController = curPiece.GetComponent<PieceController>();
+    //     curPieceController.SpawnPiece(randPiece, this);
 
-        piecesInGame.Add(localGO);
-    }
+    //     piecesInGame.Add(localGO);
+    // }
 
     /// <summary>
     /// Moves the current piece controlled by the player.

@@ -40,7 +40,7 @@ public class BoardController : MonoBehaviour {
     bool linecleared = false;
     bool arereseted = false;
     List<int> ldldy = new List<int>();
-    [SerializeField]Sprite boneblock;
+    [SerializeField]Sprite boneblockw, boneblock;
 
     List<int> allClearFireworkTime = new List<int>();
 
@@ -149,10 +149,10 @@ public class BoardController : MonoBehaviour {
             {
                 GameObject clonedTile = GameObject.Instantiate(tileClone, transform);
                 PieceController tileContr = clonedTile.GetComponent<PieceController>();
-                if(networkBoard.sectAfter20g > 1) tileContr.tiles[0].GetComponent<SpriteRenderer>().sprite = boneblock;
+                if(networkBoard.sectAfter20g > 1) tileContr.tiles[0].GetComponent<SpriteRenderer>().sprite = networkBoard.RS == RotationSystems.ARS ? boneblock : boneblockw;
                 tileContr.tiles[0].UpdatePosition(new Vector2Int(x,line));
                 tileContr.tiles[0].SetTileUp();
-                PiecesController.instance.piecesInGame.Add(clonedTile);
+                networkBoard.piecesController.piecesInGame.Add(clonedTile);
             }
         }
     }
@@ -170,16 +170,16 @@ public class BoardController : MonoBehaviour {
                     {
                         GameObject clonedTile = GameObject.Instantiate(tileClone, transform);
                         PieceController tileContr = clonedTile.GetComponent<PieceController>();
-                        if(networkBoard.sectAfter20g > 1) tileContr.tiles[0].GetComponent<SpriteRenderer>().sprite = boneblock;
+                        if(networkBoard.sectAfter20g > 1) tileContr.tiles[0].GetComponent<SpriteRenderer>().sprite = networkBoard.RS == RotationSystems.ARS ? boneblock : boneblockw;
                         tileContr.tiles[0].UpdatePosition(new Vector2Int(x,y));
                         tileContr.tiles[0].SetTileUp();
-                        PiecesController.instance.piecesInGame.Add(clonedTile);
+                        networkBoard.piecesController.piecesInGame.Add(clonedTile);
                     }
                 }        
             }
         }
         gameAudio.PlayOneShot(audioLineClone);
-        if (PiecesController.instance.curPieceController != null) if(!PiecesController.instance.curPieceController.isPieceLocked()) if (PiecesController.instance.curPieceController.LockDelayEnable) PiecesController.instance.curPieceController.MovePiece(Vector2Int.up);
+        if (networkBoard.piecesController.curPieceController != null) if(!networkBoard.piecesController.curPieceController.isPieceLocked()) if (networkBoard.piecesController.curPieceController.LockDelayEnable) networkBoard.piecesController.curPieceController.MovePiece(Vector2Int.up);
     }
     /// <summary>
     /// Destroys a line of tiles. Coded to also handle empty grid unit.
@@ -312,7 +312,7 @@ public class BoardController : MonoBehaviour {
                 if (fullGrid[x,y].isOccupied) return false;
             }
         }
-        gameAudio.PlayOneShot(PiecesController.instance.levelup);
+        gameAudio.PlayOneShot(networkBoard.piecesController.levelup);
         allClearFireworkTime.Add(0);
         return true;
     }
@@ -378,7 +378,7 @@ public class BoardController : MonoBehaviour {
             networkBoard.LineClears(linesToClear.Count, tspinned);
             CheckAllClear();
 
-            // PiecesController.instance.lineDelayf++;
+            // networkBoard.piecesController.lineDelayf++;
             if(networkBoard.lineDelay < 1)
             {
                 gameAudio.PlayOneShot(audioLineFall);

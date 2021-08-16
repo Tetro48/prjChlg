@@ -514,6 +514,7 @@ MonoBehaviour:
   LockDelayEnable: 0
   zombieContr: 0
   LockDelayf: 0
+  isPieceIsInNextQueue: 0
   hideTilesPerUpdates: 0
   tiles: []
 --- !u!1 &1957771924503588
@@ -830,7 +831,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &8480241490202946932
 Transform:
   m_ObjectHideFlags: 0

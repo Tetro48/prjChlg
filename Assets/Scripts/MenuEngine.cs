@@ -7,6 +7,8 @@ using UnityEngine.EventSystems;
 using UnityEngine.SceneManagement;
 using Discord;
 using TMPro;
+using MLAPI;
+using MLAPI.Messaging;
 
 /*
     Project Challenger, an challenging Tetris game.
@@ -94,11 +96,11 @@ public class MenuEngine : MonoBehaviour
         {"シングル：", "ダブル：", "トリプル", "テトリス：", "行：", "合計", "ピース", "成績：", "総合成績スコア", "レベル：", "時間", "", "", "", "", ""},
     };
     Language previousLang;
-    public void InstantiatePlayer()
-    {
-        GameObject newBoard = Instantiate(inGameBoard, transform);
-        players.Add(newBoard);
-    }
+    // public void InstantiatePlayer()
+    // {
+    //     GameObject newBoard = Instantiate(inGameBoard, transform);
+    //     players.Add(newBoard);
+    // }
     public void QuitGame()
     {
         if (platformCompat() || Application.platform == RuntimePlatform.Android || Application.platform == RuntimePlatform.IPhonePlayer) quitting = true;
@@ -164,12 +166,19 @@ public class MenuEngine : MonoBehaviour
     {
         players = new List<GameObject>();
         playersComponent = new List<NetworkBoard>();
-        if (platformCompat()) discord = new Discord.Discord(836600860976349192, (UInt64)Discord.CreateFlags.Default);
         Application.targetFrameRate = Screen.currentResolution.refreshRate * 4;
         alreadystarted = true;
         instance = this;
     }
     public bool drpcSwitch;
+
+    [SerializeField] void SwitchDRPC()
+    {
+        drpcSwitch = !drpcSwitch;
+        if (!drpcSwitch)
+            discord.Dispose();
+        else discord = new Discord.Discord(836600860976349192, (UInt64)Discord.CreateFlags.Default);
+    }
     private int resRefreshrates = 0;
     void Start()
     {
@@ -340,7 +349,7 @@ public class MenuEngine : MonoBehaviour
     // }
     void OnApplicationQuit()
     {
-        if (platformCompat())discord.Dispose();
+        if (platformCompat() && drpcSwitch)discord.Dispose();
     }
     double framerate;
     [SerializeField] List<double> frameratebuffer;
@@ -367,7 +376,7 @@ public class MenuEngine : MonoBehaviour
             previousLang = language;
             UpdateLang();
         }
-        if (platformCompat() && yourPlayer != null)
+        if(drpcSwitch) if (platformCompat() && yourPlayer != null)
         {
             var activityManager = discord.GetActivityManager();
             int rpclvl = yourPlayer.level < yourPlayer.endingLevel ? (yourPlayer.curSect + 1) * 100 : yourPlayer.endingLevel;
@@ -454,9 +463,9 @@ public class MenuEngine : MonoBehaviour
                     starting = true;
                     this.transform.position = Vector3.zero;
                     BackgroundController.bginstance.TriggerBackgroundChange(0);
-                    if (GameEngine.instance.replay.mode == ReplayModeType.write)
+                    if (ReplayRecord.instance.mode == ReplayModeType.write)
                     {
-                        GameEngine.instance.replay.SaveReplay(DateTime.Now.ToString("MM-dd-yyyy-HH-mm-ss"));
+                        ReplayRecord.instance.SaveReplay(DateTime.Now.ToString("MM-dd-yyyy-HH-mm-ss"));
                     }
                 }
             }
@@ -483,22 +492,28 @@ public class MenuEngine : MonoBehaviour
             {
                 if (frames == MMf + 11)
                 {
+                    MLAPI.NetworkManager.Singleton.StartHost();
+                    UnityEngine.Random.InitState(SeedManager.NewSeed());
                     ReplayRecord.instance.Reset();
+                    ReplayRecord.seed = SeedManager.seed;
+                    
                     if (ReplayRecord.instance.mode == ReplayModeType.read)
                     {
                         ReplayRecord.instance.LoadReplay("1");
+                        UnityEngine.Random.InitState(ReplayRecord.seed);
                     }
                     mainMenu.SetActive(false);
                     GameEngine.instance.gradePoints = 0;
                     GameEngine.instance.gradePointRequirement = 100;
                     GameEngine.instance.statGradePoints = 0;
                     // SceneManager.LoadScene("GameScene");
+
                     GameObject board = GameObject.Instantiate(inGameBoard, transform);
                     curBoard = board;
                     NetworkBoard netBoard = curBoard.GetComponent<NetworkBoard>();
                     board.transform.position = new Vector3(0.0f, 20f, 0.0f);
                     mainMenuMusic.Stop();
-                    netBoard.piecesController.UpdateShownPieces();
+                    // netBoard.piecesController.UpdateShownPieces();
                 }
                 if (frames == MMf + 12)   curBoard.transform.position = new Vector3(0.0f, 18f, 0.0f);
                 if (frames == MMf + 13)   curBoard.transform.position = new Vector3(0.0f, 16f, 0.0f);
@@ -770,44 +785,43 @@ public class MenuEngine : MonoBehaviour
             mainMenu.SetActive(true);
             if (frames == 1)
             {
-                GameEngine.instance.time = 0;
-                GameEngine.instance.rollTime = 0;
-                GameEngine.instance.level = 0;
-                GameEngine.instance.curSect = 0;
-                GameEngine.instance.sectAfter20g = 0;
-                GameEngine.instance.ARE = 41.66666666666666;
-                GameEngine.instance.AREf = 42 - 300;
-                GameEngine.instance.paused = true;
-                GameEngine.instance.DAS = 25;
-                GameEngine.instance.AREline = 16.66666666666666666;
-                GameEngine.instance.nextibmblocks = 0;
-                GameEngine.instance.LockDelay = 50;
-                GameEngine.instance.lineDelayf = 0;
-                GameEngine.instance.lineDelay = 25;
-                GameEngine.instance.gravity = 3 / 64f;
-                GameEngine.instance.singles = 0;
-                GameEngine.instance.doubles = 0;
-                GameEngine.instance.triples = 0;
-                GameEngine.instance.tetrises = 0;
-                GameEngine.instance.pentrises = 0;
-                GameEngine.instance.sixtrises = 0;
-                GameEngine.instance.septrises = 0;
-                GameEngine.instance.octrises = 0;
-                GameEngine.instance.totalLines = 0;
-                GameEngine.instance.lineClonePiecesLeft = 2147483647;
-                GameEngine.instance.grade = 0;
-                GameEngine.instance.gradeIndicator.sprite = GameEngine.instance.gradeSprites[0];
-                GameEngine.instance.bgmlv = 1;
-                GameEngine.instance.timeCounter.text = "00:00:00";
-                GameEngine.instance.nextSecLv.text = "100";
-                GameEngine.instance.levelTextRender.text = "0";
-                GameEngine.instance.ending = false;
-                GameEngine.instance.sectionTime = new int[21];
-                Destroy(curBoard);
-                GameEngine.instance.gameMusic.Stop();
-                GameEngine.instance.gameMusic.clip = GameEngine.instance.bgm_1p_lv[0];
-                GameEngine.instance.gameMusic.volume = 1f;
-                GameEngine.instance.tileInvisTime = -1;
+                // GameEngine.instance.time = 0;
+                // GameEngine.instance.rollTime = 0;
+                // GameEngine.instance.level = 0;
+                // GameEngine.instance.curSect = 0;
+                // GameEngine.instance.sectAfter20g = 0;
+                // GameEngine.instance.ARE = 41.66666666666666;
+                // GameEngine.instance.AREf = 42 - 300;
+                // GameEngine.instance.paused = true;
+                // GameEngine.instance.DAS = 25;
+                // GameEngine.instance.AREline = 16.66666666666666666;
+                // GameEngine.instance.nextibmblocks = 0;
+                // GameEngine.instance.LockDelay = 50;
+                // GameEngine.instance.lineDelayf = 0;
+                // GameEngine.instance.lineDelay = 25;
+                // GameEngine.instance.gravity = 3 / 64f;
+                // GameEngine.instance.singles = 0;
+                // GameEngine.instance.doubles = 0;
+                // GameEngine.instance.triples = 0;
+                // GameEngine.instance.tetrises = 0;
+                // GameEngine.instance.pentrises = 0;
+                // GameEngine.instance.sixtrises = 0;
+                // GameEngine.instance.septrises = 0;
+                // GameEngine.instance.octrises = 0;
+                // GameEngine.instance.totalLines = 0;
+                // GameEngine.instance.lineClonePiecesLeft = 2147483647;
+                // GameEngine.instance.grade = 0;
+                // GameEngine.instance.bgmlv = 1;
+                // GameEngine.instance.timeCounter.text = "00:00:00";
+                // GameEngine.instance.nextSecLv.text = "100";
+                // GameEngine.instance.levelTextRender.text = "0";
+                // GameEngine.instance.ending = false;
+                // GameEngine.instance.sectionTime = new int[21];
+                // Destroy(curBoard);
+                // GameEngine.instance.gameMusic.Stop();
+                // GameEngine.instance.gameMusic.clip = GameEngine.instance.bgm_1p_lv[0];
+                // GameEngine.instance.gameMusic.volume = 1f;
+                // GameEngine.instance.tileInvisTime = -1;
                 // mainMenu.SetActive(true);
                 audioSource.PlayOneShot(clip);
             }
@@ -828,4 +842,9 @@ public class MenuEngine : MonoBehaviour
             }
         }
     }
+    // [ServerRpc]
+    // void StartServerUp()
+    // {
+        
+    // }
 }
