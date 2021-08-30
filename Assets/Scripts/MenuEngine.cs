@@ -35,7 +35,6 @@ public class MenuEngine : MonoBehaviour
 {
     public Language language;
     public static List<GameObject> players;
-    public static List<NetworkBoard> playersComponent;
     public NetworkBoard yourPlayer;
     public Discord.Discord discord;
     public static MenuEngine instance;
@@ -165,7 +164,6 @@ public class MenuEngine : MonoBehaviour
     void Awake()
     {
         players = new List<GameObject>();
-        playersComponent = new List<NetworkBoard>();
         Application.targetFrameRate = Screen.currentResolution.refreshRate * 4;
         alreadystarted = true;
         instance = this;
@@ -503,9 +501,9 @@ public class MenuEngine : MonoBehaviour
                         UnityEngine.Random.InitState(ReplayRecord.seed);
                     }
                     mainMenu.SetActive(false);
-                    GameEngine.instance.gradePoints = 0;
-                    GameEngine.instance.gradePointRequirement = 100;
-                    GameEngine.instance.statGradePoints = 0;
+                    // GameEngine.instance.gradePoints = 0;
+                    // GameEngine.instance.gradePointRequirement = 100;
+                    // GameEngine.instance.statGradePoints = 0;
                     // SceneManager.LoadScene("GameScene");
 
                     GameObject board = GameObject.Instantiate(inGameBoard, transform);
@@ -542,9 +540,9 @@ public class MenuEngine : MonoBehaviour
                     frames = 0;
                     // imgbg.SetActive(false);
                     // imgprjchlg.SetActive(false);
-                    GameEngine.instance.paused = false;
                     NetworkBoard netBoard = curBoard.GetComponent<NetworkBoard>();
-                    netBoard.piecesController.UpdatePieceBag();
+                    netBoard.paused = false;
+                    // netBoard.piecesController.UpdatePieceBag();
                 }
             }
             if (pressedSubMenu && frames > MMSf && menu == 1)

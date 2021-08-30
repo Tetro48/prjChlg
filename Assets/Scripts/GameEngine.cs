@@ -231,115 +231,115 @@ public class GameEngine : MonoBehaviour
     static int[] lvlLineIncrement = {1, 3, 6, 10, 15, 21, 28, 36, 48, 70, 88, 90, 90, 90, 90, 90, 90, 90, 90, 90, 90, 90, 90};
 
     public int[] linesFrozen = {0, 0, 0, 6, 4, 0, 0, 0, 8, 0, 0, 12, 16, 0, 0, 0, 19, 0, 0, 0, 10, 14};
-    public void LineClears(int lines, bool spin)
-    {
-        if (lines > 0)
-        {
-            comboKeepCounter = 2;
-            if (lines > 1)
-            {
-                comboCount++;
-                if(comboCount >= 2) {
-                    int cmbse = comboCount - 2;
-                    if(cmbse > comboSE.Length-1) cmbse = comboSE.Length-1;
-                    gameAudio.PlayOneShot(comboSE[cmbse]);
-                }
-            }
-        }
-        if(level < endingLevel)
-        {
-            level += lvlLineIncrement[lines-1];
-        }
-        if(level > endingLevel) level = endingLevel;
-        if(level/100 > curSect)
-        {
-            sectionlasttime = sectionTime[curSect];
-            checkRegret(level - lvlLineIncrement[lines-1]);
-            curSect++;
-            if (curSect > (endingLevel/100) - 1)
-            {
-                AREf = (int)ARE - 400;
-                ending = true;
-            }
-            PiecesController.instance.gameAudio.PlayOneShot(PiecesController.instance.levelup);
-            if (curSect < 20)
-            {
-                BackgroundController.bginstance.TriggerBackgroundChange(curSect);
-            }
-            if(curSect % 5 == 0) NotificationEngine.instance.InstantiateNotification(MenuEngine.instance.notifLangString[(int)MenuEngine.instance.language, 12],Color.white);
-            if (gravity >= 12.5)
-            {
-                ARE *= percentage;
-                AREline *= percentage;
-                lineDelay *= percentage;
-                LockDelay *= percentage;
-                sectAfter20g++;
-                if(LockDelay < 1)
-                {
-                    LockDelay = 1.000001d;
-                }
-                if (gravity < 19.99999) gravity *= 4;
-            }
-            else
-            {
-                gravity *= 4;
-            }
-            // COOLг‚’еЏ–гЃЈгЃ¦гЃџг‚‰
-            if(cool == true) {
-                previouscool = true;
+    // public void LineClears(int lines, bool spin)
+    // {
+    //     if (lines > 0)
+    //     {
+    //         comboKeepCounter = 2;
+    //         if (lines > 1)
+    //         {
+    //             comboCount++;
+    //             if(comboCount >= 2) {
+    //                 int cmbse = comboCount - 2;
+    //                 if(cmbse > comboSE.Length-1) cmbse = comboSE.Length-1;
+    //                 gameAudio.PlayOneShot(comboSE[cmbse]);
+    //             }
+    //         }
+    //     }
+    //     if(level < endingLevel)
+    //     {
+    //         level += lvlLineIncrement[lines-1];
+    //     }
+    //     if(level > endingLevel) level = endingLevel;
+    //     if(level/100 > curSect)
+    //     {
+    //         sectionlasttime = sectionTime[curSect];
+    //         checkRegret(level - lvlLineIncrement[lines-1]);
+    //         curSect++;
+    //         if (curSect > (endingLevel/100) - 1)
+    //         {
+    //             AREf = (int)ARE - 400;
+    //             ending = true;
+    //         }
+    //         PiecesController.instance.gameAudio.PlayOneShot(PiecesController.instance.levelup);
+    //         if (curSect < 20)
+    //         {
+    //             BackgroundController.bginstance.TriggerBackgroundChange(curSect);
+    //         }
+    //         if(curSect % 5 == 0) NotificationEngine.instance.InstantiateNotification(MenuEngine.instance.notifLangString[(int)MenuEngine.instance.language, 12],Color.white);
+    //         if (gravity >= 12.5)
+    //         {
+    //             ARE *= percentage;
+    //             AREline *= percentage;
+    //             lineDelay *= percentage;
+    //             LockDelay *= percentage;
+    //             sectAfter20g++;
+    //             if(LockDelay < 1)
+    //             {
+    //                 LockDelay = 1.000001d;
+    //             }
+    //             if (gravity < 19.99999) gravity *= 4;
+    //         }
+    //         else
+    //         {
+    //             gravity *= 4;
+    //         }
+    //         // COOLг‚’еЏ–гЃЈгЃ¦гЃџг‚‰
+    //         if(cool == true) {
+    //             previouscool = true;
 
-            } else {
-                previouscool = false;
-            }
+    //         } else {
+    //             previouscool = false;
+    //         }
 
-            cool = false;
-            coolchecked = false;
-            cooldisplayed = false;
-        }
-        if (spin)
-        {
-            if (lines == 1) virtualBasePoint += 10;
-            if (lines == 2) virtualBasePoint += 20;
-            if (lines == 3) virtualBasePoint += 30;
-            if (lines == 4) virtualBasePoint += 50;
-            if (lines == 5) virtualBasePoint += 70;
-            if (lines >= 6) virtualBasePoint += 100 + (lines - 6) * 40;
-        }
-		int basepoint = tableGradePoint[lines - 1];
-        basepoint += virtualBasePoint;
-        virtualBasePoint = 0;
+    //         cool = false;
+    //         coolchecked = false;
+    //         cooldisplayed = false;
+    //     }
+    //     if (spin)
+    //     {
+    //         if (lines == 1) virtualBasePoint += 10;
+    //         if (lines == 2) virtualBasePoint += 20;
+    //         if (lines == 3) virtualBasePoint += 30;
+    //         if (lines == 4) virtualBasePoint += 50;
+    //         if (lines == 5) virtualBasePoint += 70;
+    //         if (lines >= 6) virtualBasePoint += 100 + (lines - 6) * 40;
+    //     }
+	// 	int basepoint = tableGradePoint[lines - 1];
+    //     basepoint += virtualBasePoint;
+    //     virtualBasePoint = 0;
 
-        int indexcombo = comboCount - 1;
-        if (indexcombo < 0) indexcombo = 0;
-        if (indexcombo > 9) indexcombo = 9;
-        float combobonus = tableGradeComboBonus[lines - 1, indexcombo];
+    //     int indexcombo = comboCount - 1;
+    //     if (indexcombo < 0) indexcombo = 0;
+    //     if (indexcombo > 9) indexcombo = 9;
+    //     float combobonus = tableGradeComboBonus[lines - 1, indexcombo];
 	
-		int levelbonus = 1 + (level / 250);
+	// 	int levelbonus = 1 + (level / 250);
 	
-		float point = basepoint * combobonus * levelbonus;
-        if (sectAfter20g >= 21) point *= 10;
-        else if (sectAfter20g > 19) point *= 5;
-        else if (sectAfter20g > 18) point *= 2;
-		gradePoints += point;
-		statGradePoints += point;
-        while (gradePoints >= gradePointRequirement)
-        {
-			gradePoints -= gradePointRequirement;
-            if (grade < 18) grade++;
-            gradeIndicator.sprite = gradeSprites[grade];
-            gameAudio.PlayOneShot(gradeUp);
-            gradePointRequirement *= Math.Abs(1 + (Math.Abs(Math.Floor((double)level / 100) + 1) / 4));
-        }
-        totalLines += lines;
-        if (lines == 1) singles++;
-        if (lines == 2) doubles++;
-        if (lines == 3) triples++;
-        if (lines == 4) tetrises++;
-        if (lines == 5) pentrises++;
-        if (lines == 6) sixtrises++;
-        if (lines == 7) septrises++;
-        if (lines > 7) octrises++;
-    }
+	// 	float point = basepoint * combobonus * levelbonus;
+    //     if (sectAfter20g >= 21) point *= 10;
+    //     else if (sectAfter20g > 19) point *= 5;
+    //     else if (sectAfter20g > 18) point *= 2;
+	// 	gradePoints += point;
+	// 	statGradePoints += point;
+    //     while (gradePoints >= gradePointRequirement)
+    //     {
+	// 		gradePoints -= gradePointRequirement;
+    //         if (grade < 18) grade++;
+    //         gradeIndicator.sprite = gradeSprites[grade];
+    //         gameAudio.PlayOneShot(gradeUp);
+    //         gradePointRequirement *= Math.Abs(1 + (Math.Abs(Math.Floor((double)level / 100) + 1) / 4));
+    //     }
+    //     totalLines += lines;
+    //     if (lines == 1) singles++;
+    //     if (lines == 2) doubles++;
+    //     if (lines == 3) triples++;
+    //     if (lines == 4) tetrises++;
+    //     if (lines == 5) pentrises++;
+    //     if (lines == 6) sixtrises++;
+    //     if (lines == 7) septrises++;
+    //     if (lines > 7) octrises++;
+    // }
 
     // // Start is called before the first frame update
     // private void Awake()
@@ -468,10 +468,10 @@ public class GameEngine : MonoBehaviour
     {
         return Math.Floor(((double)time/60000)%6).ToString() + Math.Floor(((double)time/6000)%10) + ":" + Math.Floor(((double)time%6000/1000)%6) + Math.Floor(((double)time%6000/100)%10) + ":" + Math.Floor((((double)time%100/1000)*100)%10) + Math.Floor((((double)time%100/100)*100)%10);
     }
-    public void SpawnFireworks()
-    {
-        BoardParticleSystem.instance.SummonFirework(new Vector2(0f, 10f), new Vector2(10f,10f));
-    }
+    // public void SpawnFireworks()
+    // {
+    //     BoardParticleSystem.instance.SummonFirework(new Vector2(0f, 10f), new Vector2(10f,10f));
+    // }
     bool showinvis = false;
     // Update is called once per frame
     void FixedUpdate()

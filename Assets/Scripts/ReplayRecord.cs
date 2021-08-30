@@ -47,9 +47,9 @@ public class ReplayRecord : MonoBehaviour
         inputs = data.inputs;
         switches = data.switches;
         Random.InitState(data.seed);
-        for (int i = 0; i < MenuEngine.players.Count; i++)
+        for (int i = 0; i < NetworkBoard.player.Count; i++)
         {
-            MenuEngine.playersComponent[i].lineFreezingMechanic = switches[i][0];
+            NetworkBoard.player[i].lineFreezingMechanic = switches[i][0];
         }
         frames = 0;
     }
@@ -85,9 +85,9 @@ public class ReplayRecord : MonoBehaviour
         // {
         //     if (mode == ReplayModeType.write && MenuEngine.instance.yourPlayer.AREf > (int)MenuEngine.instance.yourPlayer.ARE -401)
         //     {
-        //         for (int i = 0; i < MenuEngine.players.Count; i++)
+        //         for (int i = 0; i < NetworkBoard.player.gameObject.Count; i++)
         //         {
-        //             switches[i][0] = MenuEngine.playersComponent[i].lineFreezingMechanic;
+        //             switches[i][0] = NetworkBoard.player[i].lineFreezingMechanic;
         //             bool[] localInputs = new bool[7];
 
         //         }

@@ -22,7 +22,7 @@ using UnityEngine;
 
 public class BoardParticleSystem : MonoBehaviour
 {
-    public static BoardParticleSystem instance;
+    // public static BoardParticleSystem instance;
     public ParticleSystem particleEmitters;
     public Color[] tileColors;
     public Color[,] grid;

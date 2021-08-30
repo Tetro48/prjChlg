@@ -6945,13 +6945,13 @@ MonoBehaviour:
   settingsGUIPartMovement:
   - {fileID: 213451760}
   inputsGUIMovement:
+  - {fileID: 2044988575}
   - {fileID: 1714019742}
   - {fileID: 1212178006}
   - {fileID: 1771412988}
   - {fileID: 1503026072}
   - {fileID: 2034173225}
   - {fileID: 753168842}
-  - {fileID: 2044988575}
   rotationSystemsGUIMovement: []
   customModeSettingsGUIMovement: []
   preferencesGUIMovement: []
@@ -7294,8 +7294,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 62899f850307741f2a39c98a8b639597, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_Actions: {fileID: -944628639613478452, guid: d8dbe9088492df045911014303ed65a7,
-    type: 3}
+  m_Actions: {fileID: 0}
   m_NotificationBehavior: 2
   m_UIInputModule: {fileID: 0}
   m_DeviceLostEvent:
@@ -7333,147 +7332,39 @@ MonoBehaviour:
         m_CallState: 2
   m_ActionEvents:
   - m_PersistentCalls:
-      m_Calls:
-      - m_Target: {fileID: 1564083148}
-        m_TargetAssemblyTypeName: 
-        m_MethodName: OnMovement
-        m_Mode: 0
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
+      m_Calls: []
     m_ActionId: a56601bd-502e-4770-8fc2-136638dedb16
-    m_ActionName: Game maps/Movement[/Keyboard/upArrow,/Keyboard/downArrow,/Keyboard/leftArrow,/Keyboard/rightArrow,/XInputControllerWindows/leftStick/up,/XInputControllerWindows/leftStick/down,/XInputControllerWindows/leftStick/left,/XInputControllerWindows/leftStick/right]
+    m_ActionName: Game maps/Movement[/Keyboard/upArrow,/Keyboard/downArrow,/Keyboard/leftArrow,/Keyboard/rightArrow]
   - m_PersistentCalls:
-      m_Calls:
-      - m_Target: {fileID: 1564083148}
-        m_TargetAssemblyTypeName: 
-        m_MethodName: OnCounterclockwise
-        m_Mode: 0
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
+      m_Calls: []
     m_ActionId: fcc83a91-170d-48a4-882c-840d92c8be88
-    m_ActionName: Game maps/Counterclockwise[/Keyboard/z,/XInputControllerWindows/buttonEast]
+    m_ActionName: Game maps/Counterclockwise[/Keyboard/z]
   - m_PersistentCalls:
-      m_Calls:
-      - m_Target: {fileID: 1564083148}
-        m_TargetAssemblyTypeName: 
-        m_MethodName: OnClockwise
-        m_Mode: 0
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
+      m_Calls: []
     m_ActionId: da2010e5-7209-450d-a26a-c29b44be5992
-    m_ActionName: Game maps/Clockwise[/Keyboard/x,/XInputControllerWindows/buttonSouth]
+    m_ActionName: Game maps/Clockwise[/Keyboard/x]
   - m_PersistentCalls:
-      m_Calls:
-      - m_Target: {fileID: 1564083148}
-        m_TargetAssemblyTypeName: 
-        m_MethodName: OnClockwise2
-        m_Mode: 0
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
+      m_Calls: []
     m_ActionId: 4b820601-d419-4422-ae27-e9e5cf8bcc62
-    m_ActionName: Game maps/Clockwise 2[/Keyboard/space,/XInputControllerWindows/buttonWest]
+    m_ActionName: Game maps/Clockwise 2[/Keyboard/space]
   - m_PersistentCalls:
-      m_Calls:
-      - m_Target: {fileID: 1564083148}
-        m_TargetAssemblyTypeName: 
-        m_MethodName: OnUpsideDown
-        m_Mode: 0
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
+      m_Calls: []
     m_ActionId: 404c7974-63fd-4e34-86cf-eeeb33a62d7c
-    m_ActionName: Game maps/UpsideDown[/Keyboard/a,/XInputControllerWindows/buttonNorth]
+    m_ActionName: Game maps/UpsideDown[/Keyboard/a]
   - m_PersistentCalls:
-      m_Calls:
-      - m_Target: {fileID: 1564083148}
-        m_TargetAssemblyTypeName: 
-        m_MethodName: OnHold
-        m_Mode: 0
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
+      m_Calls: []
     m_ActionId: 58394490-f9be-48bd-863b-2a7571ed01be
-    m_ActionName: Game maps/Hold[/XInputControllerWindows/leftShoulder,/Keyboard/a]
+    m_ActionName: Game maps/Hold[/Keyboard/c]
   - m_PersistentCalls:
-      m_Calls:
-      - m_Target: {fileID: 1564083148}
-        m_TargetAssemblyTypeName: 
-        m_MethodName: OnPause
-        m_Mode: 0
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
+      m_Calls: []
     m_ActionId: 4ebbee2c-e26b-4bd4-b26e-fd75d3127f33
-    m_ActionName: Game maps/Pause[/Keyboard/escape,/XInputControllerWindows/start]
+    m_ActionName: Game maps/Pause[/Keyboard/f1]
   - m_PersistentCalls:
-      m_Calls:
-      - m_Target: {fileID: 1564083148}
-        m_TargetAssemblyTypeName: 
-        m_MethodName: OnFramestep
-        m_Mode: 0
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
+      m_Calls: []
     m_ActionId: c81b05b0-1a7b-4ec9-8adc-8db3aca77184
-    m_ActionName: Game maps/Framestep[/Keyboard/n,/XInputControllerWindows/select]
+    m_ActionName: Game maps/Framestep[/Keyboard/n]
   - m_PersistentCalls:
-      m_Calls:
-      - m_Target: {fileID: 1564083148}
-        m_TargetAssemblyTypeName: 
-        m_MethodName: ShowGradeScore
-        m_Mode: 1
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
+      m_Calls: []
     m_ActionId: cf300265-2f9e-481f-bd7d-0a0d56df258c
     m_ActionName: Game maps/Show Grade Score[/Keyboard/g]
   m_NeverAutoSwitchControlSchemes: 0
