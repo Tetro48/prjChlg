@@ -55,7 +55,7 @@ public class GhostPieceController : MonoBehaviour
     public void MoveGhostPiece(Vector2Int movement)
     {
         setOn = false;
-        while (CanMoveGhostPiece(movement) && !setOn)
+        while (CanMoveGhostPiece(movement) && !setOn && gameObject.activeInHierarchy)
         {
             foreach (GameObject tile in tiles)
             {
@@ -77,7 +77,7 @@ public class GhostPieceController : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if (PiecesController.instance.piecemovementlocked || !visibility)
+        if (networkBoard.piecesController.piecemovementlocked || !visibility)
         {
             Destroy(this.gameObject);
         }

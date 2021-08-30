@@ -25,6 +25,7 @@ using UnityEngine;
 public class BoardController : MonoBehaviour {
 
     public NetworkBoard networkBoard;
+    public BoardParticleSystem boardParticles;
 
     public int playerID;
 
@@ -77,7 +78,7 @@ public class BoardController : MonoBehaviour {
             {
                 arereseted = true;
                 networkBoard.lineDelayf = 0;
-                if(networkBoard.level < 2099)networkBoard.AREf = (int)Math.Floor(networkBoard.ARE - networkBoard.AREline);
+                if(networkBoard.level < networkBoard.endingLevel - 1)networkBoard.AREf = (int)Math.Floor(networkBoard.ARE - networkBoard.AREline);
             }
         }
     }
@@ -474,7 +475,7 @@ public class BoardController : MonoBehaviour {
                     tileTexture = i;
                 }
             }
-            BoardParticleSystem.instance.SummonParticles(new Vector2Int(x, lineToClear), tileTexture);
+            boardParticles.SummonParticles(new Vector2Int(x, lineToClear), tileTexture);
             Destroy(fullGrid[x, lineToClear].tileOnGridUnit);
             if (!curPC.AnyTilesLeft()) { Destroy(curPC.gameObject); }
             fullGrid[x, lineToClear].tileOnGridUnit = null;

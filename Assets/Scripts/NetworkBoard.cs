@@ -31,6 +31,7 @@ using TMPro;
 /// </summary>
 public class NetworkBoard : NetworkBehaviour
 {
+    public static List<NetworkBoard> player = new List<NetworkBoard>();
     public BoardController boardController;
     public BoardParticleSystem boardParticles;
     public PiecesController piecesController;
@@ -373,14 +374,14 @@ public class NetworkBoard : NetworkBehaviour
     }
     public void OnPause(InputAction.CallbackContext value)
     {
-        if (value.started && MenuEngine.players.Count <= 1)
+        if (value.started && player.Count <= 1)
         {
             paused = !paused;
         }
     }
     public void OnFramestep(InputAction.CallbackContext value)
     {
-        if (value.started && MenuEngine.players.Count <= 1)
+        if (value.started && player.Count <= 1)
         {
             Inputs[7] = true;
         }
@@ -398,7 +399,8 @@ public class NetworkBoard : NetworkBehaviour
             ReplayRecord.instance.switches.Add(tempSwitches);
         }
 
-        playerID = MenuEngine.players.Count;
+        if(player.Count > 0) playerID = player.Count;
+        else playerID = 0;
         boardController.playerID = playerID;
         piecesController.playerID = playerID;
         if(IsOwner)
@@ -406,8 +408,7 @@ public class NetworkBoard : NetworkBehaviour
             MenuEngine.instance.yourPlayer = this;
             MenuEngine.instance.curBoard = gameObject;
         }
-        MenuEngine.players.Add(gameObject);
-        MenuEngine.playersComponent.Add(this);
+        player.Add(this);
     }
 
     [ClientRpc]
@@ -455,8 +456,12 @@ public class NetworkBoard : NetworkBehaviour
             rolltimeObject.SetActive(ending);
             // musicTime += Time.deltaTime;
             if(notifDelay > 0)notifDelay--;
-            if(MenuEngine.instance.curBoard != null){int pieceCountHoldRed = piecesController.pieceHold == 28 ? -1 : -2;
-            if(time > 0)ppsCounter.text = Math.Floor(((double)(piecesController.pieces + pieceCountHoldRed) / ((double)time/100))*100)/100 + " pieces/second";}
+            if(MenuEngine.instance.curBoard != null)
+            {
+                int pieceCountHoldRed = piecesController.pieceHold == 28 ? -1 : -2;
+                if(time > 0)
+                ppsCounter.text = Math.Floor(((double) (piecesController.pieces + pieceCountHoldRed - piecesController.relativeNextPieceCoordinates.Count) / ((double)time/100))*100)/100 + " pieces/second";
+            }
             // if (Input.GetKey(KeyCode.X) || Input.GetKey(KeyCode.Space)) Inputs[2] = true;
             // if (Input.GetKey(KeyCode.A)) Inputs[3] = true;
             // if (Input.GetKey(KeyCode.C)) Inputs[4] = true;
@@ -567,7 +572,7 @@ public class NetworkBoard : NetworkBehaviour
             frames++;
             if(frames > 300)
             {
-                transform.localPosition -= new Vector3(0f, 0.005f * (frames*frames*frames), 0f);
+                transform.localPosition -= new Vector3(0f, 0.005f * (frames-300*frames-300*frames-300), 0f);
                 // boardrot = transform.Rotate;
                 // boardrot.z -= 0.16f;
                 transform.Rotate(new Vector3(0f, 0f, -0.1f - (float)(((frames-300) / 66) * ((frames-400) / 66))));
@@ -577,15 +582,15 @@ public class NetworkBoard : NetworkBehaviour
                 }
                 if (frames == 351)
                 {
-                    if(MenuEngine.players.Count < 2) MenuEngine.instance.audioSource2.Play();
+                    if(player.Count < 2) MenuEngine.instance.audioSource2.Play();
                 }
                 if (frames == 401)
                 {
                     MenuEngine.instance.ExtractStatsToNotifications(this);
                     int aliveplayers = 0;
-                    for (int i = 0; i < MenuEngine.players.Count; i++)
+                    for (int i = 0; i < player.Count; i++)
                     {
-                        if (!MenuEngine.playersComponent[i].GameOver)
+                        if (!player[i].GameOver)
                         {
                             aliveplayers++;
                         }
@@ -597,8 +602,7 @@ public class NetworkBoard : NetworkBehaviour
                         {
                             ReplayRecord.instance.SaveReplay(DateTime.Now.ToString("MM-dd-yyyy-HH-mm-ss"));
                         }
-                        MenuEngine.players = new List<GameObject>();
-                        MenuEngine.playersComponent = new List<NetworkBoard>();
+                        player = new List<NetworkBoard>();
                         MenuEngine.instance.starting = true;
                     }
                     Destroy(gameObject);

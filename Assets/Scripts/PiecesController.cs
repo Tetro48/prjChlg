@@ -27,7 +27,6 @@ using UnityEngine.InputSystem.Utilities;
 
 public class PiecesController : MonoBehaviour {
 
-    public static PiecesController instance;
 
     public NetworkBoard board;
 
@@ -52,21 +51,21 @@ public class PiecesController : MonoBehaviour {
     public AudioSource gameAudio;
     public AudioClip nextpiece1, nextpiece2, nextpiece3, nextpiece4, nextpiece5, nextpiece6, nextpiece7, audioIRS, audioIHS, bell, levelup;
     [SerializeField]
-    Vector2 relativeHoldPieceCoordinate;
+    Vector2Int relativeHoldPieceCoordinate;
 
     [SerializeField] 
     GameObject holdPieceBuffer;
 
     [SerializeField] 
-    List<Vector2> relativeNextPieceCoordinates;
+    public List<Vector2Int> relativeNextPieceCoordinates;
 
     [SerializeField] 
-    List<GameObject> nextPiecesBuffer = new List<GameObject>();
-    public GameObject[] nextPieceUI;
-    public GameObject[] nextIBMWPieceUI;
-    public GameObject[] nextARSPieceUI;
-    public GameObject[] nextIBMPieceUI;
-    public GameObject[] holdPieceUI;
+    List<GameObject> nextPiecesBuffer;
+    // public GameObject[] nextPieceUI;
+    // public GameObject[] nextIBMWPieceUI;
+    // public GameObject[] nextARSPieceUI;
+    // public GameObject[] nextIBMPieceUI;
+    // public GameObject[] holdPieceUI;
     //{ Up, CW, CCW, UD, Hold }
     public bool[] PrevInputs;
     
@@ -97,7 +96,6 @@ public class PiecesController : MonoBehaviour {
     /// </summary>
     private void Awake()
     {
-        instance = this;
         // holdPieceBuffer = new GameObject();
         GameObject newPrefab = Instantiate(piecePrefab, transform);
         newPrefab.SetActive(false);
@@ -250,6 +248,7 @@ public class PiecesController : MonoBehaviour {
         {
             SpawnNextPiece(bag[i]);
         }
+        UpdatePieceBag();
     }
 
     bool bagPieceRetrieved;
@@ -274,7 +273,7 @@ public class PiecesController : MonoBehaviour {
                     {
                         board.lineClonePiecesLeft = board.lineClonePerPiece[board.curSect];
                     }
-                    SpawnPiece(bag[pieces]);
+                    SpawnPiece();
                     for (int i = 0; i < (int)Math.Floor(gravityTiles); i++)
                     {
                         if(piecemovementlocked == false)MoveCurPiece(Vector2Int.down);
@@ -345,7 +344,7 @@ public class PiecesController : MonoBehaviour {
     {
         if (allowHold == true)
         {
-            SpawnNextPiece(bag[pieces] + relativeNextPieceCoordinates.Count);
+            SpawnNextPiece(bag[pieces]);
             if (board.level >= 600 && board.nextibmblocks < board.nextPieces + 1)
             {
                 board.nextibmblocks++;
@@ -432,7 +431,7 @@ public class PiecesController : MonoBehaviour {
                     {
                         board.lineClonePiecesLeft = board.lineClonePerPiece[board.curSect];
                     }
-                    SpawnPiece(bag[pieces]);
+                    SpawnPiece();
                     board.AREf = 0;
                 }
                 if ((board.Inputs[2] || board.Inputs[6]) && (!board.Inputs[1]) && (!board.Inputs[3])) {IRSCW = true; IRSCCW = false; IRSUD = false;}
@@ -563,11 +562,21 @@ public class PiecesController : MonoBehaviour {
             // {
             //     SpawnDebug(6);
             // }
-            if(curPieceController != null) if (!curPieceController.CanMovePiece(Vector2Int.zero) && !piecemovementlocked) curPieceController.SendPieceToFloor();
-            if(piecemovementlocked == false) while (gravityTiles > 0)
+            if(curPieceController != null) 
             {
-                MoveCurPiece(Vector2Int.down);
-                gravityTiles -= (float)Math.Floor(gravityTiles);
+                if (!curPieceController.CanMovePiece(Vector2Int.zero) && !piecemovementlocked) curPieceController.SendPieceToFloor();
+                if(piecemovementlocked == false) while (gravityTiles >= 1)
+                {
+                    if (!curPieceController.CanMovePiece(Vector2Int.down))
+                    {
+                        gravityTiles = 0;
+                    }
+                    else
+                    {
+                        MoveCurPiece(Vector2Int.down);
+                        gravityTiles--;
+                    }
+                }
             }
             if (board.Inputs[0] && !PrevInputs[0] && !piecemovementlocked)
             {
@@ -644,44 +653,51 @@ public class PiecesController : MonoBehaviour {
     {
         GameObject localGO = GameObject.Instantiate(piecePrefab, transform);
         localGO.SetActive(true);
-        localGO.GetComponent<PieceController>().ghostContr.gameObject.SetActive(false);
-        localGO.GetComponent<PieceController>().SpawnPiece((PieceType)id, this);
-        localGO.transform.localPosition = relativeNextPieceCoordinates[nextPiecesBuffer.Count];
+        PieceController localpiecectrl = localGO.GetComponent<PieceController>();
+        localpiecectrl.ghostContr.gameObject.SetActive(false);
+        localpiecectrl.SpawnPiece((PieceType)id, this, relativeNextPieceCoordinates[nextPiecesBuffer.Count]);
+        localpiecectrl.isPieceIsInNextQueue = true;
         nextPiecesBuffer.Add(localGO);
         if (nextPiecesBuffer.Count > board.nextPieces)
         {
             nextPiecesBuffer.RemoveAt(0);
             for (int index = 0; index < nextPiecesBuffer.Count; index++)
             {
-                nextPiecesBuffer[index].transform.localPosition = relativeNextPieceCoordinates[index];
+                nextPiecesBuffer[index].GetComponent<PieceController>().ForcefullyMovePiece(relativeNextPieceCoordinates[index] - relativeNextPieceCoordinates[index+1]);
+                // nextPiecesBuffer[index].transform.localPosition = (Vector2)relativeNextPieceCoordinates[index];
             }
         }
-
+        pieces++;
     }
     /// <summary>
     /// Spawns a new Tetris piece.
     /// </summary>
-    public void SpawnPiece(int id)
+    public void SpawnPiece()
     {
+        allowHold = true;
+        // while (nextPiecesBuffer.Count < relativeNextPieceCoordinates.Count -1)
+        // {
+        //     NextPiece();
+        //     pieces++;
+        // }
         gravityTiles = 0.0f;
         if (board.gravity >= 19.99999)
         {
             gravityTiles = 22.0f;
         }
-        pieces++;
+        // pieces++;
         if(board.comboKeepCounter > 0)board.comboKeepCounter--;
-        allowHold = true;
         IHSexecuted = false;
         GameObject localGO = nextPiecesBuffer[0];
         curPiece = localGO;
-        localGO.GetComponent<PieceController>().ghostContr.gameObject.SetActive(false);
-        NextPiece();
+        // localGO.GetComponent<PieceController>().ghostContr.gameObject.SetActive(false);
         // PieceType randPiece = (PieceType)id;
         curPieceController = curPiece.GetComponent<PieceController>();
         curPieceController.isPieceIsInNextQueue = false;
         // curPieceController.SpawnPiece(randPiece, this);
         piecemovementlocked = false;
         piecesInGame.Add(localGO);
+        NextPiece();
     }
     /// <summary>
     /// Spawns a new Tetris piece.
@@ -693,7 +709,7 @@ public class PiecesController : MonoBehaviour {
         curPieceController.isPieceIsInNextQueue = true;
         if(curPieceController.rotationIndex == 2) curPieceController.RotatePiece180(true, false);
         if(curPieceController.rotationIndex % 2 == 1) curPieceController.RotatePiece(curPieceController.rotationIndex / 2 == 1, false, false);
-        curPiece.transform.localPosition = relativeHoldPieceCoordinate;
+        curPieceController.ForcefullyMovePiece(relativeHoldPieceCoordinate - curPieceController.tiles[0].coordinates);
         gravityTiles = 0.0f;
         if (board.gravity >= 19.99999)
         {
@@ -709,6 +725,7 @@ public class PiecesController : MonoBehaviour {
         curPiece.SetActive(true);
         // PieceType randPiece = (PieceType)id;
         curPieceController = curPiece.GetComponent<PieceController>();
+        curPieceController.isPieceIsInNextQueue = false;
         // curPieceController.SpawnPiece(randPiece, this);
         piecemovementlocked = false;
         if ((board.Inputs[2] || board.Inputs[6]) && (!board.Inputs[1]) && (!board.Inputs[3])) {IRSCW = true; IRSCCW = false; IRSUD = false;}

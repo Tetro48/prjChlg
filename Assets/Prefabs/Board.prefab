@@ -5335,7 +5335,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1554080077183075402}
   m_LocalRotation: {x: 0, y: -0, z: -0, w: -1}
-  m_LocalPosition: {x: 4.5, y: 9, z: 7.8}
+  m_LocalPosition: {x: 4.5, y: 9, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
   - {fileID: 1554080077038501573}
@@ -5551,22 +5551,22 @@ MonoBehaviour:
   audioIHS: {fileID: 8300000, guid: db3a7988f2fee6e409fd5d441475865b, type: 3}
   bell: {fileID: 8300000, guid: c3742a9a65fe42f46a4f6a238331553f, type: 3}
   levelup: {fileID: 8300000, guid: 8ab9028027588a641ab9d449f1114bb1, type: 3}
-  relativeHoldPieceCoordinate: {x: 1, y: 24}
+  relativeHoldPieceCoordinate: {x: 0, y: 21}
+  holdPieceBuffer: {fileID: 0}
   relativeNextPieceCoordinates:
-  - {x: 5, y: 24}
-  - {x: 10, y: 24}
-  - {x: 15, y: 24}
-  - {x: 15, y: 21}
-  - {x: 15, y: 18}
-  - {x: 15, y: 15}
-  - {x: 15, y: 12}
-  - {x: 15, y: 9}
-  - {x: 15, y: 6}
-  nextPieceUI: []
-  nextIBMWPieceUI: []
-  nextARSPieceUI: []
-  nextIBMPieceUI: []
-  holdPieceUI: []
+  - {x: 4, y: 21}
+  - {x: 9, y: 21}
+  - {x: 14, y: 21}
+  - {x: 14, y: 18}
+  - {x: 14, y: 15}
+  - {x: 14, y: 12}
+  - {x: 14, y: 9}
+  - {x: 14, y: 6}
+  - {x: 14, y: 3}
+  - {x: 14, y: 0}
+  - {x: 14, y: -3}
+  - {x: 9, y: -3}
+  nextPiecesBuffer: []
   PrevInputs: 00000000000000
   allowHold: 1
   ARRtuning: 1
@@ -5694,7 +5694,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1554080078163721032}
   m_LocalRotation: {x: 0, y: -0, z: -0, w: -1}
-  m_LocalPosition: {x: -4.5, y: -9, z: 7.8}
+  m_LocalPosition: {x: -4.5, y: -9, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 1554080077183075403}
@@ -5713,6 +5713,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   networkBoard: {fileID: -1545146102209895259}
+  boardParticles: {fileID: 7500424796739037746}
   playerID: 0
   gridUnitPrefab: {fileID: 1456940389257632, guid: 1f1eda771ad1d144893dab343d67e484,
     type: 3}
@@ -6123,13 +6124,32 @@ MonoBehaviour:
   ppsCounter: {fileID: 7224286527902107201}
   readyGoIndicator: {fileID: 9134584172212665877}
   gradeIndicator: {fileID: 5084799398573682422}
-  gradeSprites: []
+  gradeSprites:
+  - {fileID: -1571377170218505473, guid: cf2539b3d3eb63d4888e610fb18b3277, type: 3}
+  - {fileID: -2527783471621628308, guid: cf2539b3d3eb63d4888e610fb18b3277, type: 3}
+  - {fileID: 2116624256234320420, guid: cf2539b3d3eb63d4888e610fb18b3277, type: 3}
+  - {fileID: -8956045559051837456, guid: cf2539b3d3eb63d4888e610fb18b3277, type: 3}
+  - {fileID: 5220755807092177443, guid: cf2539b3d3eb63d4888e610fb18b3277, type: 3}
+  - {fileID: -296828435537677357, guid: cf2539b3d3eb63d4888e610fb18b3277, type: 3}
+  - {fileID: 1293768987799746710, guid: cf2539b3d3eb63d4888e610fb18b3277, type: 3}
+  - {fileID: 4494768796115638314, guid: cf2539b3d3eb63d4888e610fb18b3277, type: 3}
+  - {fileID: -840210724348060756, guid: cf2539b3d3eb63d4888e610fb18b3277, type: 3}
+  - {fileID: -3695894387611418401, guid: cf2539b3d3eb63d4888e610fb18b3277, type: 3}
+  - {fileID: 2642928066069182360, guid: cf2539b3d3eb63d4888e610fb18b3277, type: 3}
+  - {fileID: 2476406436666083511, guid: cf2539b3d3eb63d4888e610fb18b3277, type: 3}
+  - {fileID: -5694208714488196036, guid: cf2539b3d3eb63d4888e610fb18b3277, type: 3}
+  - {fileID: -2711129603528921581, guid: cf2539b3d3eb63d4888e610fb18b3277, type: 3}
+  - {fileID: -6256461273992066745, guid: cf2539b3d3eb63d4888e610fb18b3277, type: 3}
+  - {fileID: -6136521521536338367, guid: cf2539b3d3eb63d4888e610fb18b3277, type: 3}
+  - {fileID: 2284442082187956351, guid: cf2539b3d3eb63d4888e610fb18b3277, type: 3}
+  - {fileID: 1148152121320515457, guid: cf2539b3d3eb63d4888e610fb18b3277, type: 3}
+  - {fileID: -5794169232483874171, guid: cf2539b3d3eb63d4888e610fb18b3277, type: 3}
   grade: 0
   readySprite: {fileID: -946842022227517061, guid: cfb59daadb9305b4db5a3fd4061b6e68,
     type: 3}
   goSprite: {fileID: -6191943026323054616, guid: cfb59daadb9305b4db5a3fd4061b6e68,
     type: 3}
-  nextPieces: 0
+  nextPieces: 7
   nextibmblocks: 0
   RS: 0
   TLS: 0

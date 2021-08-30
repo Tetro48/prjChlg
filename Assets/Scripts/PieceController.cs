@@ -51,11 +51,11 @@ public class PieceController : MonoBehaviour {
 
     bool fullyLocked;
     /// <summary>
-    /// Called as soon as the piece is initialized. Initialiezes some necessary values.
+    /// Called as soon as the piece is initialized. Initializes some necessary values.
     /// </summary>
-    private void Initiate(PiecesController connector)
+    private void Initiate(Vector2Int position)
     {
-        spawnLocation = connector.spawnPos;
+        spawnLocation = position;
         rotationIndex = 0;
 
         tiles = new TileController[4];
@@ -114,10 +114,10 @@ public class PieceController : MonoBehaviour {
     /// Moves the attached tiles to form the Tetris piece specified. Also sets the correct color of tile sprite.
     /// </summary>
     /// <param name="newType">Type of tetris piece to be spawned.</param>
-    public void SpawnPiece(PieceType newType, PiecesController connector)
+    public void SpawnPiece(PieceType newType, PiecesController connector, Vector2Int position)
     {
         board = connector.board;
-        Initiate(connector);
+        Initiate(position);
         ghostContr.Initiate(connector);
         isDisabledFromSacrifice = false;
         curType = newType;
@@ -242,7 +242,7 @@ public class PieceController : MonoBehaviour {
     {
         foreach (TileController tile in tiles)
         {
-            if (!tile.CanTileMove(movement + tile.coordinates))
+            if(tile != null) if (!tile.CanTileMove(movement + tile.coordinates))
             {
                 return false;
             }
@@ -268,6 +268,20 @@ public class PieceController : MonoBehaviour {
         return false;
     }
 
+    /// <summary>
+    /// Moves the piece by the specified amount.
+    /// </summary>
+    /// <param name="movement">X,Y amount to move the piece</param>
+    /// <returns>True if the piece was able to be moved. False if the move couln't be completed.</returns>
+    public bool ForcefullyMovePiece(Vector2Int movement)
+    {
+        for (int i = 0; i < tiles.Length; i++)
+        {
+            tiles[i].MoveTile(movement);
+            LockDelayf = 0;
+        }
+        return true;
+    }
     /// <summary>
     /// Moves the piece by the specified amount.
     /// </summary>
