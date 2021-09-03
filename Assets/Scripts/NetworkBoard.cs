@@ -72,7 +72,7 @@ public class NetworkBoard : NetworkBehaviour
 
     public AudioClip readySE, goSE, gradeUp, excellent, coolSE, regretSE;
 
-    public double gradePoints, statGradePoints, gradePointRequirement;
+    public double gradePoints, statGradePoints, gradePointRequirement = 100;
 
     private int virtualBasePoint;
 
@@ -572,10 +572,10 @@ public class NetworkBoard : NetworkBehaviour
             frames++;
             if(frames > 300)
             {
-                transform.localPosition -= new Vector3(0f, 0.005f * (frames-300*frames-300*frames-300), 0f);
+                transform.localPosition -= new Vector3(0f, 0.015f * (frames-300), 0f);
                 // boardrot = transform.Rotate;
                 // boardrot.z -= 0.16f;
-                transform.Rotate(new Vector3(0f, 0f, -0.1f - (float)(((frames-300) / 66) * ((frames-400) / 66))));
+                transform.Rotate(new Vector3(0f, -6f, -0.4f - (float)(((frames-300) / 44) * ((frames-400) / 44))));
                 if (frames == 301)
                 {
                     MenuEngine.instance.audioSource2.PlayOneShot(MenuEngine.instance.topoutSE);
