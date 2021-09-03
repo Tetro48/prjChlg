@@ -95,11 +95,18 @@ public class MenuEngine : MonoBehaviour
         {"シングル：", "ダブル：", "トリプル", "テトリス：", "行：", "合計", "ピース", "成績：", "総合成績スコア", "レベル：", "時間", "", "", "", "", ""},
     };
     Language previousLang;
-    // public void InstantiatePlayer()
-    // {
-    //     GameObject newBoard = Instantiate(inGameBoard, transform);
-    //     players.Add(newBoard);
-    // }
+    public void InstantiatePlayer(double LockDelay = 50, double ARE = 41.6666666, double AREline = 16.6666666, double lineDelay = 25, float gravity = 3/64f, int nextPieces = 7)
+    {
+        GameObject newBoard = Instantiate(inGameBoard, transform);
+        NetworkBoard component = newBoard.GetComponent<NetworkBoard>();
+        NetworkBoard.player.Add(component);
+        component.LockDelay = LockDelay;
+        component.ARE = ARE;
+        component.AREline = AREline;
+        component.gravity = gravity;
+        component.nextPieces = nextPieces;
+        component.piecesController.InitiatePieces();
+    }
     public void QuitGame()
     {
         if (platformCompat() || Application.platform == RuntimePlatform.Android || Application.platform == RuntimePlatform.IPhonePlayer) quitting = true;
@@ -313,7 +320,7 @@ public class MenuEngine : MonoBehaviour
         if(board.statGradePoints > 0) {NotificationEngine.instance.InstantiateNotification(notifLangString[(int)language, 8], Color.white); // Total grade score
         NotificationEngine.instance.InstantiateNotification(Math.Floor(board.statGradePoints).ToString(), Color.white);}
         NotificationEngine.instance.InstantiateNotification(notifLangString[(int)language, 9] + board.level + "/" + (board.level < 2100 ? (board.curSect + 1) * 100 : 2100), Color.white); // Level
-        NotificationEngine.instance.InstantiateNotification(notifLangString[(int)language, 10] + board.gravity, Color.white); // Gravity
+        NotificationEngine.instance.InstantiateNotification(notifLangString[(int)language, 10] + (board.gravity / 6 * Time.fixedDeltaTime * 1000), Color.white); // Gravity
         NotificationEngine.instance.InstantiateNotification(notifLangString[(int)language, 11] + board.timeCounter.text, Color.white);
     }
     public void UpdateLang()
@@ -354,7 +361,7 @@ public class MenuEngine : MonoBehaviour
     // rough framerate measurement
     void Update()
     {
-        double rawframetime = Time.deltaTime / Time.timeScale;
+        double rawframetime = Time.unscaledDeltaTime;
         frameratebuffer.Add(rawframetime);
         if (frameratebuffer.Count > 10)
         {
@@ -506,29 +513,30 @@ public class MenuEngine : MonoBehaviour
                     // GameEngine.instance.statGradePoints = 0;
                     // SceneManager.LoadScene("GameScene");
 
-                    GameObject board = GameObject.Instantiate(inGameBoard, transform);
-                    curBoard = board;
-                    NetworkBoard netBoard = curBoard.GetComponent<NetworkBoard>();
-                    board.transform.position = new Vector3(0.0f, 20f, 0.0f);
+                    InstantiatePlayer();
+                    // GameObject board = GameObject.Instantiate(inGameBoard, transform);
+                    // curBoard = board;
+                    // NetworkBoard netBoard = curBoard.GetComponent<NetworkBoard>();
+                    // board.transform.position = new Vector3(0.0f, 20f, 0.0f);
                     mainMenuMusic.Stop();
                     // netBoard.piecesController.UpdateShownPieces();
                 }
-                if (frames == MMf + 12)   curBoard.transform.position = new Vector3(0.0f, 18f, 0.0f);
-                if (frames == MMf + 13)   curBoard.transform.position = new Vector3(0.0f, 16f, 0.0f);
-                if (frames == MMf + 14)   curBoard.transform.position = new Vector3(0.0f, 14f, 0.0f);
-                if (frames == MMf + 15)   curBoard.transform.position = new Vector3(0.0f, 12f, 0.0f);
-                if (frames == MMf + 16)   curBoard.transform.position = new Vector3(0.0f, 10f, 0.0f);
-                if (frames == MMf + 17)   curBoard.transform.position = new Vector3(0.0f, 8f, 0.0f);
-                if (frames == MMf + 18)   curBoard.transform.position = new Vector3(0.0f, 6f, 0.0f);
-                if (frames == MMf + 19)   curBoard.transform.position = new Vector3(0.0f, 4f, 0.0f);
-                if (frames == MMf + 20)   curBoard.transform.position = new Vector3(0.0f, 2f, 0.0f);
-                if (frames == MMf + 21)   curBoard.transform.position = new Vector3(0.0f, 0f, 0.0f);
-                if (frames == MMf + 22)   curBoard.transform.position = new Vector3(0.0f, -0.8f, 0.0f);
-                if (frames == MMf + 23)   curBoard.transform.position = new Vector3(0.0f, -1.4f, 0.0f);
-                if (frames == MMf + 24)   curBoard.transform.position = new Vector3(0.0f, -2f, 0.0f);
-                if (frames == MMf + 25)   curBoard.transform.position = new Vector3(0.0f, -1.3f, 0.0f);
-                if (frames == MMf + 26)   curBoard.transform.position = new Vector3(0.0f, -0.7f, 0.0f);
-                if (frames == MMf + 27)   curBoard.transform.position = new Vector3(0.0f, 0f, 0.0f);
+                // if (frames == MMf + 12)   curBoard.transform.position = new Vector3(0.0f, 18f, 0.0f);
+                // if (frames == MMf + 13)   curBoard.transform.position = new Vector3(0.0f, 16f, 0.0f);
+                // if (frames == MMf + 14)   curBoard.transform.position = new Vector3(0.0f, 14f, 0.0f);
+                // if (frames == MMf + 15)   curBoard.transform.position = new Vector3(0.0f, 12f, 0.0f);
+                // if (frames == MMf + 16)   curBoard.transform.position = new Vector3(0.0f, 10f, 0.0f);
+                // if (frames == MMf + 17)   curBoard.transform.position = new Vector3(0.0f, 8f, 0.0f);
+                // if (frames == MMf + 18)   curBoard.transform.position = new Vector3(0.0f, 6f, 0.0f);
+                // if (frames == MMf + 19)   curBoard.transform.position = new Vector3(0.0f, 4f, 0.0f);
+                // if (frames == MMf + 20)   curBoard.transform.position = new Vector3(0.0f, 2f, 0.0f);
+                // if (frames == MMf + 21)   curBoard.transform.position = new Vector3(0.0f, 0f, 0.0f);
+                // if (frames == MMf + 22)   curBoard.transform.position = new Vector3(0.0f, -0.8f, 0.0f);
+                // if (frames == MMf + 23)   curBoard.transform.position = new Vector3(0.0f, -1.4f, 0.0f);
+                // if (frames == MMf + 24)   curBoard.transform.position = new Vector3(0.0f, -2f, 0.0f);
+                // if (frames == MMf + 25)   curBoard.transform.position = new Vector3(0.0f, -1.3f, 0.0f);
+                // if (frames == MMf + 26)   curBoard.transform.position = new Vector3(0.0f, -0.7f, 0.0f);
+                // if (frames == MMf + 27)   curBoard.transform.position = new Vector3(0.0f, 0f, 0.0f);
                 // if (frames == 23)
                 // {
                 //     SceneManager.UnloadSceneAsync("MenuScene");

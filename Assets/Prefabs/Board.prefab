@@ -4890,7 +4890,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 0.1048, y: 23.23}
+  m_AnchoredPosition: {x: 0.1048, y: 24}
   m_SizeDelta: {x: 0.3622, y: 0.1498}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!212 &1554080076603258702
@@ -4979,7 +4979,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 3.62, y: 23.21}
+  m_AnchoredPosition: {x: 3.62, y: 24}
   m_SizeDelta: {x: 0.4041, y: 0.1498}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!212 &1554080076736698916
@@ -5551,21 +5551,36 @@ MonoBehaviour:
   audioIHS: {fileID: 8300000, guid: db3a7988f2fee6e409fd5d441475865b, type: 3}
   bell: {fileID: 8300000, guid: c3742a9a65fe42f46a4f6a238331553f, type: 3}
   levelup: {fileID: 8300000, guid: 8ab9028027588a641ab9d449f1114bb1, type: 3}
-  relativeHoldPieceCoordinate: {x: 0, y: 21}
+  relativeHoldPieceCoordinate: {x: -1, y: 21}
   holdPieceBuffer: {fileID: 0}
   relativeNextPieceCoordinates:
-  - {x: 4, y: 21}
-  - {x: 9, y: 21}
-  - {x: 14, y: 21}
-  - {x: 14, y: 18}
-  - {x: 14, y: 15}
-  - {x: 14, y: 12}
-  - {x: 14, y: 9}
-  - {x: 14, y: 6}
-  - {x: 14, y: 3}
-  - {x: 14, y: 0}
-  - {x: 14, y: -3}
-  - {x: 9, y: -3}
+  - {x: 4, y: 22}
+  - {x: 9, y: 22}
+  - {x: 14, y: 22}
+  - {x: 14, y: 19}
+  - {x: 14, y: 16}
+  - {x: 14, y: 13}
+  - {x: 14, y: 10}
+  - {x: 14, y: 7}
+  - {x: 14, y: 4}
+  - {x: 14, y: 1}
+  - {x: 14, y: -2}
+  - {x: 9, y: -2}
+  - {x: 4, y: -2}
+  - {x: -1, y: -2}
+  - {x: -6, y: -2}
+  - {x: -6, y: 1}
+  - {x: -6, y: 4}
+  - {x: -6, y: 7}
+  - {x: -6, y: 10}
+  - {x: -6, y: 13}
+  - {x: -6, y: 16}
+  - {x: -6, y: 19}
+  - {x: -6, y: 22}
+  - {x: -11, y: 22}
+  - {x: -11, y: 19}
+  - {x: -11, y: 16}
+  - {x: -11, y: 13}
   nextPiecesBuffer: []
   PrevInputs: 00000000000000
   allowHold: 1
@@ -6116,7 +6131,7 @@ MonoBehaviour:
   regretSE: {fileID: 8300000, guid: d8190f04ff9e3a8438a94bb8a2ba6707, type: 3}
   gradePoints: 0
   statGradePoints: 0
-  gradePointRequirement: 0
+  gradePointRequirement: 100
   levelTextRender: {fileID: 723338413880241675}
   nextSecLv: {fileID: 9208816170203756799}
   timeCounter: {fileID: 8605258494632991575}
@@ -6149,7 +6164,7 @@ MonoBehaviour:
     type: 3}
   goSprite: {fileID: -6191943026323054616, guid: cfb59daadb9305b4db5a3fd4061b6e68,
     type: 3}
-  nextPieces: 7
+  nextPieces: 26
   nextibmblocks: 0
   RS: 0
   TLS: 0
@@ -8032,6 +8047,11 @@ PrefabInstance:
       propertyPath: m_margin.w
       value: 0.011200368
       objectReference: {fileID: 0}
+    - target: {fileID: 1485740270591445907, guid: ba372d7a30b338e41b7a40d6fe08eafa,
+        type: 3}
+      propertyPath: m_Layer
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 1485740270591445919, guid: ba372d7a30b338e41b7a40d6fe08eafa,
         type: 3}
       propertyPath: m_RootOrder
@@ -8139,6 +8159,11 @@ PrefabInstance:
         type: 3}
       propertyPath: m_AnchoredPosition.y
       value: -9.8942995
+      objectReference: {fileID: 0}
+    - target: {fileID: 207301353883770261, guid: 650bc189bb89f224eab6c9762a6f26a6,
+        type: 3}
+      propertyPath: m_Layer
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 5020723717473311888, guid: 650bc189bb89f224eab6c9762a6f26a6,
         type: 3}

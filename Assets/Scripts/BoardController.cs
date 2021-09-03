@@ -50,6 +50,12 @@ public class BoardController : MonoBehaviour {
     private void Start()
     {
         CreateGrid();
+        GameObject newTileClone = GameObject.Instantiate(tileClone, transform);
+        newTileClone.name = "Garbage tile";
+        newTileClone.SetActive(false);
+        PieceController tileCtrl = newTileClone.GetComponent<PieceController>();
+        tileCtrl.board = networkBoard;
+        tileClone = newTileClone;
     }
 
     private void FixedUpdate()
@@ -170,6 +176,7 @@ public class BoardController : MonoBehaviour {
                     if (y == 0)
                     {
                         GameObject clonedTile = GameObject.Instantiate(tileClone, transform);
+                        clonedTile.SetActive(true);
                         PieceController tileContr = clonedTile.GetComponent<PieceController>();
                         if(networkBoard.sectAfter20g > 1) tileContr.tiles[0].GetComponent<SpriteRenderer>().sprite = networkBoard.RS == RotationSystems.ARS ? boneblock : boneblockw;
                         tileContr.tiles[0].UpdatePosition(new Vector2Int(x,y));
@@ -189,7 +196,7 @@ public class BoardController : MonoBehaviour {
     {
         for (int i = 0; i < gridSizeX; i++)
         {
-            if(fullGrid[i,line].isOccupied){PieceController curPC = fullGrid[i, line].tileOnGridUnit.GetComponent<TileController>().pieceController;
+            if(fullGrid[i,line].tileOnGridUnit != null)if(fullGrid[i,line].isOccupied){PieceController curPC = fullGrid[i, line].tileOnGridUnit.GetComponent<TileController>().pieceController;
             curPC.tiles[fullGrid[i, line].tileOnGridUnit.GetComponent<TileController>().tileIndex] = null;
             Destroy(fullGrid[i, line].tileOnGridUnit);
             
@@ -217,7 +224,7 @@ public class BoardController : MonoBehaviour {
     /// <param name="percentage">Decrease tile's alpha color by percentage.</param>
     public void DecayTile(Vector2Int coords, float percentage)
     {
-        if(fullGrid[coords.x, coords.y].isOccupied == true)fullGrid[coords.x, coords.y].tileOnGridUnit.GetComponent<SpriteRenderer>().color -= new Color(0f,0f,0f,percentage);
+        if(fullGrid[coords.x, coords.y].tileOnGridUnit != null)if(fullGrid[coords.x, coords.y].isOccupied == true)fullGrid[coords.x, coords.y].tileOnGridUnit.GetComponent<SpriteRenderer>().color -= new Color(0f,0f,0f,percentage);
     }
     /// <summary>
     /// Resets a line of tiles' alpha color.
@@ -281,6 +288,10 @@ public class BoardController : MonoBehaviour {
         if(coordToTest.y >= 40)
         {
             return true;
+        }
+        if (coordToTest.x < Vector2Int.zero.x || coordToTest.y < Vector2Int.zero.y)
+        {
+            return false;
         }
 
         if(fullGrid[coordToTest.x, coordToTest.y].isOccupied)
@@ -377,6 +388,7 @@ public class BoardController : MonoBehaviour {
                 gameAudio.PlayOneShot(audioLineClear[limitedSEcount]);
             }
             networkBoard.LineClears(linesToClear.Count, tspinned);
+            
             CheckAllClear();
 
             // networkBoard.piecesController.lineDelayf++;
@@ -405,24 +417,6 @@ public class BoardController : MonoBehaviour {
             }
         }
     }
-
-    /// <summary>
-    /// Displays the Tetris text when a Tetris line clear is achieved.
-    /// </summary>
-    void ShowTetrisText()
-    {
-        tetrisText.SetActive(true);
-        Invoke("HideTetrisText", 4f);
-    }
-
-    /// <summary>
-    /// Hides the Tetris line clear text.
-    /// </summary>
-    void HideTetrisText()
-    {
-        tetrisText.SetActive(false);
-    }
-
     /// <summary>
     /// Moves an individual tile down one unit.
     /// </summary>
@@ -476,68 +470,9 @@ public class BoardController : MonoBehaviour {
                 }
             }
             boardParticles.SummonParticles(new Vector2Int(x, lineToClear), tileTexture);
-            Destroy(fullGrid[x, lineToClear].tileOnGridUnit);
-            if (!curPC.AnyTilesLeft()) { Destroy(curPC.gameObject); }
-            fullGrid[x, lineToClear].tileOnGridUnit = null;
-            fullGrid[x, lineToClear].isOccupied = false;
         }
+        DestroyLine(lineToClear);
     }
-
-    /// <summary>
-    /// Clears out the references to the piece being occupied on the grid unit,
-    /// then drops all pieces above them by one unit.
-    /// </summary>
-    /// <param name="pieceCoords">Array of coordinates where where the pieces were occupying</param>
-    public void PieceRemoved(Vector2Int[] pieceCoords)
-    {
-        foreach(Vector2Int coords in pieceCoords)
-        {
-            GridUnit curGridUnit = fullGrid[coords.x, coords.y];
-            curGridUnit.tileOnGridUnit = null;
-            curGridUnit.isOccupied = false;
-        }
-
-        for(int i = 0; i < pieceCoords.Length; i++)
-        {
-            for(int y = pieceCoords[i].y + 1; y < gridSizeY; y++)
-            {
-                GridUnit curGridUnit = fullGrid[pieceCoords[i].x, y];
-                if (curGridUnit.isOccupied)
-                {
-                    MoveTileDown(curGridUnit);
-                }
-            }
-        }
-        CheckLineClears();
-    }
-
-    /// <summary>
-    /// Determines which pieces are unavailable to be 'sacrificed.' Any piece where one tile is at the top of a given
-    /// column is unable to be sacrificed.
-    /// </summary>
-    /// <returns>Returns a list of tiles unable to be sacrificed.</returns>
-    public List<GameObject> GetUnavailablePieces()
-    {
-        List<GameObject> unavaiablePieces = new List<GameObject>();
-
-        for (int x = 0; x < gridSizeX; x++) {
-            for(int y = gridSizeY - 1; y >= 0; y--)
-            {
-                if (fullGrid[x, y].isOccupied)
-                {
-                    GameObject curPC = fullGrid[x, y].tileOnGridUnit.GetComponent<TileController>().pieceController.gameObject;
-                    if (!unavaiablePieces.Any(test => test.GetInstanceID() == curPC.GetInstanceID()))
-                    {
-                        unavaiablePieces.Add(curPC);
-                    }
-                    y = -1;
-                }
-            }
-        }
-        if(GameEngine.debugMode) Debug.Log("there are " + unavaiablePieces.Count + " Unavailable pieces");
-        return unavaiablePieces;
-    }
-
 }
 
 public class GridUnit

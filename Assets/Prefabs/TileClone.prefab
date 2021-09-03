@@ -101,6 +101,7 @@ MonoBehaviour:
   - {fileID: 5979445688713675732, guid: b770af1905bee2d48aa30980c1323ecf, type: 3}
   - {fileID: -1675130016021582584, guid: b770af1905bee2d48aa30980c1323ecf, type: 3}
   - {fileID: 9142261289523433945, guid: b770af1905bee2d48aa30980c1323ecf, type: 3}
+  board: {fileID: 0}
   setDelayTime: 5
   isDisabledFromSacrifice: 0
   audioPieceLock: {fileID: 8300000, guid: f77ceeac82370c74ab7ba4f850219b6c, type: 3}
@@ -112,7 +113,10 @@ MonoBehaviour:
   LockDelayEnable: 0
   zombieContr: 1
   LockDelayf: 0
-  tiles: []
+  isPieceIsInNextQueue: 0
+  hideTilesPerUpdates: 0
+  tiles:
+  - {fileID: 6027980590166240895}
 --- !u!1 &3819280507966362441
 GameObject:
   m_ObjectHideFlags: 0
@@ -215,6 +219,7 @@ MonoBehaviour:
   originalSpr: {fileID: 0}
   hoverSpr: {fileID: 21300016, guid: f50d0011e407351439c303c9abbe916e, type: 3}
   disableSpr: {fileID: 21300018, guid: f50d0011e407351439c303c9abbe916e, type: 3}
+  spriteRenderer: {fileID: 0}
   pieceController: {fileID: 7757641624096503570}
   tileIndex: 0
 --- !u!61 &2675151218352501350
