@@ -59,8 +59,8 @@ public class GhostPieceController : MonoBehaviour
         {
             foreach (GameObject tile in tiles)
             {
-                tile.transform.position += new Vector3(movement.x, movement.y, 0f);
                 if (!CanMoveGhostPiece(Vector2Int.down)) setOn = true;
+                tile.transform.position += new Vector3(movement.x, movement.y, 0f);
             }
         }
     }
@@ -68,8 +68,11 @@ public class GhostPieceController : MonoBehaviour
     {
         for (int i = 0; i < tiles.Length; i++)
         {
-            tiles[i].GetComponent<SpriteRenderer>().sprite = textureReading[i].GetComponent<SpriteRenderer>().sprite;
-            tiles[i].transform.position = textureReading[i].transform.position;
+            if(tiles[i] != null)
+            {
+                tiles[i].GetComponent<SpriteRenderer>().sprite = textureReading[i].GetComponent<SpriteRenderer>().sprite;
+                tiles[i].transform.position = textureReading[i].transform.position;
+            }
         }
         MoveGhostPiece(Vector2Int.down);
     }

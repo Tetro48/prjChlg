@@ -81,7 +81,7 @@ public class PiecesController : MonoBehaviour {
 
     private bool nextpiecequeued = false;
     private bool audioBellPlayed = false;
-    public int pieces;
+    public int pieces, lockedPieces;
 
     public double deadzone = 0.5;
     
@@ -91,6 +91,10 @@ public class PiecesController : MonoBehaviour {
     List<GameObject> availablePieces;
 
 
+    public bool IsHoldEmpty()
+    {
+        return holdPieceBuffer == null;
+    }
     /// <summary>
     /// Called as soon as the instance is enabled. Sets the singleton and offset data arrays.
     /// </summary>
@@ -359,41 +363,41 @@ public class PiecesController : MonoBehaviour {
         // UpdateShownPieces();
         if (!IHSexecuted)
         {
-            if(bag[pieces] == 0)
+            if(bag[lockedPieces] == 0)
             {
                 gameAudio.PlayOneShot(nextpiece2);
             }
-            if(bag[pieces] == 1)
+            if(bag[lockedPieces] == 1)
             {
                 gameAudio.PlayOneShot(nextpiece1);
             }
-            if(bag[pieces] == 2)
+            if(bag[lockedPieces] == 2)
             {
                 gameAudio.PlayOneShot(nextpiece6);
             }
-            if(bag[pieces] == 3)
+            if(bag[lockedPieces] == 3)
             {
                 gameAudio.PlayOneShot(nextpiece3);
             }
-            if(bag[pieces] == 4)
+            if(bag[lockedPieces] == 4)
             {
                 gameAudio.PlayOneShot(nextpiece7);
             }
-            if(bag[pieces] == 5)
+            if(bag[lockedPieces] == 5)
             {
                 gameAudio.PlayOneShot(nextpiece5);
             }
-            if(bag[pieces] == 6)
+            if(bag[lockedPieces] == 6)
             {
                 gameAudio.PlayOneShot(nextpiece4);
             }
         }
-        if(board.level % 100 < 99 && board.level < 2100 && pieces > 1 && allowHold == true)
+        if(board.level % 100 < 99 && board.level < 2100 && lockedPieces > 0 && allowHold == true)
         {
             board.level++;
             audioBellPlayed = false;
         }
-        else if(audioBellPlayed == false && pieces > 1 && allowHold == true)
+        else if(audioBellPlayed == false && lockedPieces > 1 && allowHold == true)
         {
             audioBellPlayed = true;
             gameAudio.PlayOneShot(bell);
@@ -501,7 +505,7 @@ public class PiecesController : MonoBehaviour {
             if (Input.GetKeyDown(KeyCode.Escape)){
                 MenuEngine.instance.yourPlayer.GameOver = true;
                 MenuEngine.instance.yourPlayer.IntentionalGameOver = true;
-                MenuEngine.instance.yourPlayer.AREf = 300;
+                MenuEngine.instance.yourPlayer.frames = 300;
             }
 
             if (((board.Inputs[4] && !PrevInputs[4]) || IHS) && !piecemovementlocked && allowHold)
@@ -512,7 +516,6 @@ public class PiecesController : MonoBehaviour {
                     IHSexecuted = true;
                 }
                 ExecuteHold();
-                return;
             }
             if (((board.Inputs[2] && !PrevInputs[2]) || (board.Inputs[6] && !PrevInputs[6]) || IRSCW) && !piecemovementlocked)
             {
@@ -541,34 +544,10 @@ public class PiecesController : MonoBehaviour {
             if (IARS && !piecemovementlocked) curPieceController.RotatePiece(true, false, true);
 
 
-            // if (Input.GetKeyDown(KeyCode.Alpha0))
-            // {
-            //     SpawnDebug(0);
-            // }
-            // if (Input.GetKeyDown(KeyCode.Alpha1))
-            // {
-            //     SpawnDebug(1);
-            // }
-            // if (Input.GetKeyDown(KeyCode.Alpha2))
-            // {
-            //     SpawnDebug(2);
-            // }
-            // if (Input.GetKeyDown(KeyCode.Alpha3))
-            // {
-            //     SpawnDebug(3);
-            // }
-            // if (Input.GetKeyDown(KeyCode.Alpha4))
-            // {
-            //     SpawnDebug(4);
-            // }
-            // if (Input.GetKeyDown(KeyCode.Alpha5))
-            // {
-            //     SpawnDebug(5);
-            // }
-            // if (Input.GetKeyDown(KeyCode.Alpha6))
-            // {
-            //     SpawnDebug(6);
-            // }
+            if (Input.GetKeyDown(KeyCode.Alpha0))
+            {
+                GameEngine.debugMode = !GameEngine.debugMode;
+            }
             if(curPieceController != null) 
             {
                 if (!curPieceController.CanMovePiece(Vector2Int.zero) && !piecemovementlocked) curPieceController.SendPieceToFloor();
@@ -699,6 +678,7 @@ public class PiecesController : MonoBehaviour {
     public void SpawnHoldPiece()
     {
         curPieceController.isPieceIsInNextQueue = true;
+        if(curPieceController.ghostContr != null)curPieceController.ghostContr.gameObject.SetActive(false);
         if(curPieceController.rotationIndex == 2) curPieceController.RotatePiece180(true, false);
         if(curPieceController.rotationIndex % 2 == 1) curPieceController.RotatePiece(curPieceController.rotationIndex / 2 == 1, false, false);
         curPieceController.ForcefullyMovePiece(relativeHoldPieceCoordinate - curPieceController.tiles[0].coordinates);
@@ -708,7 +688,6 @@ public class PiecesController : MonoBehaviour {
             gravityTiles = 22.0f;
         }
         GameObject localGO;
-        curPieceController.isPieceIsInNextQueue = true;
         if (holdPieceBuffer != null)
         {
             localGO = holdPieceBuffer;
@@ -723,7 +702,9 @@ public class PiecesController : MonoBehaviour {
         curPiece.SetActive(true);
         // PieceType randPiece = (PieceType)id;
         curPieceController = curPiece.GetComponent<PieceController>();
+        curPieceController.MovePiece(relativeNextPieceCoordinates[0] - curPieceController.tiles[0].coordinates);
         curPieceController.isPieceIsInNextQueue = false;
+        if(curPieceController.ghostContr != null)curPieceController.ghostContr.gameObject.SetActive(true);
         // curPieceController.SpawnPiece(randPiece, this);
         piecemovementlocked = false;
         if ((board.Inputs[2] || board.Inputs[6]) && (!board.Inputs[1]) && (!board.Inputs[3])) {IRSCW = true; IRSCCW = false; IRSUD = false;}

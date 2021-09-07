@@ -458,9 +458,8 @@ public class NetworkBoard : NetworkBehaviour
             if(notifDelay > 0)notifDelay--;
             if(MenuEngine.instance.curBoard != null)
             {
-                int pieceCountHoldRed = piecesController.pieceHold == 28 ? -1 : -2;
                 if(time > 0)
-                ppsCounter.text = Math.Floor(((double) (piecesController.pieces + pieceCountHoldRed - piecesController.relativeNextPieceCoordinates.Count) / ((double)time/100))*100)/100 + " pieces/second";
+                ppsCounter.text = Math.Floor(((double) (piecesController.lockedPieces) / ((double)time/100))*100)/100 + " pieces/second";
             }
             // if (Input.GetKey(KeyCode.X) || Input.GetKey(KeyCode.Space)) Inputs[2] = true;
             // if (Input.GetKey(KeyCode.A)) Inputs[3] = true;
@@ -583,6 +582,7 @@ public class NetworkBoard : NetworkBehaviour
                 if (frames == 351)
                 {
                     if(player.Count < 2) MenuEngine.instance.audioSource2.Play();
+                    Debug.Log(player.Count);
                 }
                 if (frames == 401)
                 {
@@ -605,7 +605,7 @@ public class NetworkBoard : NetworkBehaviour
                         player = new List<NetworkBoard>();
                         MenuEngine.instance.starting = true;
                     }
-                    Destroy(gameObject);
+                    NetworkObject.Destroy(gameObject);
                 }
             }
         }

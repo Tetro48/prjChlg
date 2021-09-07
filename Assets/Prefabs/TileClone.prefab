@@ -117,6 +117,7 @@ MonoBehaviour:
   hideTilesPerUpdates: 0
   tiles:
   - {fileID: 6027980590166240895}
+  fullyLocked: 1
 --- !u!1 &3819280507966362441
 GameObject:
   m_ObjectHideFlags: 0
