@@ -5551,7 +5551,7 @@ MonoBehaviour:
   audioIHS: {fileID: 8300000, guid: db3a7988f2fee6e409fd5d441475865b, type: 3}
   bell: {fileID: 8300000, guid: c3742a9a65fe42f46a4f6a238331553f, type: 3}
   levelup: {fileID: 8300000, guid: 8ab9028027588a641ab9d449f1114bb1, type: 3}
-  relativeHoldPieceCoordinate: {x: -1, y: 21}
+  relativeHoldPieceCoordinate: {x: -1, y: 22}
   holdPieceBuffer: {fileID: 0}
   relativeNextPieceCoordinates:
   - {x: 4, y: 22}

@@ -39,7 +39,7 @@ public class MenuEngine : MonoBehaviour
     public Discord.Discord discord;
     public static MenuEngine instance;
     public int frames = 0;
-    public int menu = 0;
+    public int menu = 0, prevMenu;
     public bool quitting = false;
     public bool startGame = false;
     public bool GameOver = false;
@@ -54,20 +54,28 @@ public class MenuEngine : MonoBehaviour
 
     public TMP_Dropdown resDropdown;
 
+    [SerializeField] double[] UITimeDeltas;
+
+    [SerializeField]
+    GameObject[] menuSectors;
     public AudioSource audioSource, audioSource2, mainMenuMusic, audioSourceConfirmation;
     public AudioClip clip, topoutSE;
     public GameObject inGameBoard, curBoard;
     public AudioClip ModeOK;
-    public GameObject mainMenu, settingsMenu, inputsMenu, rotationSystemsMenu, customModeSettingsMenu, preferencesMenu, tuningMenu, imgprjchlg, mobileInput;
-    public GameObject[] supposedToBeAPartOfBoard, mainMenuGUI, settingsMenuGUI, settingsMenuGUIpart, inputsMenuGUI, rotationSystemsMenuGUI, customModeSettingsMenuGUI, preferencesMenuGUI, tuningMenuGUI;
+    public GameObject mainMenu, settingsMenu, inputsMenu, rotationSystemsMenu, imgprjchlg, mobileInput;
+    public GameObject[] mainMenuGUI, settingsMenuGUI, settingsMenuGUIpart, inputsMenuGUI, rotationSystemsMenuGUI, customModeSettingsMenuGUI, preferencesMenuGUI, tuningMenuGUI;
     public RectTransform mainMenuMovement, settingsMovement,settingsGUI1PartMovement, inputsMovement, rotationSystemsMovement, customModeSettingsMovement, preferencesMovement, tuningMovement;
     public RectTransform[] mainMenuGUIMovement, settingsGUIMovement, settingsGUIPartMovement, inputsGUIMovement, rotationSystemsGUIMovement, customModeSettingsGUIMovement, preferencesGUIMovement, tuningGUIMovement;
     public TextMeshProUGUI[] mainMenuGUIText, settingsGUIText, inputsGUIText;
     Vector3 boardpos, boardrot, posMM, posS, posSGUI1P, posI, posRS, posCMS, posP, posT;
     public Vector3[] posMMGUI, posSGUI, posSGUIP, posIGUI, posRSGUI, posCMSGUI, posPGUI, posTGUI;
-    private float fallingdegree;
     Resolution[] resolutions;
     public float reswidth;
+
+    /// <summary>
+    /// How long does each button takes to move
+    /// </summary>
+    public double buttonMovementInSeconds;
 
     public String[,] mainMenuLangString =
     {
@@ -141,6 +149,93 @@ public class MenuEngine : MonoBehaviour
             }
         }
     }
+    
+    public void ChangeMenu(int menuType)
+    {
+        /*
+        Pseudocode
+        
+        if menuType is same as menu or when button is already pressed or when starting up then do nothing aka return
+        if menuType more than menu then pressedSubMenu equals true
+        else then pressedBack equals true and prevMenu equals menu
+        menu equals menuType
+        menuSector array MenuType SetActive true
+        */
+
+        if (menuType == menu || pressedBack || pressedSubMenu || starting) return;
+        if (menuType > menu) pressedSubMenu = true;
+        else {pressedBack = true; prevMenu = menu;}
+        menu = menuType;
+        menuSectors[menuType].SetActive(true);
+    }
+
+    bool CheckUIScroll(int timeIndex, bool side, int count)
+    {
+        double variable1 = UITimeDeltas[timeIndex];
+        double variable2 = buttonMovementInSeconds;
+        bool output;
+        if(side)
+        {
+            variable1 += Time.unscaledDeltaTime;
+            variable2 *= System.Math.Ceiling(UITimeDeltas[timeIndex] / buttonMovementInSeconds);
+            if(variable1 >= (double)count) output = false;
+            else output = variable1 > variable2;
+        }
+        else
+        {
+            variable1 -= Time.unscaledDeltaTime;
+            variable2 *= System.Math.Floor(UITimeDeltas[timeIndex] / buttonMovementInSeconds);
+            if(variable1 <= 0d) output = false;
+            else output = variable1 < variable2;
+            
+        }
+
+        // Debug.Log(variable1 + " / " + variable2 + ". " + output); // for debug purposes
+        return output;
+    }
+
+    /// <summary>
+    /// This deals with moving user interface elements. Everything in dynamic timing.
+    /// </summary>
+    /// <param name="UIElements"> Elements of user interface. It's in arrays, so keep that in mind. </param>
+    /// <param name="UITimeDeltaIndex"> Index of user interface delta time. </param>
+    /// <param name="side"> False -> Left side. True -> Right side. </param>
+
+    private void MoveCoupleUIElements(RectTransform[] UIElements, int UITimeDeltaIndex, bool side, float multiplication = 1f)
+    {
+        float time = Time.deltaTime;
+        if(multiplication == 1f) if(CheckUIScroll(UITimeDeltaIndex, side, UIElements.Length))
+        audioSource.PlayOneShot(clip);
+        // Debug.Log(time);
+        float reversibleTime = time;
+        if(!side) reversibleTime *= -1;
+        UITimeDeltas[UITimeDeltaIndex] += reversibleTime;
+        float timeToPosX = (float)(UITimeDeltas[UITimeDeltaIndex] / buttonMovementInSeconds) * 500 - 250;
+        if(side) for (int i = 0; i < UIElements.Length; i++)
+        {
+            Vector3 tempPos = UIElements[i].position;
+            tempPos.x = Mathf.Clamp((timeToPosX - 500 * i) * reswidth * multiplication, -250f * reswidth * multiplication, 250f * reswidth * multiplication);
+            UIElements[i].position = tempPos;
+        }
+        else for (int i = UIElements.Length - 1; i >= 0 ; i--)
+        {
+            Vector3 tempPos = UIElements[i].position;
+            tempPos.x = Mathf.Clamp((timeToPosX - 500 * (UIElements.Length-i-1)) * reswidth * multiplication, -250f * reswidth * multiplication, 250f * reswidth * multiplication);
+            UIElements[i].position = tempPos;
+        }
+    }
+    double CalculateButtonTime(RectTransform[] transforms)
+    {
+        return buttonMovementInSeconds * transforms.Length;
+    }
+
+    void MoveEntireArrayOfButtons(RectTransform[] transforms)
+    {
+        foreach (var transform in transforms)
+        {
+            transform.position -= new Vector3(500f*reswidth,0f,0f);
+        }
+    }
     bool platformLogged = false;
     public bool platformCompat()
     {
@@ -177,7 +272,7 @@ public class MenuEngine : MonoBehaviour
     }
     public bool drpcSwitch;
 
-    [SerializeField] void SwitchDRPC()
+    public void SwitchDRPC()
     {
         drpcSwitch = !drpcSwitch;
         if (!drpcSwitch)
@@ -278,34 +373,20 @@ public class MenuEngine : MonoBehaviour
         {
             language = Language.日本語;
         }
-        posMM = mainMenuMovement.position;
-        posMM.x -= (float)(500.0 * reswidth);
-        mainMenuMovement.position = posMM;
-        posS = settingsMovement.position;
-        posS.x -= (float)(500.0 * reswidth);
-        settingsMovement.position = posS;
-        posSGUI1P = settingsGUI1PartMovement.position;
-        posSGUI1P.x -= (float)(500.0 * reswidth);
-        settingsGUI1PartMovement.position = posSGUI1P;
-        posI = inputsMovement.position;
-        posI.x -= (float)(500.0 * reswidth);
-        inputsMovement.position = posI;
-        posRS = rotationSystemsMovement.position;
-        posRS.x -= (float)(500.0 * reswidth);
-        rotationSystemsMovement.position = posRS;
-        posCMS = customModeSettingsMovement.position;
-        posCMS.x -= (float)(500.0 * reswidth);
-        customModeSettingsMovement.position = posCMS;
-        posP = preferencesMovement.position;
-        posP.x -= (float)(500.0 * reswidth);
-        preferencesMovement.position = posP;
-        posT = tuningMovement.position;
-        posT.x -= (float)(500.0 * reswidth);
-        tuningMovement.position = posT;
+        MoveEntireArrayOfButtons(mainMenuGUIMovement);
+        MoveEntireArrayOfButtons(settingsGUIMovement);
+        MoveEntireArrayOfButtons(inputsGUIMovement);
+        MoveEntireArrayOfButtons(rotationSystemsGUIMovement);
+        MoveEntireArrayOfButtons(customModeSettingsGUIMovement);
+        MoveEntireArrayOfButtons(preferencesGUIMovement);
+        MoveEntireArrayOfButtons(tuningGUIMovement);
+    }
+    public bool IfDoubleIsInValueRange(double test, double variable1, double variable2)
+    {
+        return (test >= variable1 || test <= variable2);
     }
     public void ExtractStatsToNotifications(NetworkBoard board)
     {
-        int pieceCountHoldRed = board.piecesController.pieceHold == 28 ? 0 : -1;
         if(board.singles > 0) NotificationEngine.instance.InstantiateNotification(notifLangString[(int)language, 0] + board.singles, Color.white); // Singles
         if(board.doubles > 0) NotificationEngine.instance.InstantiateNotification(notifLangString[(int)language, 1] + board.doubles, Color.white); // Doubles
         if(board.triples > 0) NotificationEngine.instance.InstantiateNotification(notifLangString[(int)language, 2] + board.triples, Color.white); // Triples
@@ -315,7 +396,7 @@ public class MenuEngine : MonoBehaviour
         if(board.septrises > 0) NotificationEngine.instance.InstantiateNotification("7 " + notifLangString[(int)language, 4] + board.septrises, Color.white); // 7 lines
         if(board.octrises > 0) NotificationEngine.instance.InstantiateNotification("8+ " + notifLangString[(int)language, 4] + board.octrises, Color.white); // 8+ lines
         if(board.totalLines > 0) NotificationEngine.instance.InstantiateNotification(notifLangString[(int)language, 5] + notifLangString[(int)language, 4] + board.totalLines, Color.white); // Total lines
-        if(board.piecesController.pieces > 0) NotificationEngine.instance.InstantiateNotification(notifLangString[(int)language, 6] + (board.piecesController.pieces + pieceCountHoldRed), Color.white); // Pieces
+        if(board.piecesController.lockedPieces > 0) NotificationEngine.instance.InstantiateNotification(notifLangString[(int)language, 6] + (board.piecesController.lockedPieces), Color.white); // Pieces
         NotificationEngine.instance.InstantiateNotification(notifLangString[(int)language, 7] + gradeStringConversion[board.grade], Color.white); // Grade
         if(board.statGradePoints > 0) {NotificationEngine.instance.InstantiateNotification(notifLangString[(int)language, 8], Color.white); // Total grade score
         NotificationEngine.instance.InstantiateNotification(Math.Floor(board.statGradePoints).ToString(), Color.white);}
@@ -358,6 +439,7 @@ public class MenuEngine : MonoBehaviour
     }
     double framerate;
     [SerializeField] List<double> frameratebuffer;
+    bool executedOnce = false;
     // rough framerate measurement
     void Update()
     {
@@ -373,19 +455,18 @@ public class MenuEngine : MonoBehaviour
             result += frameratebuffer[fr];
         }
         framerate = 1.0 / (result/frameratebuffer.Count);
-    }
-    void FixedUpdate()
-    {
         if (previousLang != language)
         {
             previousLang = language;
             UpdateLang();
         }
-        if(drpcSwitch) if (platformCompat() && yourPlayer != null)
+        if(drpcSwitch) if (platformCompat())
         {
             var activityManager = discord.GetActivityManager();
-            int rpclvl = yourPlayer.level < yourPlayer.endingLevel ? (yourPlayer.curSect + 1) * 100 : yourPlayer.endingLevel;
-            var activity = new Activity
+            int rpclvl = 0;
+            if(yourPlayer != null) rpclvl = yourPlayer.level < yourPlayer.endingLevel ? (yourPlayer.curSect + 1) * 100 : yourPlayer.endingLevel;
+            Activity activity;
+            if(yourPlayer != null)activity = new Activity
             {
                 Details = yourPlayer.ending ? "Roll time left: " + yourPlayer.rollTimeCounter.text 
                 : curBoard != null ? "Level " + yourPlayer.level + " | " + rpclvl + (yourPlayer.level > 800 ? ". Struggling." : string.Empty) : null,
@@ -399,6 +480,15 @@ public class MenuEngine : MonoBehaviour
                     LargeImage = "icon"
                 }
             };
+            else activity = new Activity
+            {
+                State = !Application.genuineCheckAvailable ? "The game is tampered" : framerate > 2600 ? "Suspiciously smooth" : framerate < 10 ? "Performance issues"
+                : curBoard != null ? "Currently playing" : quitting ? "Quitting" : menu == 1 ? "Currently in settings menu" : "Currently in main menu",
+                Assets = {
+                    LargeImage = "icon"
+                }
+            };
+
             activityManager.UpdateActivity(activity, (res) => {
             });
             if(drpcSwitch)discord.RunCallbacks();
@@ -419,8 +509,6 @@ public class MenuEngine : MonoBehaviour
         var SBPRf = SBf + PRf;
         var SBTUf = SBf + TUf;
         var MMSf = MMf + 50;
-        var MMSCf = MMSf + SBf;
-        var MMSCVf = MMSf + SBVf;
 
         if(curBoard == null && Input.GetKeyDown(KeyCode.Escape))
         {
@@ -437,65 +525,75 @@ public class MenuEngine : MonoBehaviour
         }
         reswidth = (float)(Screen.width / 1920.0);
         framerateCounter.text = (Math.Floor((framerate)*100)/100) + " FPS";
-        if (GameOver)
-        {
-            frames++;
-            if(frames > 300)
-            {
-                boardpos = this.transform.position;
-                boardpos.y -= (float)(0.1f + (((frames-300) / 33) * ((frames-300) / 33)));
-                this.transform.position = boardpos;
-                // boardrot = curBoard.transform.Rotate;
-                // boardrot.z -= 0.16f;
-                curBoard.transform.Rotate(new Vector3(0f, 0f, -0.1f - (float)(((frames-300) / 66) * ((frames-400) / 66))));
-                if (frames == 301)
-                {
-                    audioSource2.PlayOneShot(topoutSE);
-                }
-                if (frames == 351)
-                {
-                    audioSource2.Play();
-                }
-                if (frames == 400)
-                {
-                    // SceneManager.LoadScene("MenuScene");
-                }
-                if (frames == 401)
-                {
-                    frames = 0;
-                    GameOver = false;
-                    IntentionalGameOver = false;
-                    starting = true;
-                    this.transform.position = Vector3.zero;
-                    BackgroundController.bginstance.TriggerBackgroundChange(0);
-                    if (ReplayRecord.instance.mode == ReplayModeType.write)
-                    {
-                        ReplayRecord.instance.SaveReplay(DateTime.Now.ToString("MM-dd-yyyy-HH-mm-ss"));
-                    }
-                }
-            }
-        }
+        // if (GameOver)
+        // {
+        //     frames++;
+        //     if(frames > 300)
+        //     {
+        //         boardpos = this.transform.position;
+        //         boardpos.y -= (float)(0.1f + (((frames-300) / 33) * ((frames-300) / 33)));
+        //         this.transform.position = boardpos;
+        //         // boardrot = curBoard.transform.Rotate;
+        //         // boardrot.z -= 0.16f;
+        //         curBoard.transform.Rotate(new Vector3(0f, 0f, -0.1f - (float)(((frames-300) / 66) * ((frames-400) / 66))));
+        //         if (frames == 301)
+        //         {
+        //             audioSource2.PlayOneShot(topoutSE);
+        //         }
+        //         if (frames == 351)
+        //         {
+        //             audioSource2.Play();
+        //         }
+        //         if (frames == 400)
+        //         {
+        //             // SceneManager.LoadScene("MenuScene");
+        //         }
+        //         if (frames == 401)
+        //         {
+        //             frames = 0;
+        //             GameOver = false;
+        //             IntentionalGameOver = false;
+        //             starting = true;
+        //             this.transform.position = Vector3.zero;
+        //             BackgroundController.bginstance.TriggerBackgroundChange(0);
+        //             if (ReplayRecord.instance.mode == ReplayModeType.write)
+        //             {
+        //                 ReplayRecord.instance.SaveReplay(DateTime.Now.ToString("MM-dd-yyyy-HH-mm-ss"));
+        //             }
+        //         }
+        //     }
+        // }
         if (quitting || (pressedSubMenu && menu == 1) || startGame)
         {
-            frames++;
-            if (frames == 1)
+            //Movement to the left
+            if(UITimeDeltas[0] > 0)
             {
-                mainMenu.SetActive(true);
-                audioSource.PlayOneShot(clip);
+                MoveCoupleUIElements(mainMenuGUIMovement, 0, false);
             }
-            else if(frames % 8 == 7 && frames < MMf -1)
+            else if(quitting)
             {
-                if(mainMenuGUI[(frames-1)/8].activeSelf)audioSource.PlayOneShot(clip);
+                if(drpcSwitch) discord.Dispose();
+                Application.Quit();
             }
-            if(frames < MMf + 1)
+            // if (frames == 1)
+            // {
+            //     mainMenu.SetActive(true);
+            //     audioSource.PlayOneShot(clip);
+            // }
+            // else if(frames % 8 == 7 && frames < MMf -1)
+            // {
+            //     if(mainMenuGUI[(frames-1)/8].activeSelf)audioSource.PlayOneShot(clip);
+            // }
+            // if(frames < MMf + 1)
+            // {
+            //     posMMGUI[(frames-1)/8] = mainMenuGUIMovement[(frames-1)/8].position;
+            //     posMMGUI[(frames-1)/8].x -= (float)(62.5 * reswidth);
+            //     mainMenuGUIMovement[(frames-1)/8].position = posMMGUI[(frames-1)/8];
+            // }
+            else if (startGame && UITimeDeltas[0] <= 0)
             {
-                posMMGUI[(frames-1)/8] = mainMenuGUIMovement[(frames-1)/8].position;
-                posMMGUI[(frames-1)/8].x -= (float)(62.5 * reswidth);
-                mainMenuGUIMovement[(frames-1)/8].position = posMMGUI[(frames-1)/8];
-            }
-            if (startGame && frames > MMf + 10)
-            {
-                if (frames == MMf + 11)
+                UITimeDeltas[0] -= Time.deltaTime;
+                if (!executedOnce)
                 {
                     MLAPI.NetworkManager.Singleton.StartHost();
                     UnityEngine.Random.InitState(SeedManager.NewSeed());
@@ -508,6 +606,7 @@ public class MenuEngine : MonoBehaviour
                         UnityEngine.Random.InitState(ReplayRecord.seed);
                     }
                     mainMenu.SetActive(false);
+                    executedOnce = true;
                     // GameEngine.instance.gradePoints = 0;
                     // GameEngine.instance.gradePointRequirement = 100;
                     // GameEngine.instance.statGradePoints = 0;
@@ -521,264 +620,183 @@ public class MenuEngine : MonoBehaviour
                     mainMenuMusic.Stop();
                     // netBoard.piecesController.UpdateShownPieces();
                 }
-                // if (frames == MMf + 12)   curBoard.transform.position = new Vector3(0.0f, 18f, 0.0f);
-                // if (frames == MMf + 13)   curBoard.transform.position = new Vector3(0.0f, 16f, 0.0f);
-                // if (frames == MMf + 14)   curBoard.transform.position = new Vector3(0.0f, 14f, 0.0f);
-                // if (frames == MMf + 15)   curBoard.transform.position = new Vector3(0.0f, 12f, 0.0f);
-                // if (frames == MMf + 16)   curBoard.transform.position = new Vector3(0.0f, 10f, 0.0f);
-                // if (frames == MMf + 17)   curBoard.transform.position = new Vector3(0.0f, 8f, 0.0f);
-                // if (frames == MMf + 18)   curBoard.transform.position = new Vector3(0.0f, 6f, 0.0f);
-                // if (frames == MMf + 19)   curBoard.transform.position = new Vector3(0.0f, 4f, 0.0f);
-                // if (frames == MMf + 20)   curBoard.transform.position = new Vector3(0.0f, 2f, 0.0f);
-                // if (frames == MMf + 21)   curBoard.transform.position = new Vector3(0.0f, 0f, 0.0f);
-                // if (frames == MMf + 22)   curBoard.transform.position = new Vector3(0.0f, -0.8f, 0.0f);
-                // if (frames == MMf + 23)   curBoard.transform.position = new Vector3(0.0f, -1.4f, 0.0f);
-                // if (frames == MMf + 24)   curBoard.transform.position = new Vector3(0.0f, -2f, 0.0f);
-                // if (frames == MMf + 25)   curBoard.transform.position = new Vector3(0.0f, -1.3f, 0.0f);
-                // if (frames == MMf + 26)   curBoard.transform.position = new Vector3(0.0f, -0.7f, 0.0f);
-                // if (frames == MMf + 27)   curBoard.transform.position = new Vector3(0.0f, 0f, 0.0f);
-                // if (frames == 23)
-                // {
-                //     SceneManager.UnloadSceneAsync("MenuScene");
-                // }
-                if (frames > MMf + 27)
+                if (UITimeDeltas[0] < -0.17)
                 {
                     // PiecesController.instance.bagPieceResult=Random.Range(0,7);
                     startGame = false;
                     frames = 0;
+                    UITimeDeltas[0] = 0d;
                     // imgbg.SetActive(false);
                     // imgprjchlg.SetActive(false);
                     NetworkBoard netBoard = curBoard.GetComponent<NetworkBoard>();
                     netBoard.paused = false;
+                    executedOnce = false;
                     // netBoard.piecesController.UpdatePieceBag();
                 }
-            }
-            if (pressedSubMenu && frames > MMSf && menu == 1)
-            {
-                if(frames % 8 == 0)
-                {
-                    mainMenu.SetActive(false);
-                    if(settingsMenuGUI[((frames-1) - MMSf)/8].activeSelf)audioSource.PlayOneShot(clip);
-                }
-                if (frames == MMSf + 1)
-                {
-                    settingsMenu.SetActive(true);
-                }
-                if (frames < MMSCf + 1)
-                {
-                    posSGUI[((frames-1) - MMSf)/8] = settingsGUIMovement[((frames-1) - MMSf)/8].position;
-                    posSGUI[((frames-1) - MMSf)/8].x += (float)(62.5 * reswidth);
-                    settingsGUIMovement[((frames-1) - MMSf)/8].position = posSGUI[((frames-1) - MMSf)/8];
-                    if((frames-1) < MMSf + settingsGUIPartMovement.Length * 8)
-                    {
-                        posSGUIP[((frames-1) - MMSf)/8] = settingsGUIPartMovement[((frames-1) - MMSf)/8].position;
-                        posSGUIP[((frames-1) - MMSf)/8].x += (float)(125.0 * reswidth);
-                        settingsGUIPartMovement[((frames-1) - MMSf)/8].position = posSGUIP[((frames-1) - MMSf)/8];
-                    }
-                }
-                else
-                {
-                    pressedSubMenu = false;
-                    mainMenu.SetActive(false);
-                    frames = 0;
-                }
-            }
-            if (frames > MMf + 65 && quitting)
-            {
-                discord.Dispose();
-                Application.Quit();
             }
         }
         if (pressedBack)
         {
-            frames++;
-            if (menu == 0)
+            
+            switch (prevMenu)
             {
-                if (frames == 1)
-                {
-                    mainMenu.SetActive(true);
-                    audioSource.PlayOneShot(clip);
-                }
-                else if(frames % 8 == 0)
-                {
-                    audioSource.PlayOneShot(clip);
-                }
-                if (frames < SBf + 1)
-                {
-                    posSGUI[(frames-1)/8] = settingsGUIMovement[(frames-1)/8].position;
-                    posSGUI[(frames-1)/8].x -= (float)(62.5 * reswidth);
-                    settingsGUIMovement[(frames-1)/8].position = posSGUI[(frames-1)/8];
-                    if(frames < settingsMenuGUIpart.Length * 8 +1)
+                //In Settings menu
+                case 1:
+                
+                    //Movement to the right
+                    if(UITimeDeltas[1] > 0d)
                     {
-                        posSGUIP[(frames-1)/8] = settingsGUIPartMovement[(frames-1)/8].position;
-                        posSGUIP[(frames-1)/8].x -= (float)(125.0 * reswidth);
-                        settingsGUIPartMovement[(frames-1)/8].position = posSGUIP[(frames-1)/8];
+                        MoveCoupleUIElements(settingsGUIMovement, 1, false);
+                        if(UITimeDeltas[2] > 0d)
+                        MoveCoupleUIElements(settingsGUIPartMovement, 2, false, 2f);
                     }
-                }
-                else if(frames < MMSBf + 1)
-                {
-                    posMMGUI[((frames-1) - SBf)/8] = mainMenuGUIMovement[((frames-1) - SBf)/8].position;
-                    posMMGUI[((frames-1) - SBf)/8].x += (float)(62.5 * reswidth);
-                    mainMenuGUIMovement[((frames-1) - SBf)/8].position = posMMGUI[((frames-1) - SBf)/8];
-                }
-                else
-                {
-                    settingsMenu.SetActive(false);
-                    pressedBack = false;
-                    frames = 0;
-                }
-            }
-            if (inputsMenu.activeSelf)
-            {
-                if (frames == 1)
-                {
-                    settingsMenu.SetActive(true);
-                    audioSource.PlayOneShot(clip);
-                }
-                else if(frames % 8 == 0)
-                {
-                    audioSource.PlayOneShot(clip);
-                }
-                if (frames < IPf + 1)
-                {
-                    posIGUI[(frames-1)/8] = inputsGUIMovement[(frames-1)/8].position;
-                    posIGUI[(frames-1)/8].x -= (float)(62.5 * reswidth);
-                    inputsGUIMovement[(frames-1)/8].position = posIGUI[(frames-1)/8];
-                }
-                else if (frames < SBIPf + 1)
-                {
-                    posSGUI[((frames-1) - IPf)/8] = settingsGUIMovement[((frames-1) - IPf)/8].position;
-                    posSGUI[((frames-1) - IPf)/8].x += (float)(62.5 * reswidth);
-                    settingsGUIMovement[((frames-1) - IPf)/8].position = posSGUI[((frames-1) - IPf)/8];
-                    if(frames < settingsMenuGUIpart.Length * 8 +1 + IPf)
+                    //Movement to the left
+                    else if (UITimeDeltas[0] < CalculateButtonTime(mainMenuGUIMovement))
                     {
-                        posSGUIP[((frames-1) - IPf)/8] = settingsGUIPartMovement[((frames-1) - IPf)/8].position;
-                        posSGUIP[((frames-1) - IPf)/8].x += (float)(125.0 * reswidth);
-                        settingsGUIPartMovement[((frames-1) - IPf)/8].position = posSGUIP[((frames-1) - IPf)/8];
+                        MoveCoupleUIElements(mainMenuGUIMovement, 0, true);
                     }
-                }
-                else
-                {
-                    inputsMenu.SetActive(false);
-                    pressedBack = false;
-                    frames = 0;
-                }
-            }
-            if (rotationSystemsMenu.activeSelf)
-            {
-                if (frames == 1)
-                {
-                    settingsMenu.SetActive(true);
-                    audioSource.PlayOneShot(clip);
-                }
-                else if (frames % 8 == 0)
-                {
-                    audioSource.PlayOneShot(clip);
-                }
-                if (frames < RSf + 1)
-                {
-                    posRSGUI[(frames - 1) / 8] = rotationSystemsGUIMovement[(frames - 1) / 8].position;
-                    posRSGUI[(frames - 1) / 8].x -= (float)(62.5 * reswidth);
-                    rotationSystemsGUIMovement[(frames - 1) / 8].position = posRSGUI[(frames - 1) / 8];
-                }
-                else if (frames < SBRSf + 1)
-                {
-                    posSGUI[((frames - 1) - RSf) / 8] = settingsGUIMovement[((frames - 1) - RSf) / 8].position;
-                    posSGUI[((frames - 1) - RSf) / 8].x += (float)(62.5 * reswidth);
-                    settingsGUIMovement[((frames - 1) - RSf) / 8].position = posSGUI[((frames - 1) - RSf) / 8];
-                    if (frames < settingsMenuGUIpart.Length * 8 + 1 + RSf)
+                    else
                     {
-                        posSGUIP[((frames - 1) - RSf) / 8] = settingsGUIPartMovement[((frames - 1) - RSf) / 8].position;
-                        posSGUIP[((frames - 1) - RSf) / 8].x += (float)(125.0 * reswidth);
-                        settingsGUIPartMovement[((frames - 1) - RSf) / 8].position = posSGUIP[((frames - 1) - RSf) / 8];
+                        menuSectors[1].SetActive(false);
+                        UITimeDeltas[0] = CalculateButtonTime(mainMenuGUIMovement);
+                        UITimeDeltas[1] = 0;
+                        UITimeDeltas[2] = 0;
+                        pressedBack = false;
                     }
-                }
-                else
-                {
-                    inputsMenu.SetActive(false);
-                    pressedBack = false;
-                    frames = 0;
-                }
+
+                break;
+
+                //In Inputs menu
+                case 2:
+                
+                    //Movement to the right
+                    if(UITimeDeltas[3] > 0d)
+                    {
+                        MoveCoupleUIElements(inputsGUIMovement, 3, false);
+                    }
+                    //Movement to the left
+                    else if (UITimeDeltas[1] < CalculateButtonTime(settingsGUIMovement))
+                    {
+                        MoveCoupleUIElements(settingsGUIMovement, 1, true);
+                    }
+                    else
+                    {
+                        menuSectors[2].SetActive(false);
+                        UITimeDeltas[1] = CalculateButtonTime(settingsGUIMovement);
+                        UITimeDeltas[3] = 0;
+                        pressedBack = false;
+                    }
+                    
+                break;
+                
+                //In Rotation Systems menu
+                case 3:
+                
+                    //Movement to the right
+                    if(UITimeDeltas[4] > 0d)
+                    {
+                        MoveCoupleUIElements(rotationSystemsGUIMovement, 4, false);
+                    }
+                    //Movement to the left
+                    else if (UITimeDeltas[0] < CalculateButtonTime(settingsGUIMovement))
+                    {
+                        MoveCoupleUIElements(settingsGUIMovement, 1, true);
+                    }
+                    else
+                    {
+                        menuSectors[3].SetActive(false);
+                        UITimeDeltas[1] = CalculateButtonTime(settingsGUIMovement);
+                        UITimeDeltas[4] = 0;
+                        pressedBack = false;
+                    }
+                    
+                break;
+                
+                default: break;
             }
         }
         if (pressedSubMenu)
         {
-            // Inputs menu
-            if (menu == 2)
+            switch (menu)
             {
-                frames++;
-                if (frames == 1)
-                {
-                    inputsMenu.SetActive(true);
-                    audioSource.PlayOneShot(clip);
-                }
-                else if (frames % 8 == 0)
-                {
-                    audioSource.PlayOneShot(clip);
-                }
-                if (frames < SBf + 1)
-                {
-                    posSGUI[(frames - 1) / 8] = settingsGUIMovement[(frames - 1) / 8].position;
-                    posSGUI[(frames - 1) / 8].x -= (float)(62.5 * reswidth);
-                    settingsGUIMovement[(frames - 1) / 8].position = posSGUI[(frames - 1) / 8];
-                    if (frames < settingsMenuGUIpart.Length * 8 + 1)
-                    {
-                        posSGUIP[(frames - 1) / 8] = settingsGUIPartMovement[(frames - 1) / 8].position;
-                        posSGUIP[(frames - 1) / 8].x -= (float)(125.0 * reswidth);
-                        settingsGUIPartMovement[(frames - 1) / 8].position = posSGUIP[(frames - 1) / 8];
-                    }
-                }
-                else if (frames < SBIPf + 1)
-                {
-                    posIGUI[((frames - 1) - SBf) / 8] = inputsGUIMovement[((frames - 1) - SBf) / 8].position;
-                    posIGUI[((frames - 1) - SBf) / 8].x += (float)(62.5 * reswidth);
-                    inputsGUIMovement[((frames - 1) - SBf) / 8].position = posIGUI[((frames - 1) - SBf) / 8];
-                }
-                else
-                {
-                    pressedSubMenu = false;
-                    settingsMenu.SetActive(false);
-                    frames = 0;
-                }
-            }
+                //Settings button press
+                case 1:
 
-            // Rotation Systems menu
-            if (menu == 3)
-            {
-                frames++;
-                if (frames == 1)
-                {
-                    inputsMenu.SetActive(true);
-                    audioSource.PlayOneShot(clip);
-                }
-                else if (frames % 8 == 0)
-                {
-                    audioSource.PlayOneShot(clip);
-                }
-                if (frames < SBf + 1)
-                {
-                    posSGUI[(frames - 1) / 8] = settingsGUIMovement[(frames - 1) / 8].position;
-                    posSGUI[(frames - 1) / 8].x -= (float)(62.5 * reswidth);
-                    settingsGUIMovement[(frames - 1) / 8].position = posSGUI[(frames - 1) / 8];
-                    if (frames < settingsMenuGUIpart.Length * 8 + 1)
+                    //Movement to the left
+                    if(UITimeDeltas[0] > 0)
                     {
-                        posSGUIP[(frames - 1) / 8] = settingsGUIPartMovement[(frames - 1) / 8].position;
-                        posSGUIP[(frames - 1) / 8].x -= (float)(125.0 * reswidth);
-                        settingsGUIPartMovement[(frames - 1) / 8].position = posSGUIP[(frames - 1) / 8];
+                        MoveCoupleUIElements(mainMenuGUIMovement, 0, false);
                     }
-                }
-                else if (frames < SBRSf + 1)
-                {
-                    posRSGUI[((frames - 1) - SBf) / 8] = rotationSystemsGUIMovement[((frames - 1) - SBf) / 8].position;
-                    posRSGUI[((frames - 1) - SBf) / 8].x += (float)(62.5 * reswidth);
-                    rotationSystemsGUIMovement[((frames - 1) - SBf) / 8].position = posRSGUI[((frames - 1) - SBf) / 8];
-                }
-                else
-                {
-                    pressedSubMenu = false;
-                    settingsMenu.SetActive(false);
-                    frames = 0;
-                }
+                    //Movement to the right
+                    else if (UITimeDeltas[1] < CalculateButtonTime(settingsGUIMovement))
+                    {
+                        MoveCoupleUIElements(settingsGUIMovement, 1, true);
+                        if(UITimeDeltas[2] < CalculateButtonTime(settingsGUIPartMovement))
+                        MoveCoupleUIElements(settingsGUIPartMovement, 2, true, 3f);
+                    }
+                    else
+                    {
+                        menuSectors[0].SetActive(false);
+                        UITimeDeltas[0] = 0;
+                        UITimeDeltas[1] = CalculateButtonTime(settingsGUIMovement);
+                        UITimeDeltas[2] = CalculateButtonTime(settingsGUIPartMovement);
+                        pressedSubMenu = false;
+                    }
+
+                break;
+
+                //Inputs button press
+                case 2:
+
+                    //Movement to the left
+                    if(UITimeDeltas[1] > 0)
+                    {
+                        MoveCoupleUIElements(settingsGUIMovement, 1, false);
+                        if(UITimeDeltas[2] > 0d)
+                        MoveCoupleUIElements(settingsGUIPartMovement, 2, false, 2f);
+                    }
+                    //Movement to the right
+                    else if (UITimeDeltas[3] < CalculateButtonTime(inputsGUIMovement))
+                    {
+                        MoveCoupleUIElements(inputsGUIMovement, 3, true);
+                    }
+                    else
+                    {
+                        menuSectors[1].SetActive(false);
+                        UITimeDeltas[0] = 0;
+                        UITimeDeltas[3] = CalculateButtonTime(inputsGUIMovement);
+                        pressedSubMenu = false;
+                    }
+
+                break;
+
+                //Rotation Systems button press
+                case 3:
+                
+
+                    //Movement to the left
+                    if(UITimeDeltas[1] > 0)
+                    {
+                        MoveCoupleUIElements(settingsGUIMovement, 1, false);
+                        if(UITimeDeltas[2] > 0d)
+                        MoveCoupleUIElements(settingsGUIPartMovement, 2, false, 2f);
+                    }
+                    //Movement to the right
+                    else if (UITimeDeltas[4] < CalculateButtonTime(rotationSystemsGUIMovement))
+                    {
+                        MoveCoupleUIElements(rotationSystemsGUIMovement, 4, true);
+                    }
+                    else
+                    {
+                        menuSectors[1].SetActive(false);
+                        UITimeDeltas[0] = 0;
+                        UITimeDeltas[4] = CalculateButtonTime(rotationSystemsGUIMovement);
+                        pressedSubMenu = false;
+                    }
+                
+                break;
+
+                default: break;
             }
         }
         if (starting)
@@ -789,62 +807,16 @@ public class MenuEngine : MonoBehaviour
             // imgbg.SetActive(true);
             // imgprjchlg.SetActive(true);
             mainMenu.SetActive(true);
-            if (frames == 1)
+           
+            //Movement to the right
+            if(UITimeDeltas[0] < CalculateButtonTime(mainMenuGUIMovement))
             {
-                // GameEngine.instance.time = 0;
-                // GameEngine.instance.rollTime = 0;
-                // GameEngine.instance.level = 0;
-                // GameEngine.instance.curSect = 0;
-                // GameEngine.instance.sectAfter20g = 0;
-                // GameEngine.instance.ARE = 41.66666666666666;
-                // GameEngine.instance.AREf = 42 - 300;
-                // GameEngine.instance.paused = true;
-                // GameEngine.instance.DAS = 25;
-                // GameEngine.instance.AREline = 16.66666666666666666;
-                // GameEngine.instance.nextibmblocks = 0;
-                // GameEngine.instance.LockDelay = 50;
-                // GameEngine.instance.lineDelayf = 0;
-                // GameEngine.instance.lineDelay = 25;
-                // GameEngine.instance.gravity = 3 / 64f;
-                // GameEngine.instance.singles = 0;
-                // GameEngine.instance.doubles = 0;
-                // GameEngine.instance.triples = 0;
-                // GameEngine.instance.tetrises = 0;
-                // GameEngine.instance.pentrises = 0;
-                // GameEngine.instance.sixtrises = 0;
-                // GameEngine.instance.septrises = 0;
-                // GameEngine.instance.octrises = 0;
-                // GameEngine.instance.totalLines = 0;
-                // GameEngine.instance.lineClonePiecesLeft = 2147483647;
-                // GameEngine.instance.grade = 0;
-                // GameEngine.instance.bgmlv = 1;
-                // GameEngine.instance.timeCounter.text = "00:00:00";
-                // GameEngine.instance.nextSecLv.text = "100";
-                // GameEngine.instance.levelTextRender.text = "0";
-                // GameEngine.instance.ending = false;
-                // GameEngine.instance.sectionTime = new int[21];
-                // Destroy(curBoard);
-                // GameEngine.instance.gameMusic.Stop();
-                // GameEngine.instance.gameMusic.clip = GameEngine.instance.bgm_1p_lv[0];
-                // GameEngine.instance.gameMusic.volume = 1f;
-                // GameEngine.instance.tileInvisTime = -1;
-                // mainMenu.SetActive(true);
-                audioSource.PlayOneShot(clip);
-            }
-            else if(frames % 17 == 16 && frames < mainMenuGUI.Length * 17 - 1)
-            {
-                if(mainMenuGUI[(frames-1)/17].activeSelf)audioSource.PlayOneShot(clip);
-            }
-            if(frames < mainMenuGUI.Length * 17 + 1)
-            {
-                posMMGUI[(frames-1)/17] = mainMenuGUIMovement[(frames-1)/17].position;
-                posMMGUI[(frames-1)/17].x += (float)(29.411764705882352941176470588235 * reswidth);
-                mainMenuGUIMovement[(frames-1)/17].position = posMMGUI[(frames-1)/17];
+                MoveCoupleUIElements(mainMenuGUIMovement, 0, true);
             }
             else
             {
+                UITimeDeltas[0] = CalculateButtonTime(mainMenuGUIMovement);
                 starting = false;
-                frames = 0;
             }
         }
     }

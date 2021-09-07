@@ -49,7 +49,7 @@ public class PieceController : MonoBehaviour {
     //Vector2Int spawnLocation = new Vector2Int(4, 21);
     Vector2Int spawnLocation;
 
-    bool fullyLocked;
+    [SerializeField] bool fullyLocked;
     /// <summary>
     /// Called as soon as the piece is initialized. Initializes some necessary values.
     /// </summary>
@@ -507,6 +507,7 @@ public class PieceController : MonoBehaviour {
     {
         AudioManager.PlayClip(audioPieceLock);
         board.piecesController.piecemovementlocked = true;
+        board.piecesController.lockedPieces++;
         fullyLocked = true;
         for(int i = 0; i < tiles.Length; i++)
         {
