@@ -5551,6 +5551,7 @@ MonoBehaviour:
   audioIHS: {fileID: 8300000, guid: db3a7988f2fee6e409fd5d441475865b, type: 3}
   bell: {fileID: 8300000, guid: c3742a9a65fe42f46a4f6a238331553f, type: 3}
   levelup: {fileID: 8300000, guid: 8ab9028027588a641ab9d449f1114bb1, type: 3}
+  holdSE: {fileID: 8300000, guid: c5c999ab2bcfc474ab1bad4f950ca4eb, type: 3}
   relativeHoldPieceCoordinate: {x: -1, y: 22}
   holdPieceBuffer: {fileID: 0}
   relativeNextPieceCoordinates:
@@ -5586,6 +5587,7 @@ MonoBehaviour:
   allowHold: 1
   ARRtuning: 1
   pieces: 0
+  lockedPieces: 0
   deadzone: 0.5
   curPieceController: {fileID: 0}
 --- !u!1 &1554080078095360850
@@ -6129,6 +6131,9 @@ MonoBehaviour:
   excellent: {fileID: 8300000, guid: 1e918a8204fc65649a8051b1c23e7412, type: 3}
   coolSE: {fileID: 8300000, guid: 9c9b1d36a0e3ad94db29833c1d846d2d, type: 3}
   regretSE: {fileID: 8300000, guid: d8190f04ff9e3a8438a94bb8a2ba6707, type: 3}
+  hardDropSE: {fileID: 8300000, guid: ed9c56a20ab2ba44aadd6bb736ec1fdf, type: 3}
+  moveSE: {fileID: 8300000, guid: b344a1477e7abcb4ca1ec96f2f539ab0, type: 3}
+  rotateSE: {fileID: 8300000, guid: e0a1ad571de3564409e1af057b76e486, type: 3}
   gradePoints: 0
   statGradePoints: 0
   gradePointRequirement: 100

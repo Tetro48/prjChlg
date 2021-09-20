@@ -49,7 +49,7 @@ public class PiecesController : MonoBehaviour {
     public int pieceHold = 28;
 
     public AudioSource gameAudio;
-    public AudioClip nextpiece1, nextpiece2, nextpiece3, nextpiece4, nextpiece5, nextpiece6, nextpiece7, audioIRS, audioIHS, bell, levelup;
+    public AudioClip nextpiece1, nextpiece2, nextpiece3, nextpiece4, nextpiece5, nextpiece6, nextpiece7, audioIRS, audioIHS, bell, levelup, holdSE;
     [SerializeField]
     Vector2Int relativeHoldPieceCoordinate;
 
@@ -361,36 +361,16 @@ public class PiecesController : MonoBehaviour {
         else if(holdPieceBuffer == null) 
             SpawnNextPiece(bag[pieces]);
         // UpdateShownPieces();
+        int extraPiece = holdPieceBuffer != null ? 2 : 1;
         if (!IHSexecuted)
         {
-            if(bag[lockedPieces] == 0)
-            {
-                gameAudio.PlayOneShot(nextpiece2);
-            }
-            if(bag[lockedPieces] == 1)
-            {
-                gameAudio.PlayOneShot(nextpiece1);
-            }
-            if(bag[lockedPieces] == 2)
-            {
-                gameAudio.PlayOneShot(nextpiece6);
-            }
-            if(bag[lockedPieces] == 3)
-            {
-                gameAudio.PlayOneShot(nextpiece3);
-            }
-            if(bag[lockedPieces] == 4)
-            {
-                gameAudio.PlayOneShot(nextpiece7);
-            }
-            if(bag[lockedPieces] == 5)
-            {
-                gameAudio.PlayOneShot(nextpiece5);
-            }
-            if(bag[lockedPieces] == 6)
-            {
-                gameAudio.PlayOneShot(nextpiece4);
-            }
+            if(bag[lockedPieces+extraPiece] == 0) gameAudio.PlayOneShot(nextpiece2);
+            if(bag[lockedPieces+extraPiece] == 1) gameAudio.PlayOneShot(nextpiece1);
+            if(bag[lockedPieces+extraPiece] == 2) gameAudio.PlayOneShot(nextpiece6);
+            if(bag[lockedPieces+extraPiece] == 3) gameAudio.PlayOneShot(nextpiece3);
+            if(bag[lockedPieces+extraPiece] == 4) gameAudio.PlayOneShot(nextpiece7);
+            if(bag[lockedPieces+extraPiece] == 5) gameAudio.PlayOneShot(nextpiece5);
+            if(bag[lockedPieces+extraPiece] == 6) gameAudio.PlayOneShot(nextpiece4);
         }
         if(board.level % 100 < 99 && board.level < 2100 && lockedPieces > 0 && allowHold == true)
         {
@@ -457,12 +437,12 @@ public class PiecesController : MonoBehaviour {
             {
                 gravityTiles += (float)board.gravity * (float)board.SDF * (board.movement.y * -1);
             }
-            if(!piecemovementlocked && curPieceController != null)
+            if (board.movement.x < -deadzone)
             {
-                if (board.movement.x < -deadzone)
+                DASfl++;
+                if(!piecemovementlocked)
                 {
-                    if (DASfl == 0) MoveCurPiece(Vector2Int.left);
-                    DASfl++;
+                    if (DASfl == 1) MoveCurPiece(Vector2Int.left);
                     if (DASfl > DAStuning && (ARRtuning == 0 || DASfl % ARRtuning == 0))
                     {
                         MoveCurPiece(Vector2Int.left);
@@ -475,11 +455,14 @@ public class PiecesController : MonoBehaviour {
                         }
                     }
                 }
-                else DASfl = 0;
-                if (board.movement.x > deadzone)
+            }
+            else DASfl = 0;
+            if (board.movement.x > deadzone)
+            {
+                DASfr++;
+                if(!piecemovementlocked)
                 {
-                    if (DASfr == 0) MoveCurPiece(Vector2Int.right);
-                    DASfr++;
+                    if (DASfr == 1) MoveCurPiece(Vector2Int.right);
                     if (DASfr > DAStuning && (ARRtuning == 0 || DASfr % ARRtuning == 0))
                     {
                         MoveCurPiece(Vector2Int.right);
@@ -492,8 +475,8 @@ public class PiecesController : MonoBehaviour {
                         }
                     }
                 }
-                else DASfr = 0;
             }
+            else DASfr = 0;
             // if (Input.GetKeyDown(KeyCode.Return) || Input.GetKeyDown(KeyCode.KeypadEnter))
             // {
             //     if(curPieceController != null)
@@ -652,7 +635,7 @@ public class PiecesController : MonoBehaviour {
         //     NextPiece();
         //     pieces++;
         // }
-        gravityTiles = 0.0f;
+        gravityTiles = 1.0f;
         if (board.gravity >= 19.99999)
         {
             gravityTiles = 22.0f;
@@ -673,16 +656,17 @@ public class PiecesController : MonoBehaviour {
         NextPiece();
     }
     /// <summary>
-    /// Spawns a new Tetris piece.
+    /// Swaps a piece.
     /// </summary>
     public void SpawnHoldPiece()
     {
+        if(!IHSexecuted) AudioManager.PlayClip(holdSE);
         curPieceController.isPieceIsInNextQueue = true;
         if(curPieceController.ghostContr != null)curPieceController.ghostContr.gameObject.SetActive(false);
         if(curPieceController.rotationIndex == 2) curPieceController.RotatePiece180(true, false);
         if(curPieceController.rotationIndex % 2 == 1) curPieceController.RotatePiece(curPieceController.rotationIndex / 2 == 1, false, false);
         curPieceController.ForcefullyMovePiece(relativeHoldPieceCoordinate - curPieceController.tiles[0].coordinates);
-        gravityTiles = 0.0f;
+        gravityTiles = 1.0f;
         if (board.gravity >= 19.99999)
         {
             gravityTiles = 22.0f;
@@ -695,6 +679,7 @@ public class PiecesController : MonoBehaviour {
         else 
         {
             localGO = nextPiecesBuffer[0];
+            
             NextPiece();
         }
         holdPieceBuffer = curPieceController.gameObject;
@@ -702,7 +687,7 @@ public class PiecesController : MonoBehaviour {
         curPiece.SetActive(true);
         // PieceType randPiece = (PieceType)id;
         curPieceController = curPiece.GetComponent<PieceController>();
-        curPieceController.MovePiece(relativeNextPieceCoordinates[0] - curPieceController.tiles[0].coordinates);
+        curPieceController.MovePiece(relativeNextPieceCoordinates[0] - curPieceController.tiles[0].coordinates, false);
         curPieceController.isPieceIsInNextQueue = false;
         if(curPieceController.ghostContr != null)curPieceController.ghostContr.gameObject.SetActive(true);
         // curPieceController.SpawnPiece(randPiece, this);
@@ -733,10 +718,9 @@ public class PiecesController : MonoBehaviour {
     /// <param name="movement">X,Y amount the piece should be moved by</param>
     public void MoveCurPiece(Vector2Int movement)
     {
-        if(curPiece == null)
+        if (curPiece != null && curPieceController != null)
         {
-            return;
+            curPieceController.MovePiece(movement, false);
         }
-        curPieceController.MovePiece(movement);
     }
 }

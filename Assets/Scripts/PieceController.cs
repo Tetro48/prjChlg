@@ -90,7 +90,7 @@ public class PieceController : MonoBehaviour {
             
                 if(LockDelayEnable && !harddrop && !fullyLocked)
                 {
-                    if(LockDelayf == 0)
+                    if(LockDelayf == 0 && board.LockDelay > 2)
                     {
                         AudioManager.PlayClip(audioPieceStep);
                     }
@@ -287,7 +287,7 @@ public class PieceController : MonoBehaviour {
     /// </summary>
     /// <param name="movement">X,Y amount to move the piece</param>
     /// <returns>True if the piece was able to be moved. False if the move couln't be completed.</returns>
-    public bool MovePiece(Vector2Int movement)
+    public bool MovePiece(Vector2Int movement, bool offset)
     {
         for (int i = 0; i < tiles.Length; i++)
         {
@@ -307,6 +307,7 @@ public class PieceController : MonoBehaviour {
             tiles[i].MoveTile(movement);
             LockDelayf = 0;
         }
+        if(movement.y >= 0) if(!offset) if(board.LockDelay > 5 || board.gravity < 19) AudioManager.PlayClip(board.moveSE);
         if(!CanMovePiece(Vector2Int.down))countLockResets++;
         if(countLockResets >= maxLockResets)LockDelayf = 2147483640;
         if (!CanMovePiece(Vector2Int.down) && fullyLocked == false)  {if(LockDelayEnable == false && board.piecesController.piecemovementlocked == false)  {LockDelayf = 0;  LockDelayEnable = true;}}
@@ -440,8 +441,9 @@ public class PieceController : MonoBehaviour {
 
         if (movePossible)
         {
-            MovePiece(endOffset);
+            MovePiece(endOffset, true);
         }
+        if(board.LockDelay > 6 || board.gravity < 19) AudioManager.PlayClip(board.rotateSE);
         // else
         // {
         //     Debug.Log("Move impossible");
@@ -491,8 +493,9 @@ public class PieceController : MonoBehaviour {
 
         if (movePossible)
         {
-            MovePiece(endOffset);
+            MovePiece(endOffset, true);
         }
+        if(board.LockDelay > 6 || board.gravity < 19) AudioManager.PlayClip(board.rotateSE);
         // else
         // {
         //     Debug.Log("Move impossible");
@@ -540,6 +543,7 @@ public class PieceController : MonoBehaviour {
     {
         harddrop = true;
         board.piecesController.PrevInputs[0] = true;
-        while (MovePiece(Vector2Int.down)) {}
+        AudioManager.PlayClip(board.hardDropSE);
+        while (MovePiece(Vector2Int.down, true)) {}
     }
 }

@@ -187,7 +187,7 @@ public class BoardController : MonoBehaviour {
             }
         }
         gameAudio.PlayOneShot(audioLineClone);
-        if (networkBoard.piecesController.curPieceController != null) if(!networkBoard.piecesController.curPieceController.isPieceLocked()) if (networkBoard.piecesController.curPieceController.LockDelayEnable) networkBoard.piecesController.curPieceController.MovePiece(Vector2Int.up);
+        if (networkBoard.piecesController.curPieceController != null) if(!networkBoard.piecesController.curPieceController.isPieceLocked()) if (networkBoard.piecesController.curPieceController.LockDelayEnable) networkBoard.piecesController.curPieceController.MovePiece(Vector2Int.up, true);
     }
     /// <summary>
     /// Destroys a line of tiles. Coded to also handle empty grid unit.
