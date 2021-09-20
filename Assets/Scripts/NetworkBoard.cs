@@ -31,6 +31,7 @@ using TMPro;
 /// </summary>
 public class NetworkBoard : NetworkBehaviour
 {
+    public int lives = 1;
     public static List<NetworkBoard> player = new List<NetworkBoard>();
     public BoardController boardController;
     public BoardParticleSystem boardParticles;
@@ -70,7 +71,7 @@ public class NetworkBoard : NetworkBehaviour
 
 
 
-    public AudioClip readySE, goSE, gradeUp, excellent, coolSE, regretSE;
+    public AudioClip readySE, goSE, gradeUp, excellent, coolSE, regretSE, hardDropSE, moveSE, rotateSE;
 
     public double gradePoints, statGradePoints, gradePointRequirement = 100;
 
@@ -107,7 +108,7 @@ public class NetworkBoard : NetworkBehaviour
     public double ARE = 41.66666666666666;
 
     [Range(-1005, 1000)]
-    public int AREf = 42 - 300;
+    public double AREf = 42 - 300;
 
     public int frames;
 
@@ -244,7 +245,7 @@ public class NetworkBoard : NetworkBehaviour
             curSect++;
             if (curSect > (endingLevel/100) - 1)
             {
-                AREf = (int)ARE - 400;
+                AREf = ARE - 400;
                 ending = true;
             }
             AudioManager.PlayClip(piecesController.levelup);
@@ -253,7 +254,7 @@ public class NetworkBoard : NetworkBehaviour
                 BackgroundController.bginstance.TriggerBackgroundChange(curSect);
             }
             if(curSect % 5 == 0) NotificationEngine.instance.InstantiateNotification(MenuEngine.instance.notifLangString[(int)MenuEngine.instance.language, 12],Color.white);
-            if (gravity >= 12.5)
+            if (gravity >= 10)
             {
                 ARE *= percentage;
                 AREline *= percentage;
@@ -493,9 +494,9 @@ public class NetworkBoard : NetworkBehaviour
                 }
                 if (level >= endingLevel && AREf < (int)ARE && AREf > (int)ARE - 400)
                 {
-                    int whichline = ((AREf - (int)ARE)+400)/10;
+                    double whichline = ((AREf - ARE)+400)/10;
                     if(GameEngine.debugMode) Debug.Log(whichline);
-                    boardController.DestroyLine(whichline);
+                    boardController.DestroyLine((int)whichline);
                 }
                 
                 if(ending)tileInvisTime = 20 - (rollTime / (400/6*10));
@@ -553,16 +554,16 @@ public class NetworkBoard : NetworkBehaviour
                 framestepped = false;
             }
             Inputs[7] = false;
-            if(AREf == (int)ARE - 200 && level < 100) {AudioManager.PlayClip(readySE); readyGoIndicator.sprite = readySprite;}
-            if(AREf == (int)ARE - 100 && level < 100) {AudioManager.PlayClip(goSE); readyGoIndicator.sprite = goSprite;}
-            if(AREf == (int)ARE - 1 && level < 100) readyGoIndicator.sprite = null;
+            if(AREf == (int)ARE - 200) {AudioManager.PlayClip(readySE); readyGoIndicator.sprite = readySprite;}
+            if(AREf == (int)ARE - 100) {AudioManager.PlayClip(goSE); readyGoIndicator.sprite = goSprite;}
+            if(AREf == (int)ARE - 1) readyGoIndicator.sprite = null;
             if (sectAfter20g < 1) DAS = 25;
             else if (sectAfter20g < 5) DAS = 15;
             else if (sectAfter20g < 9) DAS = 10;
             else if (sectAfter20g < 13) DAS = 3;
             else DAS = 1;
         }
-        else
+        else if (lives <= 1)
         {
             readyGoIndicator.sprite = null;
             GameEngine.instance.gameMusic.Stop();
@@ -607,6 +608,35 @@ public class NetworkBoard : NetworkBehaviour
                     }
                     NetworkObject.Destroy(gameObject);
                 }
+            }
+        }
+        //If you have more than 1 life
+        else
+        {
+            frames++;
+            framestepped = false;
+            if(frames<80)
+            {
+                boardController.DecayLine(frames/2, 0.5f);
+                if(frames%2==1)
+                {
+                    if(boardController.TilesInALine(frames/2) > 0)AudioManager.PlayClip(boardController.audioLineFall);
+                    boardController.DestroyLine(frames/2);
+                }
+            }
+            else
+            {
+                GameOver = false;
+                AREf = ARE -2;
+                lives--;
+                frames = 0;
+                piecesController.UpdatePieceBag();
+                IntentionalGameOver = false;
+            }
+            if(frames == 1)
+            {
+                if(IntentionalGameOver)Destroy(piecesController.curPieceController.gameObject);
+                MenuEngine.instance.audioSource2.PlayOneShot(MenuEngine.instance.topoutSE);
             }
         }
     }

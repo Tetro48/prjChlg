@@ -45,6 +45,7 @@ public class GhostPieceController : MonoBehaviour
     {
         for (int i = 0; i < tiles.Length; i++)
         {
+            if(textureReading[i] != null)
             if (!CanGhostTileMove(movement + new Vector2Int(textureReading[i].GetComponent<TileController>().coordinates.x, (int)tiles[i].transform.position.y)))
             {
                 return false;
