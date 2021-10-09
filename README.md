@@ -1,6 +1,10 @@
 # Project Challenger
 
-An opensource challenging Tetris game. This game is not intended for complete newbies, since pieces' initial falling speed is 4,6875 tiles per second.
+An opensource challenging Tetris game. You're free to modify anything you want! Free as in freedom!
+
+# Difficulty notes
+This game is not intended for complete newbies, since pieces' initial falling speed is 4,6875 tiles per second.
+
 
 # Keyboard Controls
 
