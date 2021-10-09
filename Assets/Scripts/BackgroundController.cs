@@ -45,19 +45,19 @@ public class BackgroundController : MonoBehaviour
         {
             if (backgroundType != nextBackground)
             {
-                this.spriteRenderer.color -= new Color(1f/50f,1f/50f,1f/50f, 0.0f);
+                spriteRenderer.color -= new Color(1f/50f,1f/50f,1f/50f, 0.0f);
             }
             else
             {
-                this.spriteRenderer.color += new Color(1/50f,1/50f,1/50f, 0.0f);
+                spriteRenderer.color += new Color(1/50f,1/50f,1/50f, 0.0f);
             }
-            if(this.spriteRenderer.color == new Color(1f, 1f, 1f, 1f)) BGChanging = false;
+            if(spriteRenderer.color == new Color(1f, 1f, 1f, 1f)) BGChanging = false;
         }
-        if (this.spriteRenderer.color == new Color(0f,0f,0f))
+        if (spriteRenderer.color == new Color(0f,0f,0f))
         {
             backgroundType = nextBackground;
         }
-        if(this.spriteRenderer.sprite != backgrounds[backgroundType]) this.spriteRenderer.sprite = backgrounds[backgroundType];
+        if(spriteRenderer.sprite != backgrounds[backgroundType]) spriteRenderer.sprite = backgrounds[backgroundType];
     }
     ///<param name="bg">Background sprite change by a integer</param>
     public void TriggerBackgroundChange(int bg)

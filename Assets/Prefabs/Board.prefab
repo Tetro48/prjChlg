@@ -5540,13 +5540,14 @@ MonoBehaviour:
   gravityTiles: 0
   pieceHold: 28
   gameAudio: {fileID: 1554080077399579772}
-  nextpiece1: {fileID: 8300000, guid: 8fffec13a102ada4996813aafa985d4b, type: 3}
-  nextpiece2: {fileID: 8300000, guid: 0e64e75884d371f4b801b8c874912743, type: 3}
-  nextpiece3: {fileID: 8300000, guid: 00671dc9de8b4e044a1a8c9ca1d84928, type: 3}
-  nextpiece4: {fileID: 8300000, guid: 4a87cb5fd94a6e9479350b0110c7575e, type: 3}
-  nextpiece5: {fileID: 8300000, guid: 05e11dbb4421564409679b75be629688, type: 3}
-  nextpiece6: {fileID: 8300000, guid: 37a429f7ab509a44d8bc0c2549eb659e, type: 3}
-  nextpiece7: {fileID: 8300000, guid: d1d5c099784404f40a297e11abc951c2, type: 3}
+  nextpieceSE:
+  - {fileID: 8300000, guid: f3c95687256ae6e4ab690ef6c54e7ecc, type: 3}
+  - {fileID: 8300000, guid: 544cf00f29d329244ac06c70a6c3e9d2, type: 3}
+  - {fileID: 8300000, guid: 25e8e812a183fe345b42db6622000dfc, type: 3}
+  - {fileID: 8300000, guid: 2e83914545ba6b24b9bea96ce2a53deb, type: 3}
+  - {fileID: 8300000, guid: 562a835d626904849a484fb5125d2aa0, type: 3}
+  - {fileID: 8300000, guid: 0dc9df79352512b45ad87429e628e64a, type: 3}
+  - {fileID: 8300000, guid: 7f59a01cba238774780d4a72e66e1a54, type: 3}
   audioIRS: {fileID: 8300000, guid: b0911d8f18e9a9f4cb76f600ff4c7d7f, type: 3}
   audioIHS: {fileID: 8300000, guid: db3a7988f2fee6e409fd5d441475865b, type: 3}
   bell: {fileID: 8300000, guid: c3742a9a65fe42f46a4f6a238331553f, type: 3}
@@ -6105,6 +6106,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9f6feb501e8041c408a01faff930e64b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  lives: 1
   boardController: {fileID: 1554080078163721033}
   boardParticles: {fileID: 7500424796739037746}
   piecesController: {fileID: 1554080077464144241}
@@ -6134,6 +6136,9 @@ MonoBehaviour:
   hardDropSE: {fileID: 8300000, guid: ed9c56a20ab2ba44aadd6bb736ec1fdf, type: 3}
   moveSE: {fileID: 8300000, guid: b344a1477e7abcb4ca1ec96f2f539ab0, type: 3}
   rotateSE: {fileID: 8300000, guid: e0a1ad571de3564409e1af057b76e486, type: 3}
+  audioPieceLock: {fileID: 8300000, guid: f77ceeac82370c74ab7ba4f850219b6c, type: 3}
+  audioPieceStep: {fileID: 8300000, guid: 82f3999481bf2bb468b7238726593bd3, type: 3}
+  lineClearTopout: {fileID: 8300000, guid: e5bbf73abc17ce141947f7c7b67b15a6, type: 3}
   gradePoints: 0
   statGradePoints: 0
   gradePointRequirement: 100
@@ -6178,7 +6183,11 @@ MonoBehaviour:
   coolchecked: 0
   previouscool: 0
   lineFreezingMechanic: 0
+  LockDelayEnable: 0
+  countLockResets: 0
+  maxLockResets: 20
   LockDelay: 50
+  LockDelayf: 0
   DAS: 15
   SDF: 6
   ARE: 41.66666666666666
@@ -7024,7 +7033,7 @@ MonoBehaviour:
   m_textAlignment: 65535
   m_characterSpacing: 0
   m_wordSpacing: 0
-  m_lineSpacing: 0
+  m_lineSpacing: -50
   m_lineSpacingMax: 0
   m_paragraphSpacing: 0
   m_charWidthMaxAdj: 0

@@ -3,8 +3,6 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
-using UnityEngine.EventSystems;
-using UnityEngine.SceneManagement;
 using Discord;
 using TMPro;
 using MLAPI;
@@ -41,7 +39,6 @@ public class MenuEngine : MonoBehaviour
     public NetworkBoard yourPlayer;
     public Discord.Discord discord;
     public static MenuEngine instance;
-    public int frames = 0;
     public int menu = 0, prevMenu;
     public bool quitting = false;
     public bool startGame = false;
@@ -66,7 +63,9 @@ public class MenuEngine : MonoBehaviour
     public GameObject inGameBoard, curBoard;
     public AudioClip ModeOK;
     public GameObject imgprjchlg, mobileInput;
-    public RectTransform[] mainMenuGUIMovement, settingsGUIMovement, settingsGUIPartMovement, inputsGUIMovement, rotationSystemsGUIMovement, customModeSettingsGUIMovement, preferencesGUIMovement, tuningGUIMovement;
+    public RectTransform[] mainMenuGUIMovement, settingsGUIMovement, settingsGUIPartMovement;
+    public MenuSegment[] segments;
+
     public TextMeshProUGUI[] mainMenuGUIText, settingsGUIText, inputsGUIText;
     Resolution[] resolutions;
     public float reswidth;
@@ -155,87 +154,17 @@ public class MenuEngine : MonoBehaviour
         Pseudocode
         
         if menuType is same as menu or when button is already pressed or when starting up then do nothing aka return
-        if menuType more than menu then pressedSubMenu equals true
-        else then pressedBack equals true and prevMenu equals menu
+        pressedSubMenu equals true
+        prevMenu equals menu
         menu equals menuType
         menuSector array MenuType SetActive true
         */
 
         if (menuType == menu || pressedBack || pressedSubMenu || starting) return;
-        if (menuType > menu) pressedSubMenu = true;
-        else {pressedBack = true; prevMenu = menu;}
+        pressedSubMenu = true;
+        prevMenu = menu;
         menu = menuType;
         menuSectors[menuType].SetActive(true);
-    }
-
-    bool CheckUIScroll(int timeIndex, bool side, int count)
-    {
-        double variable1 = UITimeDeltas[timeIndex];
-        double variable2 = buttonMovementInSeconds;
-        bool output;
-        if(side)
-        {
-            variable1 += Time.unscaledDeltaTime;
-            variable2 *= System.Math.Ceiling(UITimeDeltas[timeIndex] / buttonMovementInSeconds);
-            if(variable1 >= (double)count) output = false;
-            else output = variable1 > variable2;
-        }
-        else
-        {
-            variable1 -= Time.unscaledDeltaTime;
-            variable2 *= System.Math.Floor(UITimeDeltas[timeIndex] / buttonMovementInSeconds);
-            if(variable1 <= 0d) output = false;
-            else output = variable1 < variable2;
-            
-        }
-
-        // Debug.Log(variable1 + " / " + variable2 + ". " + output); // for debug purposes
-        return output;
-    }
-
-    /// <summary>
-    /// This deals with moving user interface elements. Everything in dynamic timing.
-    /// </summary>
-    /// <param name="UIElements"> Elements of user interface. It's in arrays, so keep that in mind. </param>
-    /// <param name="UITimeDeltaIndex"> Index of user interface delta time. </param>
-    /// <param name="side"> False -> Left side. True -> Right side. </param>
-
-    private void MoveCoupleUIElements(RectTransform[] UIElements, int UITimeDeltaIndex, bool side, float multiplication = 1f)
-    {
-        float time = Time.deltaTime;
-        if(multiplication == 1f) if(CheckUIScroll(UITimeDeltaIndex, side, UIElements.Length))
-        audioSource.PlayOneShot(clip);
-        // Debug.Log(time);
-        float reversibleTime = time;
-        if(!side) reversibleTime *= -1;
-        UITimeDeltas[UITimeDeltaIndex] += reversibleTime;
-        float timeToPosX = (float)(UITimeDeltas[UITimeDeltaIndex] / buttonMovementInSeconds) * 300 - 200;
-        if(side) for (int i = 0; i < UIElements.Length; i++)
-        {
-            Vector3 tempPos = UIElements[i].localPosition;
-            tempPos.x = Mathf.Clamp((timeToPosX - 300 * i) * reswidth * multiplication, (-150f * reswidth * multiplication) - 50f, (150f * reswidth * multiplication) - 50f);
-            // Debug.Log(tempPos.x);
-            UIElements[i].localPosition = tempPos;
-        }
-        else for (int i = UIElements.Length - 1; i >= 0 ; i--)
-        {
-            Vector3 tempPos = UIElements[i].localPosition;
-            tempPos.x = Mathf.Clamp((timeToPosX - 300 * (UIElements.Length-i-1)) * reswidth * multiplication, (-150f * reswidth * multiplication) - 50f, (150f * reswidth * multiplication) - 50f);
-            // Debug.Log(tempPos.x);
-            UIElements[i].localPosition = tempPos;
-        }
-    }
-    double CalculateButtonTime(RectTransform[] transforms)
-    {
-        return buttonMovementInSeconds * transforms.Length;
-    }
-
-    void MoveEntireArrayOfButtons(RectTransform[] transforms)
-    {
-        foreach (var transform in transforms)
-        {
-            transform.position -= new Vector3(500f*reswidth,0f,0f);
-        }
     }
     bool platformLogged = false;
     public bool platformCompat()
@@ -374,18 +303,6 @@ public class MenuEngine : MonoBehaviour
         {
             language = Language.日本語;
         }
-        MoveEntireArrayOfButtons(mainMenuGUIMovement);
-        MoveEntireArrayOfButtons(settingsGUIMovement);
-        MoveEntireArrayOfButtons(settingsGUIPartMovement);
-        MoveEntireArrayOfButtons(inputsGUIMovement);
-        MoveEntireArrayOfButtons(rotationSystemsGUIMovement);
-        MoveEntireArrayOfButtons(customModeSettingsGUIMovement);
-        MoveEntireArrayOfButtons(preferencesGUIMovement);
-        MoveEntireArrayOfButtons(tuningGUIMovement);
-    }
-    public bool IfDoubleIsInValueRange(double test, double variable1, double variable2)
-    {
-        return (test >= variable1 || test <= variable2);
     }
     public void ExtractStatsToNotifications(NetworkBoard board)
     {
@@ -474,10 +391,12 @@ public class MenuEngine : MonoBehaviour
                 : curBoard != null ? "Level " + yourPlayer.level + " | " + rpclvl + (yourPlayer.level > 800 ? ". Struggling." : string.Empty) : null,
 
                 State = !Application.genuineCheckAvailable ? "The game is tampered" : framerate > 2600 ? "Suspiciously smooth" : framerate < 10 ? "Performance issues" 
+                : yourPlayer.lives > 1 && yourPlayer.GameOver ? "Lost a life." : yourPlayer.rollTime >= yourPlayer.rollTimeLimit ? 
+                String.Format("Successful at level {0}", yourPlayer.endingLevel)
                 : yourPlayer.IntentionalGameOver ? "Exiting..." : yourPlayer.GameOver ? "Topped out" : curBoard != null && yourPlayer.paused && !yourPlayer.FrameStep ? "Paused" 
                 : curBoard != null && ReplayRecord.instance.mode == ReplayModeType.read ? "Currently replaying" 
                 : curBoard != null && yourPlayer.paused && yourPlayer.FrameStep ? "Currently playing (Framestepping)" 
-                : curBoard != null ? "Currently playing" : quitting ? "Quitting" : menu == 1 ? "Currently in settings menu" : "Currently in main menu",
+                : curBoard != null ? "Currently playing" : null,
                 Assets = {
                     LargeImage = "icon"
                 }
@@ -516,7 +435,7 @@ public class MenuEngine : MonoBehaviour
         {
             if (menu > 0)
             {
-                Back();
+                // Back();
                 audioSourceConfirmation.Play();
             }
             else
@@ -527,52 +446,9 @@ public class MenuEngine : MonoBehaviour
         }
         reswidth = (float)(Screen.width / 1920.0);
         framerateCounter.text = (Math.Floor((framerate)*100)/100) + " FPS";
-        // if (GameOver)
-        // {
-        //     frames++;
-        //     if(frames > 300)
-        //     {
-        //         boardpos = this.transform.position;
-        //         boardpos.y -= (float)(0.1f + (((frames-300) / 33) * ((frames-300) / 33)));
-        //         this.transform.position = boardpos;
-        //         // boardrot = curBoard.transform.Rotate;
-        //         // boardrot.z -= 0.16f;
-        //         curBoard.transform.Rotate(new Vector3(0f, 0f, -0.1f - (float)(((frames-300) / 66) * ((frames-400) / 66))));
-        //         if (frames == 301)
-        //         {
-        //             audioSource2.PlayOneShot(topoutSE);
-        //         }
-        //         if (frames == 351)
-        //         {
-        //             audioSource2.Play();
-        //         }
-        //         if (frames == 400)
-        //         {
-        //             // SceneManager.LoadScene("MenuScene");
-        //         }
-        //         if (frames == 401)
-        //         {
-        //             frames = 0;
-        //             GameOver = false;
-        //             IntentionalGameOver = false;
-        //             starting = true;
-        //             this.transform.position = Vector3.zero;
-        //             BackgroundController.bginstance.TriggerBackgroundChange(0);
-        //             if (ReplayRecord.instance.mode == ReplayModeType.write)
-        //             {
-        //                 ReplayRecord.instance.SaveReplay(DateTime.Now.ToString("MM-dd-yyyy-HH-mm-ss"));
-        //             }
-        //         }
-        //     }
-        // }
-        if (quitting || (pressedSubMenu && menu == 1) || startGame)
+        if (quitting || startGame)
         {
-            //Movement to the left
-            if(UITimeDeltas[0] > 0)
-            {
-                MoveCoupleUIElements(mainMenuGUIMovement, 0, false);
-            }
-            else if(quitting)
+            if(quitting && segments[0].MoveCoupleUIElements(false))
             {
                 if(drpcSwitch) discord.Dispose();
                 Application.Quit();
@@ -626,7 +502,6 @@ public class MenuEngine : MonoBehaviour
                 {
                     // PiecesController.instance.bagPieceResult=Random.Range(0,7);
                     startGame = false;
-                    frames = 0;
                     UITimeDeltas[0] = 0d;
                     // imgbg.SetActive(false);
                     // imgprjchlg.SetActive(false);
@@ -637,345 +512,22 @@ public class MenuEngine : MonoBehaviour
                 }
             }
         }
-        if (pressedBack)
+        if(pressedSubMenu)
         {
-            
-            switch (prevMenu)
-            {
-                //In Settings menu
-                case 1:
-                
-                    //Movement to the right
-                    if(UITimeDeltas[1] > 0d)
-                    {
-                        MoveCoupleUIElements(settingsGUIMovement, 1, false);
-                        if(UITimeDeltas[2] > 0d)
-                        MoveCoupleUIElements(settingsGUIPartMovement, 2, false, 3f);
-                    }
-                    //Movement to the left
-                    else if (UITimeDeltas[0] < CalculateButtonTime(mainMenuGUIMovement))
-                    {
-                        MoveCoupleUIElements(mainMenuGUIMovement, 0, true);
-                    }
-                    else
-                    {
-                        menuSectors[1].SetActive(false);
-                        UITimeDeltas[0] = CalculateButtonTime(mainMenuGUIMovement);
-                        UITimeDeltas[1] = 0;
-                        UITimeDeltas[2] = 0;
-                        pressedBack = false;
-                    }
-
-                break;
-
-                //In Inputs menu
-                case 2:
-                
-                    //Movement to the right
-                    if(UITimeDeltas[3] > 0d)
-                    {
-                        MoveCoupleUIElements(inputsGUIMovement, 3, false);
-                    }
-                    //Movement to the left
-                    else if (UITimeDeltas[1] < CalculateButtonTime(settingsGUIMovement))
-                    {
-                        MoveCoupleUIElements(settingsGUIMovement, 1, true);
-                        if(UITimeDeltas[2] < CalculateButtonTime(settingsGUIPartMovement))
-                        MoveCoupleUIElements(settingsGUIPartMovement, 2, true, 3f);
-                    }
-                    else
-                    {
-                        menuSectors[2].SetActive(false);
-                        UITimeDeltas[1] = CalculateButtonTime(settingsGUIMovement);
-                        UITimeDeltas[2] = CalculateButtonTime(settingsGUIPartMovement);
-                        UITimeDeltas[3] = 0;
-                        pressedBack = false;
-                    }
-                    
-                break;
-                
-                //In Rotation Systems menu
-                case 3:
-                
-                    //Movement to the right
-                    if(UITimeDeltas[4] > 0d)
-                    {
-                        MoveCoupleUIElements(rotationSystemsGUIMovement, 4, false);
-                    }
-                    //Movement to the left
-                    else if (UITimeDeltas[1] < CalculateButtonTime(settingsGUIMovement))
-                    {
-                        MoveCoupleUIElements(settingsGUIMovement, 1, true);
-                        if(UITimeDeltas[2] < CalculateButtonTime(settingsGUIPartMovement))
-                        MoveCoupleUIElements(settingsGUIPartMovement, 2, true, 3f);
-                    }
-                    else
-                    {
-                        menuSectors[3].SetActive(false);
-                        UITimeDeltas[1] = CalculateButtonTime(settingsGUIMovement);
-                        UITimeDeltas[2] = CalculateButtonTime(settingsGUIPartMovement);
-                        UITimeDeltas[4] = 0;
-                        pressedBack = false;
-                    }
-                    
-                break;
-                //In Custom Mode settings menu
-                case 4:
-                
-                    //Movement to the right
-                    if(UITimeDeltas[5] > 0d)
-                    {
-                        MoveCoupleUIElements(customModeSettingsGUIMovement, 5, false);
-                    }
-                    //Movement to the left
-                    else if (UITimeDeltas[1] < CalculateButtonTime(settingsGUIMovement))
-                    {
-                        MoveCoupleUIElements(settingsGUIMovement, 1, true);
-                        if(UITimeDeltas[2] < CalculateButtonTime(settingsGUIPartMovement))
-                        MoveCoupleUIElements(settingsGUIPartMovement, 2, true, 3f);
-                    }
-                    else
-                    {
-                        menuSectors[4].SetActive(false);
-                        UITimeDeltas[1] = CalculateButtonTime(settingsGUIMovement);
-                        UITimeDeltas[2] = CalculateButtonTime(settingsGUIPartMovement);
-                        UITimeDeltas[5] = 0;
-                        pressedBack = false;
-                    }
-                    
-                break;
-                //In Preference menu
-                case 5:
-                
-                    //Movement to the right
-                    if(UITimeDeltas[6] > 0d)
-                    {
-                        MoveCoupleUIElements(preferencesGUIMovement, 6, false);
-                    }
-                    //Movement to the left
-                    else if (UITimeDeltas[1] < CalculateButtonTime(settingsGUIMovement))
-                    {
-                        MoveCoupleUIElements(settingsGUIMovement, 1, true);
-                        if(UITimeDeltas[2] < CalculateButtonTime(settingsGUIPartMovement))
-                        MoveCoupleUIElements(settingsGUIPartMovement, 2, true, 3f);
-                    }
-                    else
-                    {
-                        menuSectors[5].SetActive(false);
-                        UITimeDeltas[1] = CalculateButtonTime(settingsGUIMovement);
-                        UITimeDeltas[2] = CalculateButtonTime(settingsGUIPartMovement);
-                        UITimeDeltas[6] = 0;
-                        pressedBack = false;
-                    }
-                    
-                break;
-                //In Tuning menu
-                case 6:
-                
-                    //Movement to the right
-                    if(UITimeDeltas[7] > 0d)
-                    {
-                        MoveCoupleUIElements(tuningGUIMovement, 7, false);
-                    }
-                    //Movement to the left
-                    else if (UITimeDeltas[1] < CalculateButtonTime(settingsGUIMovement))
-                    {
-                        MoveCoupleUIElements(settingsGUIMovement, 1, true);
-                        if(UITimeDeltas[2] < CalculateButtonTime(settingsGUIPartMovement))
-                        MoveCoupleUIElements(settingsGUIPartMovement, 2, true, 3f);
-                    }
-                    else
-                    {
-                        menuSectors[6].SetActive(false);
-                        UITimeDeltas[1] = CalculateButtonTime(settingsGUIMovement);
-                        UITimeDeltas[2] = CalculateButtonTime(settingsGUIPartMovement);
-                        UITimeDeltas[7] = 0;
-                        pressedBack = false;
-                    }
-                    
-                break;
-                
-                default: break;
-            }
-        }
-        if (pressedSubMenu)
-        {
-            switch (menu)
-            {
-                //Settings button press
-                case 1:
-
-                    //Movement to the left
-                    if(UITimeDeltas[0] > 0)
-                    {
-                        MoveCoupleUIElements(mainMenuGUIMovement, 0, false);
-                    }
-                    //Movement to the right
-                    else if (UITimeDeltas[1] < CalculateButtonTime(settingsGUIMovement))
-                    {
-                        MoveCoupleUIElements(settingsGUIMovement, 1, true);
-                        if(UITimeDeltas[2] < CalculateButtonTime(settingsGUIPartMovement))
-                        MoveCoupleUIElements(settingsGUIPartMovement, 2, true, 3f);
-                    }
-                    else
-                    {
-                        menuSectors[0].SetActive(false);
-                        UITimeDeltas[0] = 0;
-                        UITimeDeltas[1] = CalculateButtonTime(settingsGUIMovement);
-                        UITimeDeltas[2] = CalculateButtonTime(settingsGUIPartMovement);
-                        pressedSubMenu = false;
-                    }
-
-                break;
-
-                //Inputs button press
-                case 2:
-
-                    //Movement to the left
-                    if(UITimeDeltas[1] > 0)
-                    {
-                        MoveCoupleUIElements(settingsGUIMovement, 1, false);
-                        if(UITimeDeltas[2] > 0d)
-                        MoveCoupleUIElements(settingsGUIPartMovement, 2, false, 3f);
-                    }
-                    //Movement to the right
-                    else if (UITimeDeltas[3] < CalculateButtonTime(inputsGUIMovement))
-                    {
-                        MoveCoupleUIElements(inputsGUIMovement, 3, true);
-                    }
-                    else
-                    {
-                        menuSectors[1].SetActive(false);
-                        UITimeDeltas[0] = 0;
-                        UITimeDeltas[3] = CalculateButtonTime(inputsGUIMovement);
-                        pressedSubMenu = false;
-                    }
-
-                break;
-
-                //Rotation Systems button press
-                case 3:
-                
-
-                    //Movement to the left
-                    if(UITimeDeltas[1] > 0)
-                    {
-                        MoveCoupleUIElements(settingsGUIMovement, 1, false);
-                        if(UITimeDeltas[2] > 0d)
-                        MoveCoupleUIElements(settingsGUIPartMovement, 2, false, 3f);
-                    }
-                    //Movement to the right
-                    else if (UITimeDeltas[4] < CalculateButtonTime(rotationSystemsGUIMovement))
-                    {
-                        MoveCoupleUIElements(rotationSystemsGUIMovement, 4, true);
-                    }
-                    else
-                    {
-                        menuSectors[1].SetActive(false);
-                        UITimeDeltas[0] = 0;
-                        UITimeDeltas[4] = CalculateButtonTime(rotationSystemsGUIMovement);
-                        pressedSubMenu = false;
-                    }
-                
-                break;
-                //Custom Mode settings button press
-                case 4:
-                
-
-                    //Movement to the left
-                    if(UITimeDeltas[1] > 0)
-                    {
-                        MoveCoupleUIElements(settingsGUIMovement, 1, false);
-                        if(UITimeDeltas[2] > 0d)
-                        MoveCoupleUIElements(settingsGUIPartMovement, 2, false, 3f);
-                    }
-                    //Movement to the right
-                    else if (UITimeDeltas[5] < CalculateButtonTime(customModeSettingsGUIMovement))
-                    {
-                        MoveCoupleUIElements(customModeSettingsGUIMovement, 5, true);
-                    }
-                    else
-                    {
-                        menuSectors[1].SetActive(false);
-                        UITimeDeltas[0] = 0;
-                        UITimeDeltas[5] = CalculateButtonTime(customModeSettingsGUIMovement);
-                        pressedSubMenu = false;
-                    }
-                
-                break;
-                //Preferences button press
-                case 5:
-                
-
-                    //Movement to the left
-                    if(UITimeDeltas[1] > 0)
-                    {
-                        MoveCoupleUIElements(settingsGUIMovement, 1, false);
-                        if(UITimeDeltas[2] > 0d)
-                        MoveCoupleUIElements(settingsGUIPartMovement, 2, false, 3f);
-                    }
-                    //Movement to the right
-                    else if (UITimeDeltas[6] < CalculateButtonTime(preferencesGUIMovement))
-                    {
-                        MoveCoupleUIElements(preferencesGUIMovement, 6, true);
-                    }
-                    else
-                    {
-                        menuSectors[1].SetActive(false);
-                        UITimeDeltas[0] = 0;
-                        UITimeDeltas[6] = CalculateButtonTime(preferencesGUIMovement);
-                        pressedSubMenu = false;
-                    }
-                
-                break;
-                //Tuning button press
-                case 6:
-                
-
-                    //Movement to the left
-                    if(UITimeDeltas[1] > 0)
-                    {
-                        MoveCoupleUIElements(settingsGUIMovement, 1, false);
-                        if(UITimeDeltas[2] > 0d)
-                        MoveCoupleUIElements(settingsGUIPartMovement, 2, false, 3f);
-                    }
-                    //Movement to the right
-                    else if (UITimeDeltas[7] < CalculateButtonTime(tuningGUIMovement))
-                    {
-                        MoveCoupleUIElements(tuningGUIMovement, 7, true);
-                    }
-                    else
-                    {
-                        menuSectors[1].SetActive(false);
-                        UITimeDeltas[0] = 0;
-                        UITimeDeltas[7] = CalculateButtonTime(tuningGUIMovement);
-                        pressedSubMenu = false;
-                    }
-                
-                break;
-
-                default: break;
-            }
+            if(segments[prevMenu].MoveCoupleUIElements(false))
+            if(segments[menu].MoveCoupleUIElements(true))
+            pressedSubMenu = false;
         }
         if (starting)
         {
             if (!mainMenuMusic.isPlaying)mainMenuMusic.Play();
-            frames++;
             // if (SceneManager.GetActiveScene().name != "MenuScene")SceneManager.LoadScene("MenuScene");
             // imgbg.SetActive(true);
             // imgprjchlg.SetActive(true);
             menuSectors[0].SetActive(true);
            
             //Movement to the right
-            if(UITimeDeltas[0] < CalculateButtonTime(mainMenuGUIMovement))
-            {
-                MoveCoupleUIElements(mainMenuGUIMovement, 0, true);
-            }
-            else
-            {
-                UITimeDeltas[0] = CalculateButtonTime(mainMenuGUIMovement);
-                starting = false;
-            }
+            if(segments[0].MoveCoupleUIElements(true)) starting = false;
         }
     }
     // [ServerRpc]

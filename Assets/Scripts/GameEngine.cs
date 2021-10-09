@@ -393,14 +393,14 @@ public class GameEngine : MonoBehaviour
     int[] tableBGMChange  = {400,600,700,900,1000,2100,-1};
     void FadeoutBGM()
     {
-	    if (tableBGMFadeout[bgmlv-1] != -1 && level >= tableBGMFadeout[bgmlv-1])
+	    if (tableBGMFadeout[bgmlv-1] != -1 && NetworkBoard.highestLevel >= tableBGMFadeout[bgmlv-1])
         {
             gameMusic.volume -= (Time.deltaTime / 3);
         }
     }
     void ChangeBGM()
     {
-        if (tableBGMChange[bgmlv-1] != -1 && level >= tableBGMChange[bgmlv-1]) { bgmlv += 1; gameMusic.volume = 1; gameMusic.Stop(); gameMusic.clip = bgm_1p_lv[bgmlv-1]; if(bgmlv < 7)gameMusic.Play();}
+        if (tableBGMChange[bgmlv-1] != -1 && NetworkBoard.highestLevel >= tableBGMChange[bgmlv-1]) { bgmlv += 1; gameMusic.volume = 1; gameMusic.Stop(); gameMusic.clip = bgm_1p_lv[bgmlv-1]; if(bgmlv < 7)gameMusic.Play();}
     }
     public void OnMovement(InputAction.CallbackContext value)
     {
@@ -464,6 +464,10 @@ public class GameEngine : MonoBehaviour
         // if (value.performed) HoldInputs[7] = true;
         // else HoldInputs[7] = false;
     }
+    public static void ResetMusic()
+    {
+        instance.gameMusic.clip = instance.bgm_1p_lv[0];
+    }
     public string timeCount(int time)
     {
         return Math.Floor(((double)time/60000)%6).ToString() + Math.Floor(((double)time/6000)%10) + ":" + Math.Floor(((double)time%6000/1000)%6) + Math.Floor(((double)time%6000/100)%10) + ":" + Math.Floor((((double)time%100/1000)*100)%10) + Math.Floor((((double)time%100/100)*100)%10);
@@ -493,8 +497,8 @@ public class GameEngine : MonoBehaviour
         // if (Input.GetKeyDown(KeyCode.H) && debugMode) {gradePoints += gradePointRequirement; statGradePoints += gradePointRequirement;}
         // if((paused == false || (FrameStep == true && Inputs[7])) && MenuEngine.instance.GameOver == false)
         // {
-        //     FadeoutBGM();
-        //     ChangeBGM();
+            FadeoutBGM();
+            ChangeBGM();
         //     if (replay.mode == ReplayModeType.read && AREf > (int)ARE - 401)
         //     {
         //         // Vector2 tempmov;

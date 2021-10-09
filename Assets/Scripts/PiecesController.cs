@@ -49,7 +49,8 @@ public class PiecesController : MonoBehaviour {
     public int pieceHold = 28;
 
     public AudioSource gameAudio;
-    public AudioClip nextpiece1, nextpiece2, nextpiece3, nextpiece4, nextpiece5, nextpiece6, nextpiece7, audioIRS, audioIHS, bell, levelup, holdSE;
+    public AudioClip[] nextpieceSE;
+    public AudioClip audioIRS, audioIHS, bell, levelup, holdSE;
     [SerializeField]
     Vector2Int relativeHoldPieceCoordinate;
 
@@ -364,15 +365,9 @@ public class PiecesController : MonoBehaviour {
         int extraPiece = holdPieceBuffer != null ? 2 : 1;
         if (!IHSexecuted)
         {
-            if(bag[lockedPieces+extraPiece] == 0) gameAudio.PlayOneShot(nextpiece2);
-            if(bag[lockedPieces+extraPiece] == 1) gameAudio.PlayOneShot(nextpiece1);
-            if(bag[lockedPieces+extraPiece] == 2) gameAudio.PlayOneShot(nextpiece6);
-            if(bag[lockedPieces+extraPiece] == 3) gameAudio.PlayOneShot(nextpiece3);
-            if(bag[lockedPieces+extraPiece] == 4) gameAudio.PlayOneShot(nextpiece7);
-            if(bag[lockedPieces+extraPiece] == 5) gameAudio.PlayOneShot(nextpiece5);
-            if(bag[lockedPieces+extraPiece] == 6) gameAudio.PlayOneShot(nextpiece4);
+            gameAudio.PlayOneShot(nextpieceSE[bag[lockedPieces+extraPiece]]);
         }
-        if(board.level % 100 < 99 && board.level < 2100 && lockedPieces > 0 && allowHold == true)
+        if(board.level % board.sectionSize < board.sectionSize - 1 && board.level < board.endingLevel && lockedPieces > 0 && allowHold == true)
         {
             board.level++;
             audioBellPlayed = false;
@@ -488,7 +483,8 @@ public class PiecesController : MonoBehaviour {
             if (Input.GetKeyDown(KeyCode.Escape)){
                 MenuEngine.instance.yourPlayer.GameOver = true;
                 MenuEngine.instance.yourPlayer.IntentionalGameOver = true;
-                MenuEngine.instance.yourPlayer.frames = 300;
+                if(MenuEngine.instance.yourPlayer.lives == 1)MenuEngine.instance.yourPlayer.frames = 300;
+                else curPieceController.SetPiece();
             }
 
             if (((board.Inputs[4] && !PrevInputs[4]) || IHS) && !piecemovementlocked && allowHold)
@@ -663,7 +659,7 @@ public class PiecesController : MonoBehaviour {
         if(!IHSexecuted) AudioManager.PlayClip(holdSE);
         curPieceController.isPieceIsInNextQueue = true;
         if(curPieceController.ghostContr != null)curPieceController.ghostContr.gameObject.SetActive(false);
-        if(curPieceController.rotationIndex == 2) curPieceController.RotatePiece180(true, false);
+        if(curPieceController.rotationIndex == 2) curPieceController.RotatePiece180(true, true);
         if(curPieceController.rotationIndex % 2 == 1) curPieceController.RotatePiece(curPieceController.rotationIndex / 2 == 1, false, false);
         curPieceController.ForcefullyMovePiece(relativeHoldPieceCoordinate - curPieceController.tiles[0].coordinates);
         gravityTiles = 1.0f;

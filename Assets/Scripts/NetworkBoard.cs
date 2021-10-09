@@ -60,7 +60,8 @@ public class NetworkBoard : NetworkBehaviour
         9000, 7500, 7500, 6800, 6000, 6000, 5000, 5000, 500, 5000, 4500, 4500, 4500, 4000, 4000, 3400, 3000, 2600, 1700, 800, -1
     };
 
-    public int level;
+    public int level, sectionSize = 100;
+    public static int highestLevel;
 
     public int endingLevel = 2100;
 
@@ -71,7 +72,7 @@ public class NetworkBoard : NetworkBehaviour
 
 
 
-    public AudioClip readySE, goSE, gradeUp, excellent, coolSE, regretSE, hardDropSE, moveSE, rotateSE;
+    public AudioClip readySE, goSE, gradeUp, excellent, coolSE, regretSE, hardDropSE, moveSE, rotateSE, audioPieceLock, audioPieceStep, lineClearTopout;
 
     public double gradePoints, statGradePoints, gradePointRequirement = 100;
 
@@ -94,9 +95,12 @@ public class NetworkBoard : NetworkBehaviour
     public bool TLS, tSpin, ending, coolchecked, previouscool;
 
     public bool lineFreezingMechanic;
+    public bool LockDelayEnable;
+    [Range(0,25)]
+    public int countLockResets, maxLockResets = 20;
 
     [Range(0, 1000)]
-    public double LockDelay = 50;
+    public double LockDelay = 50, LockDelayf = 0;
 
     [Range(0, 1000)]
     public double DAS = 15;
@@ -131,7 +135,7 @@ public class NetworkBoard : NetworkBehaviour
 
     public int lineClonePiecesLeft = 20;
 
-    public float percentage = 0.8f;
+    public double percentage = 0.8f;
 
     public bool paused, FrameStep, framestepped;
 
@@ -145,8 +149,8 @@ public class NetworkBoard : NetworkBehaviour
     bool cool, cooldisplayed;
 	private void checkCool() {
 		// COOL check
-		if((level % 100 >= 70) && (coolchecked == false && level < 2001)) {
-			int section = level / 100;
+		if((level % sectionSize >= sectionSize * 0.7) && (coolchecked == false && level <= sectionSize * cools.Length)) {
+			int section = level / sectionSize;
 
 			if( (sectionTime[section] <= tableTimeCool[section]) &&
 				((previouscool == false) || ((previouscool == true) && (sectionTime[section] <= coolprevtime + 60))) )
@@ -160,7 +164,7 @@ public class NetworkBoard : NetworkBehaviour
 		}
 
 		// COOLиЎЁз¤є
-		if((level % 100 >= 82) && (cool == true) && (cooldisplayed == false)) {
+		if((level % sectionSize >= sectionSize * 0.82) && (cool == true) && (cooldisplayed == false)) {
 			AudioManager.PlayClip(coolSE);
 			// cooldispframe = 180;
 			cooldisplayed = true;
@@ -174,7 +178,7 @@ public class NetworkBoard : NetworkBehaviour
 	 * @param levelb Line clearе‰ЌгЃ® level
 	 */
 	private void checkRegret(int levelb) {
-		int section = levelb / 100;
+		int section = levelb / sectionSize;
 		if(sectionlasttime > tableTimeRegret[section]) {
 
 			virtualBasePoint -= 600;
@@ -238,12 +242,12 @@ public class NetworkBoard : NetworkBehaviour
             level += lvlLineIncrement[lines-1];
         }
         if(level > endingLevel) level = endingLevel;
-        if(level/100 > curSect)
+        if(level/sectionSize > curSect || level > endingLevel)
         {
             sectionlasttime = sectionTime[curSect];
             checkRegret(level - lvlLineIncrement[lines-1]);
             curSect++;
-            if (curSect > (endingLevel/100) - 1)
+            if (curSect > (endingLevel/sectionSize) - 1)
             {
                 AREf = ARE - 400;
                 ending = true;
@@ -315,7 +319,7 @@ public class NetworkBoard : NetworkBehaviour
             if (grade < gradeSprites.Length - 1) grade++;
             gradeIndicator.sprite = gradeSprites[grade];
             AudioManager.PlayClip(gradeUp);
-            gradePointRequirement *= Math.Abs(1 + (Math.Abs(Math.Floor((double)level / 100) + 1) / 4));
+            gradePointRequirement *= Math.Abs(1 + (Math.Abs(Math.Floor((double)level / sectionSize) + 1) / 4));
         }
         totalLines += lines;
         if (lines == 1) singles++;
@@ -426,6 +430,7 @@ public class NetworkBoard : NetworkBehaviour
     
     void FixedUpdate()
     {
+        if(level > highestLevel) highestLevel = level;
         if (IsOwner)
         {
             NetworkUpdate();
@@ -434,6 +439,7 @@ public class NetworkBoard : NetworkBehaviour
     // Update is called once per frame
     void NetworkUpdate()
     {
+        
         if (AREf == (-400 + ARE)+1)  transform.position = new Vector3(0.0f, 18f, 0.0f);
         if (AREf == (-400 + ARE)+2)  transform.position = new Vector3(0.0f, 16f, 0.0f);
         if (AREf == (-400 + ARE)+3)  transform.position = new Vector3(0.0f, 14f, 0.0f);
@@ -460,7 +466,8 @@ public class NetworkBoard : NetworkBehaviour
             if(MenuEngine.instance.curBoard != null)
             {
                 if(time > 0)
-                ppsCounter.text = Math.Floor(((double) (piecesController.lockedPieces) / ((double)time/100))*100)/100 + " pieces/second";
+                ppsCounter.text = String.Format("{0} pieces/second\nLock: {1} / {2}\nResets: {3} / {4}",
+                    Math.Floor(((double) (piecesController.lockedPieces) / ((double)time/100))*100)/100, LockDelay - LockDelayf, LockDelay, maxLockResets - countLockResets, maxLockResets);
             }
             // if (Input.GetKey(KeyCode.X) || Input.GetKey(KeyCode.Space)) Inputs[2] = true;
             // if (Input.GetKey(KeyCode.A)) Inputs[3] = true;
@@ -528,7 +535,7 @@ public class NetworkBoard : NetworkBehaviour
                         AudioManager.PlayClip(gradeUp);
                     }
                 }
-                int nextsecint = level < endingLevel ? (curSect + 1) * 100 : endingLevel;
+                int nextsecint = (curSect + 1) * sectionSize > endingLevel ? endingLevel : level < endingLevel ? (curSect + 1) * sectionSize : endingLevel;
                 levelTextRender.text = level.ToString();
                 if(curSect < 21)nextSecLv.text = nextsecint.ToString();
                 if(!ending)
@@ -556,7 +563,11 @@ public class NetworkBoard : NetworkBehaviour
             Inputs[7] = false;
             if(AREf == (int)ARE - 200) {AudioManager.PlayClip(readySE); readyGoIndicator.sprite = readySprite;}
             if(AREf == (int)ARE - 100) {AudioManager.PlayClip(goSE); readyGoIndicator.sprite = goSprite;}
-            if(AREf == (int)ARE - 1) readyGoIndicator.sprite = null;
+            if(AREf == (int)ARE - 1) 
+            {
+                if(!GameEngine.instance.gameMusic.isPlaying) GameEngine.instance.gameMusic.Play();
+                readyGoIndicator.sprite = null;
+            }
             if (sectAfter20g < 1) DAS = 25;
             else if (sectAfter20g < 5) DAS = 15;
             else if (sectAfter20g < 9) DAS = 10;
@@ -566,19 +577,28 @@ public class NetworkBoard : NetworkBehaviour
         else if (lives <= 1)
         {
             readyGoIndicator.sprite = null;
-            GameEngine.instance.gameMusic.Stop();
             if(frames%10==9 && frames<400)boardController.DestroyLine(frames/10);
             if(frames<400)boardController.DecayLine(frames/10, 0.1f);
             frames++;
+            if(frames == 1)
+            GameEngine.instance.gameMusic.Stop();
+            
             if(frames > 300)
             {
-                transform.localPosition -= new Vector3(0f, 0.015f * (frames-300), 0f);
-                // boardrot = transform.Rotate;
-                // boardrot.z -= 0.16f;
-                transform.Rotate(new Vector3(0f, -6f, -0.4f - (float)(((frames-300) / 44) * ((frames-400) / 44))));
                 if (frames == 301)
                 {
+                    GameEngine.instance.gameMusic.Stop();
+                    if(highestLevel == level) highestLevel = 0;
                     MenuEngine.instance.audioSource2.PlayOneShot(MenuEngine.instance.topoutSE);
+                    Rigidbody rigidbody;
+                    rigidbody = gameObject.AddComponent<Rigidbody>();
+                    rigidbody.mass = 16;
+                    Vector3 explosionPos = new Vector3(transform.position.x + UnityEngine.Random.Range(-20f, 20f), transform.position.y + UnityEngine.Random.Range(-20f, 20f), transform.position.z + UnityEngine.Random.Range(-20f, 20f));
+                    rigidbody.AddExplosionForce(25, explosionPos, 50f, 2f);
+                    rigidbody.angularDrag = 0.0f;
+                    Destroy(gameObject.GetComponent<PlayerInput>());
+                    Destroy(ppsCounter.gameObject);
+                    Destroy(gameObject, 10f);
                 }
                 if (frames == 351)
                 {
@@ -606,38 +626,47 @@ public class NetworkBoard : NetworkBehaviour
                         player = new List<NetworkBoard>();
                         MenuEngine.instance.starting = true;
                     }
-                    NetworkObject.Destroy(gameObject);
+                    else
+                    {
+                        GameEngine.instance.gameMusic.Play();
+                    }
+                    GameEngine.ResetMusic();
+                    // NetworkObject.Destroy(gameObject);
                 }
             }
+        }
+        else if(paused && !framestepped)
+        {
+            framestepped = Inputs[7];
         }
         //If you have more than 1 life
         else
         {
             frames++;
-            framestepped = false;
+            if(frames == 1)
+            {
+                AREf = (int)ARE - 201;
+                if(IntentionalGameOver)Destroy(piecesController.curPieceController.gameObject);
+                MenuEngine.instance.audioSource2.PlayOneShot(MenuEngine.instance.topoutSE);
+            }
             if(frames<80)
             {
-                boardController.DecayLine(frames/2, 0.5f);
+                boardController.DecayLine(39-frames/2, 0.5f);
                 if(frames%2==1)
                 {
-                    if(boardController.TilesInALine(frames/2) > 0)AudioManager.PlayClip(boardController.audioLineFall);
-                    boardController.DestroyLine(frames/2);
+                    if(boardController.TilesInALine(39-frames/2) > 0)AudioManager.PlayClip(lineClearTopout);
+                    boardController.DestroyLine(39-frames/2);
                 }
             }
             else
             {
                 GameOver = false;
-                AREf = ARE -2;
                 lives--;
                 frames = 0;
                 piecesController.UpdatePieceBag();
                 IntentionalGameOver = false;
             }
-            if(frames == 1)
-            {
-                if(IntentionalGameOver)Destroy(piecesController.curPieceController.gameObject);
-                MenuEngine.instance.audioSource2.PlayOneShot(MenuEngine.instance.topoutSE);
-            }
+            framestepped = false;
         }
     }
     public void SpawnFireworks()

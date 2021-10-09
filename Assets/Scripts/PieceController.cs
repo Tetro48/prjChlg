@@ -33,12 +33,8 @@ public class PieceController : MonoBehaviour {
 
     public int rotationIndex { get; private set; }
     public int setDelayTime;
-    public bool isDisabledFromSacrifice;
-    public AudioClip audioPieceLock, audioPieceStep;
     public GhostPieceController ghostContr;
-    public int countLockResets, maxLockResets = 20;
     public bool harddrop;
-    public bool LockDelayEnable;
     public bool zombieContr;
     public int LockDelayf;
     public bool isPieceIsInNextQueue;
@@ -86,19 +82,26 @@ public class PieceController : MonoBehaviour {
             }
             if(board.framestepped)
             {
-                if (!LockDelayEnable && !board.piecesController.piecemovementlocked)  {if(!CanMovePiece(Vector2Int.down) && !fullyLocked)  {LockDelayf = 0;  LockDelayEnable = true;} else LockDelayEnable = false;}
-            
-                if(LockDelayEnable && !harddrop && !fullyLocked)
+                if (!board.LockDelayEnable && !board.piecesController.piecemovementlocked)  
                 {
-                    if(LockDelayf == 0 && board.LockDelay > 2)
+                    if(!CanMovePiece(Vector2Int.down) && !fullyLocked)  
                     {
-                        AudioManager.PlayClip(audioPieceStep);
+                        board.LockDelayf = 0;  board.LockDelayEnable = true;
                     }
-                    LockDelayf++;
-                    if (LockDelayf >= board.LockDelay)
+                    else board.LockDelayEnable = false;
+                }
+            
+                if(board.LockDelayEnable && !harddrop && !fullyLocked)
+                {
+                    if(board.LockDelayf == 0 && board.LockDelay > 4)
                     {
-                        LockDelayf = 0;
-                        LockDelayEnable = false;
+                        AudioManager.PlayClip(board.audioPieceStep);
+                    }
+                    board.LockDelayf++;
+                    if (board.LockDelayf >= board.LockDelay)
+                    {
+                        board.LockDelayf = 0;
+                        board.LockDelayEnable = false;
                         SetPiece();
                     }
                 }
@@ -119,7 +122,6 @@ public class PieceController : MonoBehaviour {
         board = connector.board;
         Initiate(position);
         ghostContr.Initiate(connector);
-        isDisabledFromSacrifice = false;
         curType = newType;
         int increaseByLevel = board.level >= 600 && board.nextibmblocks == board.nextPieces + 1 ? 14 : 0;
         int RSint = board.RS == RotationSystems.ARS ? 7 : 0;
@@ -278,7 +280,7 @@ public class PieceController : MonoBehaviour {
         for (int i = 0; i < tiles.Length; i++)
         {
             tiles[i].MoveTile(movement);
-            LockDelayf = 0;
+            board.LockDelayf = 0;
         }
         return true;
     }
@@ -305,15 +307,24 @@ public class PieceController : MonoBehaviour {
         for (int i = 0; i < tiles.Length; i++)
         {
             tiles[i].MoveTile(movement);
-            LockDelayf = 0;
+            board.LockDelayf = 0;
         }
         if(movement.y >= 0) if(!offset) if(board.LockDelay > 5 || board.gravity < 19) AudioManager.PlayClip(board.moveSE);
-        if(!CanMovePiece(Vector2Int.down))countLockResets++;
-        if(countLockResets >= maxLockResets)LockDelayf = 2147483640;
-        if (!CanMovePiece(Vector2Int.down) && fullyLocked == false)  {if(LockDelayEnable == false && board.piecesController.piecemovementlocked == false)  {LockDelayf = 0;  LockDelayEnable = true;}}
-        else LockDelayEnable = false;
+        if(!CanMovePiece(Vector2Int.down))board.countLockResets++;
+        if(board.countLockResets >= board.maxLockResets)
+        {
+            board.LockDelayf = board.LockDelay;
+        }
+        if (!CanMovePiece(Vector2Int.down) && fullyLocked == false)  
+        {
+            if(board.LockDelayEnable == false && board.piecesController.piecemovementlocked == false)  
+            {
+                board.LockDelayf = 0;  board.LockDelayEnable = true;
+            }
+        }
+        else board.LockDelayEnable = false;
 
-        if (board.level < 100 || board.TLS) ghostContr.UpdateGhostPiece();
+        if (board.level < board.sectionSize || board.TLS) ghostContr.UpdateGhostPiece();
         return true;
     }
 
@@ -338,7 +349,7 @@ public class PieceController : MonoBehaviour {
         //     rotationIndex = Mod(rotationIndex, 2);
         // }
 
-        board.tSpin = (curType == PieceType.T && LockDelayEnable);
+        board.tSpin = (curType == PieceType.T && board.LockDelayEnable);
 
         for(int i = 0; i < tiles.Length; i++)
         {
@@ -361,7 +372,7 @@ public class PieceController : MonoBehaviour {
         {
             RotatePiece(!clockwise, /*rotIndex == 2 ? true :*/ false, UD);
         }
-        if (board.level < 100 || board.TLS) ghostContr.UpdateGhostPiece();
+        if (board.level < board.sectionSize || board.TLS) ghostContr.UpdateGhostPiece();
     }
     public void RotatePiece180(bool clockwise, bool shouldOffset)
     {
@@ -390,7 +401,7 @@ public class PieceController : MonoBehaviour {
             RotatePiece(!clockwise, /*rotIndex == 2 ? true :*/ false, true);
             if(GameEngine.debugMode) Debug.Log("Couldn't apply 180 offset");
         }
-        if (board.level < 100 || board.TLS) ghostContr.UpdateGhostPiece();
+        if (board.level < board.sectionSize || board.TLS) ghostContr.UpdateGhostPiece();
     }
 
     /// <summary>
@@ -508,10 +519,11 @@ public class PieceController : MonoBehaviour {
     /// </summary>
     public void SetPiece()
     {
-        AudioManager.PlayClip(audioPieceLock);
+        AudioManager.PlayClip(board.audioPieceLock);
         board.piecesController.piecemovementlocked = true;
         board.piecesController.lockedPieces++;
         fullyLocked = true;
+        board.countLockResets = 0;
         for(int i = 0; i < tiles.Length; i++)
         {
             if (!tiles[i].SetTile())
