@@ -467,6 +467,8 @@ public class GameEngine : MonoBehaviour
     public static void ResetMusic()
     {
         instance.gameMusic.clip = instance.bgm_1p_lv[0];
+        NetworkBoard.highestLevel = 0;
+        instance.bgmlv = 1;
     }
     public string timeCount(int time)
     {

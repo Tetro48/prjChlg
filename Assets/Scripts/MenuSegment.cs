@@ -57,7 +57,7 @@ public class MenuSegment : MonoBehaviour
         if(!side) reversibleTime *= -1;
         UITimeDelta += reversibleTime * speed;
         float timeToPosX = (float)(UITimeDelta / buttonMovementInSeconds) * 300 - 200;
-        float timeToPosXPart = (float)(UITimeDelta / buttonMovementInSeconds) * 300;
+        float timeToPosXPart = (float)(UITimeDelta / buttonMovementInSeconds) * 300 + 100;
         if(side)
         {
             for (int i = 0; i < UIElements.Length; i++)

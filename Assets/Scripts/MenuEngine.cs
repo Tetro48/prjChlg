@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.InputSystem;
 using UnityEngine.UI;
 using Discord;
 using TMPro;
@@ -34,6 +35,7 @@ public enum Language {English, Русский, 日本語};
 [RequireComponent(typeof(AudioSource))]
 public class MenuEngine : MonoBehaviour
 {
+    public InputActionAsset modifiableInputAsset;
     public Language language;
     public static List<GameObject> players;
     public NetworkBoard yourPlayer;
@@ -66,14 +68,58 @@ public class MenuEngine : MonoBehaviour
     public RectTransform[] mainMenuGUIMovement, settingsGUIMovement, settingsGUIPartMovement;
     public MenuSegment[] segments;
 
-    public TextMeshProUGUI[] mainMenuGUIText, settingsGUIText, inputsGUIText;
+    public TextMeshProUGUI[] switchesGUIText, mainMenuGUIText, settingsGUIText, inputsGUIText;
     Resolution[] resolutions;
     public float reswidth;
-
     /// <summary>
     /// How long does each button takes to move
     /// </summary>
     public double buttonMovementInSeconds;
+
+    #region Player Configuration
+    public double[] timings = {50, 41.6666666, 16.6666666, 25, 3/64};
+    public RotationSystems rotationSystems;
+    public int nextPieces = 7;
+    public bool[] switches;
+
+
+    public void ChangeTiming(int index, double timing)
+    {
+        timings[index] = timing;
+    }
+    public void ChangeNextPieces(int amount)
+    {
+        nextPieces = amount;
+    }
+    public void ChangeSwitch(int index)
+    {
+        switches[index] = !switches[index];
+        string switchName;
+        switch (index)
+        {
+            case 0:
+            switchName = "Frozen lines: {0}";
+            break;
+            default:
+            switchName = "No-name switch: {0}";
+            break;
+        }
+        switchesGUIText[index].text = String.Format(switchName, switches[index] ? "ON" : "OFF");
+    }
+    public void RebindKey(int index)
+    {
+        modifiableInputAsset.Disable();
+        modifiableInputAsset.actionMaps[0].actions[index].PerformInteractiveRebinding()
+        .WithControlsExcluding("<Mouse>/*")
+        .WithControlsExcluding("*/escape")
+        .OnMatchWaitForAnother(1f)
+        .OnComplete(callback => {
+            NotificationEngine.instance.InstantiateNotification("Rebound! Currently it'll reset when the game is closed.", Color.green);
+            callback.Dispose();
+            modifiableInputAsset.Enable();})
+        .Start();
+    }
+    #endregion
 
     public String[,] mainMenuLangString =
     {
@@ -107,6 +153,7 @@ public class MenuEngine : MonoBehaviour
         NetworkBoard component = newBoard.GetComponent<NetworkBoard>();
         component.LockDelay = LockDelay;
         component.ARE = ARE;
+        component.AREf = (int)ARE - 300;
         component.AREline = AREline;
         component.gravity = gravity;
         component.nextPieces = nextPieces;
@@ -115,7 +162,11 @@ public class MenuEngine : MonoBehaviour
     }
     public void QuitGame()
     {
-        if (platformCompat() || Application.platform == RuntimePlatform.Android || Application.platform == RuntimePlatform.IPhonePlayer) quitting = true;
+        if (platformCompat() || Application.platform == RuntimePlatform.Android || Application.platform == RuntimePlatform.IPhonePlayer) 
+        {
+            quitting = true;
+            if(drpcSwitch) SwitchDRPC();
+        }
     }
     public void TriggerGameOver()
     {
@@ -450,9 +501,9 @@ public class MenuEngine : MonoBehaviour
         {
             if(quitting && segments[0].MoveCoupleUIElements(false))
             {
-                if(drpcSwitch) discord.Dispose();
                 Application.Quit();
             }
+            else if(!segments[0].MoveCoupleUIElements(false)) return;
             // if (frames == 1)
             // {
             //     mainMenu.SetActive(true);

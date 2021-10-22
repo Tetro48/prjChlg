@@ -5372,7 +5372,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1554080077399579775}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 9.602774, y: 17.165657, z: 14.534508}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 6241171629878019178}
@@ -5531,6 +5531,9 @@ MonoBehaviour:
   spawnPos: {x: 4, y: 21}
   dropTime: 0.25
   turnsToSac: 10
+  minoBlock: {fileID: 7875926357646168440, guid: 5f76549503f7c0249ab58d74b3bffcb1,
+    type: 3}
+  scaling: {x: 4, y: 10}
   piecesInGame: []
   pieceToDestroy: {fileID: 0}
   sacText: {fileID: 0}
@@ -5538,7 +5541,6 @@ MonoBehaviour:
   piecemovementlocked: 0
   bag: 
   gravityTiles: 0
-  pieceHold: 28
   gameAudio: {fileID: 1554080077399579772}
   nextpieceSE:
   - {fileID: 8300000, guid: f3c95687256ae6e4ab690ef6c54e7ecc, type: 3}
@@ -5754,10 +5756,8 @@ MonoBehaviour:
   tetrisText: {fileID: 0}
   tileClone: {fileID: 2796074006605267220, guid: 617534ae5383fb442a34058db65d55be,
     type: 3}
-  boneblockw: {fileID: -8831488332037543944, guid: b770af1905bee2d48aa30980c1323ecf,
-    type: 3}
-  boneblock: {fileID: -7069943817679871487, guid: b770af1905bee2d48aa30980c1323ecf,
-    type: 3}
+  boneblockw: {x: 0, y: 0.3}
+  boneblock: {x: 0, y: 0.5}
 --- !u!1 &1554080078565110004
 GameObject:
   m_ObjectHideFlags: 0
@@ -6122,6 +6122,7 @@ MonoBehaviour:
   sectionTime: 000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
   cools: 000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
   level: 0
+  sectionSize: 100
   endingLevel: 2100
   curSect: 0
   sectAfter20g: 0
@@ -6928,8 +6929,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 2.81, y: -12.52}
-  m_SizeDelta: {x: 10, y: 1.5324}
+  m_AnchoredPosition: {x: 7.8, y: -12.52}
+  m_SizeDelta: {x: 20, y: 1.5324}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!23 &5395739318270894243
 MeshRenderer:
@@ -7384,22 +7385,22 @@ PrefabInstance:
         type: 3}
       propertyPath: tiles.Array.data[0]
       value: 
-      objectReference: {fileID: 1443692495367862129}
+      objectReference: {fileID: 0}
     - target: {fileID: 114736791834091324, guid: 001276e186c8db0469ae0bf5b31104ef,
         type: 3}
       propertyPath: tiles.Array.data[1]
       value: 
-      objectReference: {fileID: 1443757292119347729}
+      objectReference: {fileID: 0}
     - target: {fileID: 114736791834091324, guid: 001276e186c8db0469ae0bf5b31104ef,
         type: 3}
       propertyPath: tiles.Array.data[2]
       value: 
-      objectReference: {fileID: 1443374082179616125}
+      objectReference: {fileID: 0}
     - target: {fileID: 114736791834091324, guid: 001276e186c8db0469ae0bf5b31104ef,
         type: 3}
       propertyPath: tiles.Array.data[3]
       value: 
-      objectReference: {fileID: 1442965134064019575}
+      objectReference: {fileID: 0}
     - target: {fileID: 114736791834091324, guid: 001276e186c8db0469ae0bf5b31104ef,
         type: 3}
       propertyPath: isDisabledFromSacrifice

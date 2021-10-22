@@ -98,13 +98,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: eb3442cd6de5630479e7609b11d42576, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  coordinates: {x: 0, y: 0}
-  originalSpr: {fileID: 0}
-  hoverSpr: {fileID: 21300016, guid: f50d0011e407351439c303c9abbe916e, type: 3}
-  disableSpr: {fileID: 21300018, guid: f50d0011e407351439c303c9abbe916e, type: 3}
-  spriteRenderer: {fileID: 0}
   pieceController: {fileID: 114736791834091324}
   tileIndex: 0
+  textureID: 0
 --- !u!61 &61810690106093598
 BoxCollider2D:
   m_ObjectHideFlags: 0
@@ -229,13 +225,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: eb3442cd6de5630479e7609b11d42576, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  coordinates: {x: 0, y: 0}
-  originalSpr: {fileID: 0}
-  hoverSpr: {fileID: 21300016, guid: f50d0011e407351439c303c9abbe916e, type: 3}
-  disableSpr: {fileID: 21300018, guid: f50d0011e407351439c303c9abbe916e, type: 3}
-  spriteRenderer: {fileID: 0}
   pieceController: {fileID: 114736791834091324}
   tileIndex: 0
+  textureID: 0
 --- !u!61 &61993168141157884
 BoxCollider2D:
   m_ObjectHideFlags: 0
@@ -360,13 +352,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: eb3442cd6de5630479e7609b11d42576, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  coordinates: {x: 0, y: 0}
-  originalSpr: {fileID: 0}
-  hoverSpr: {fileID: 21300016, guid: f50d0011e407351439c303c9abbe916e, type: 3}
-  disableSpr: {fileID: 21300018, guid: f50d0011e407351439c303c9abbe916e, type: 3}
-  spriteRenderer: {fileID: 0}
   pieceController: {fileID: 114736791834091324}
   tileIndex: 0
+  textureID: 0
 --- !u!61 &61150994679042334
 BoxCollider2D:
   m_ObjectHideFlags: 0
@@ -408,7 +396,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &4910789834717706
 Transform:
   m_ObjectHideFlags: 0
@@ -504,19 +492,19 @@ MonoBehaviour:
   - {fileID: 9142261289523433945, guid: b770af1905bee2d48aa30980c1323ecf, type: 3}
   board: {fileID: 0}
   setDelayTime: 5
-  isDisabledFromSacrifice: 0
-  audioPieceLock: {fileID: 8300000, guid: f77ceeac82370c74ab7ba4f850219b6c, type: 3}
-  audioPieceStep: {fileID: 8300000, guid: 82f3999481bf2bb468b7238726593bd3, type: 3}
   ghostContr: {fileID: 6561965192548773307}
-  countLockResets: 0
-  maxLockResets: 20
   harddrop: 0
-  LockDelayEnable: 0
   zombieContr: 0
   LockDelayf: 0
   isPieceIsInNextQueue: 0
   hideTilesPerUpdates: 0
   tiles: []
+  tileBlock: {fileID: 7875926357646168440, guid: 5f76549503f7c0249ab58d74b3bffcb1,
+    type: 3}
+  materials: []
+  numberToTextureIDs: 0b0000000d0000000c000000090000000a0000000e0000000f000000030000000100000007000000040000000200000006000000050000001000000011000000120000001300000014000000150000001600000018000000190000001a0000001b0000001c0000001d0000001e000000
+  spawnLocation: {x: 4, y: 22}
+  fullyLocked: 0
 --- !u!1 &1957771924503588
 GameObject:
   m_ObjectHideFlags: 0
@@ -615,13 +603,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: eb3442cd6de5630479e7609b11d42576, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  coordinates: {x: 0, y: 0}
-  originalSpr: {fileID: 0}
-  hoverSpr: {fileID: 21300016, guid: f50d0011e407351439c303c9abbe916e, type: 3}
-  disableSpr: {fileID: 21300018, guid: f50d0011e407351439c303c9abbe916e, type: 3}
-  spriteRenderer: {fileID: 0}
   pieceController: {fileID: 114736791834091324}
   tileIndex: 0
+  textureID: 0
 --- !u!61 &61849885103803530
 BoxCollider2D:
   m_ObjectHideFlags: 0
@@ -673,8 +657,8 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 982109100685623819}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -0.08, y: 0.08, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalPosition: {x: -0.5, y: 0.5, z: 0}
+  m_LocalScale: {x: 6.25, y: 6.25, z: 1}
   m_Children: []
   m_Father: {fileID: 8480241490202946932}
   m_RootOrder: 0
@@ -756,8 +740,8 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1609873065570238011}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0.08, y: 0.08, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalPosition: {x: 0.08, y: 0.5, z: 0}
+  m_LocalScale: {x: 6.25, y: 6.25, z: 1}
   m_Children: []
   m_Father: {fileID: 8480241490202946932}
   m_RootOrder: 1
@@ -840,8 +824,8 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 4183358773309698476}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -0.5, y: -0.5, z: 0}
-  m_LocalScale: {x: 6.25, y: 6.25, z: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
   - {fileID: 7207803651958552823}
   - {fileID: 9137765612151549891}
@@ -926,7 +910,6 @@ MonoBehaviour:
   - {fileID: 1230257575201144}
   - {fileID: 1590379007049038}
   - {fileID: 1957771924503588}
-  setOn: 0
   visibility: 0
 --- !u!1 &7488145142613630363
 GameObject:
@@ -953,8 +936,8 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 7488145142613630363}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0.08, y: -0.08, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalPosition: {x: 0.5, y: -0.5, z: 0}
+  m_LocalScale: {x: 6.25, y: 6.25, z: 1}
   m_Children: []
   m_Father: {fileID: 8480241490202946932}
   m_RootOrder: 3
@@ -1036,8 +1019,8 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 7593312461857491755}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -0.08, y: -0.08, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalPosition: {x: -0.5, y: -0.5, z: 0}
+  m_LocalScale: {x: 6.25, y: 6.25, z: 1}
   m_Children: []
   m_Father: {fileID: 8480241490202946932}
   m_RootOrder: 2

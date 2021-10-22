@@ -26,7 +26,7 @@ public class ReplayRecord : MonoBehaviour
 {
     public static ReplayRecord instance;
     public ReplayModeType mode;
-    public int frames;
+    public List<int> frames;
     public int boards;
     public List<List<float[]>> movementVector;
     public List<List<bool[]>> inputs;
@@ -43,6 +43,8 @@ public class ReplayRecord : MonoBehaviour
         ReplayVars data = ReplayScript.LoadReplay(name);
 
         boards = data.boards;
+        frames = new List<int>();
+        for (int i = 0; i < boards; i++) frames.Add(0);
         movementVector = data.movementVector;
         inputs = data.inputs;
         switches = data.switches;
@@ -50,8 +52,8 @@ public class ReplayRecord : MonoBehaviour
         for (int i = 0; i < NetworkBoard.player.Count; i++)
         {
             NetworkBoard.player[i].lineFreezingMechanic = switches[i][0];
+            frames[i] = 0;
         }
-        frames = 0;
     }
     public void SwitchMode()
     {
@@ -60,8 +62,11 @@ public class ReplayRecord : MonoBehaviour
         textMode.text = "Replay type: " + (mode == ReplayModeType.write ? "Write" : mode == ReplayModeType.read ? "Read" : "OFF");
         if(mode != ReplayModeType.read)
         {
-            inputs.RemoveRange(frames,inputs.Count-frames);
-            movementVector.RemoveRange(frames,movementVector.Count-frames);
+            for (int i = 0; i < boards; i++)
+            {
+                inputs[i].RemoveRange(frames[i],inputs[i].Count-frames[i]);
+                movementVector[i].RemoveRange(frames[i],movementVector[i].Count-frames[i]);
+            }
             Time.timeScale = 1.0f;
         }
     }
@@ -81,21 +86,21 @@ public class ReplayRecord : MonoBehaviour
     }
     void FixedUpdate()
     {
-        // if (MenuEngine.instance.yourPlayer != null)
-        // {
-        //     if (mode == ReplayModeType.write && MenuEngine.instance.yourPlayer.AREf > (int)MenuEngine.instance.yourPlayer.ARE -401)
-        //     {
-        //         for (int i = 0; i < NetworkBoard.player.gameObject.Count; i++)
-        //         {
-        //             switches[i][0] = NetworkBoard.player[i].lineFreezingMechanic;
-        //             bool[] localInputs = new bool[7];
+        if (MenuEngine.instance.yourPlayer != null)
+        {
+            if (mode == ReplayModeType.write && MenuEngine.instance.yourPlayer.AREf > (int)MenuEngine.instance.yourPlayer.ARE -401)
+            {
+                for (int i = 0; i < NetworkBoard.player.Count; i++)
+                {
+                    switches[i][0] = NetworkBoard.player[i].lineFreezingMechanic;
+                    bool[] localInputs = new bool[7];
 
-        //         }
-        //     }
-        //     else if(MenuEngine.instance.curBoard != null && MenuEngine.instance.yourPlayer.framestepped) 
-        //     {
-        //         frames++;
-        //     }
-        // }
+                }
+            }
+            else for (int i = 0; i < boards; i++)
+            {
+                if(NetworkBoard.player[i].framestepped)frames[i]++;
+            }
+        }
     }
 }

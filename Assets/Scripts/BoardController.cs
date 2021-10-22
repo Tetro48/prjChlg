@@ -41,11 +41,12 @@ public class BoardController : MonoBehaviour {
     bool linecleared = false;
     bool arereseted = false;
     List<int> ldldy = new List<int>();
-    [SerializeField]Sprite boneblockw, boneblock;
+    [SerializeField]Vector2 boneblockw, boneblock;
 
     List<int> allClearFireworkTime = new List<int>();
 
     GridUnit[,] fullGrid;
+    Material[,] gridOfMaterials;
 
     private void Start()
     {
@@ -156,9 +157,9 @@ public class BoardController : MonoBehaviour {
             {
                 GameObject clonedTile = GameObject.Instantiate(tileClone, transform);
                 PieceController tileContr = clonedTile.GetComponent<PieceController>();
-                if(networkBoard.sectAfter20g > 1) tileContr.tiles[0].GetComponent<SpriteRenderer>().sprite = networkBoard.RS == RotationSystems.ARS ? boneblock : boneblockw;
-                tileContr.tiles[0].UpdatePosition(new Vector2Int(x,line));
-                tileContr.tiles[0].SetTileUp();
+                if(networkBoard.sectAfter20g > 1) tileContr.tiles[0].GetComponent<MeshRenderer>().material.mainTextureOffset = networkBoard.RS == RotationSystems.ARS ? boneblock : boneblockw;
+                UpdatePosition(tileContr.tiles[0],new Vector2Int(x,line));
+                SetTileUp(tileContr.tiles[0].gameObject);
                 networkBoard.piecesController.piecesInGame.Add(clonedTile);
             }
         }
@@ -178,9 +179,9 @@ public class BoardController : MonoBehaviour {
                         GameObject clonedTile = GameObject.Instantiate(tileClone, transform);
                         clonedTile.SetActive(true);
                         PieceController tileContr = clonedTile.GetComponent<PieceController>();
-                        if(networkBoard.sectAfter20g > 1) tileContr.tiles[0].GetComponent<SpriteRenderer>().sprite = networkBoard.RS == RotationSystems.ARS ? boneblock : boneblockw;
-                        tileContr.tiles[0].UpdatePosition(new Vector2Int(x,y));
-                        tileContr.tiles[0].SetTileUp();
+                        if(networkBoard.sectAfter20g > 1) tileContr.tiles[0].GetComponent<MeshRenderer>().material.mainTextureOffset = networkBoard.RS == RotationSystems.ARS ? boneblock : boneblockw;
+                        UpdatePosition(tileContr.tiles[0],new Vector2Int(x,y));
+                        SetTileUp(tileContr.tiles[0].gameObject);
                         networkBoard.piecesController.piecesInGame.Add(clonedTile);
                     }
                 }        
@@ -192,12 +193,21 @@ public class BoardController : MonoBehaviour {
     /// <summary>
     /// Destroys a line of tiles. Coded to also handle empty grid unit.
     /// </summary>
-    public void DestroyLine(int line)
+    public void DestroyLine(int line, bool particles = false)
     {
         for (int i = 0; i < gridSizeX; i++)
         {
-            if(fullGrid[i,line].tileOnGridUnit != null)if(fullGrid[i,line].isOccupied){PieceController curPC = fullGrid[i, line].tileOnGridUnit.GetComponent<TileController>().pieceController;
-            curPC.tiles[fullGrid[i, line].tileOnGridUnit.GetComponent<TileController>().tileIndex] = null;
+            if(fullGrid[i,line].tileOnGridUnit == null) continue;
+            TileController tile = fullGrid[i, line].tileOnGridUnit.GetComponent<TileController>();
+            if(particles)
+            {
+                PieceController curPC = tile.pieceController;
+                curPC.tiles[tile.tileIndex] = null;
+                int tileTexture = tile.textureID;
+                boardParticles.SummonParticles(new Vector2Int(i, line), tileTexture);
+            }
+            if(fullGrid[i,line].tileOnGridUnit != null)if(fullGrid[i,line].isOccupied){PieceController curPC = tile.pieceController;
+            curPC.tiles[tile.tileIndex] = null;
             Destroy(fullGrid[i, line].tileOnGridUnit);
             
             if (!curPC.AnyTilesLeft()) { Destroy(curPC.gameObject); }}
@@ -224,7 +234,7 @@ public class BoardController : MonoBehaviour {
     /// <param name="percentage">Decrease tile's alpha color by percentage.</param>
     public void DecayTile(Vector2Int coords, float percentage)
     {
-        if(fullGrid[coords.x, coords.y].tileOnGridUnit != null)if(fullGrid[coords.x, coords.y].isOccupied == true)fullGrid[coords.x, coords.y].tileOnGridUnit.GetComponent<SpriteRenderer>().color -= new Color(0f,0f,0f,percentage);
+        if(fullGrid[coords.x, coords.y].tileOnGridUnit != null)if(fullGrid[coords.x, coords.y].isOccupied == true)gridOfMaterials[coords.x, coords.y].color -= new Color(0f,0f,0f,percentage);
     }
     /// <summary>
     /// Resets a line of tiles' alpha color.
@@ -241,7 +251,7 @@ public class BoardController : MonoBehaviour {
     /// </summary>
     public void ResetTileTransparency(Vector2Int coords)
     {
-        if(fullGrid[coords.x, coords.y].isOccupied == true)fullGrid[coords.x, coords.y].tileOnGridUnit.GetComponent<SpriteRenderer>().color = new Color(1f,1f,1f,1f);
+        if(fullGrid[coords.x, coords.y].isOccupied == true)gridOfMaterials[coords.x, coords.y].color = new Color(1f,1f,1f,1f);
     }
 
     /// <summary>
@@ -250,6 +260,7 @@ public class BoardController : MonoBehaviour {
     private void CreateGrid()
     {
         fullGrid = new GridUnit[gridSizeX, gridSizeY];
+        gridOfMaterials = new Material[gridSizeX, gridSizeY];
 
         for(int y = 0; y < gridSizeY; y++)
         {
@@ -314,6 +325,7 @@ public class BoardController : MonoBehaviour {
         fullGrid[coords.x, coords.y].isOccupied = true;
         if(fullGrid[coords.x, coords.y].tileOnGridUnit != null) Destroy(fullGrid[coords.x, coords.y].tileOnGridUnit);
         fullGrid[coords.x, coords.y].tileOnGridUnit = tileGO;
+        gridOfMaterials[coords.x, coords.y] = tileGO.GetComponent<MeshRenderer>().material;
     }
     public bool CheckAllClear()
     {
@@ -423,9 +435,9 @@ public class BoardController : MonoBehaviour {
     /// <param name="curGridUnit">The grid unit that contains the tile to be moved down</param>
     void MoveTileDown(GridUnit curGridUnit)
     {
-        TileController curTile = curGridUnit.tileOnGridUnit.GetComponent<TileController>();
-        curTile.MoveTile(Vector2Int.down);
-        curTile.SetTile();
+        GameObject curTile = curGridUnit.tileOnGridUnit;
+        PieceController.MoveTile(curTile,Vector2Int.down);
+        SetTile(curTile.gameObject);
         curGridUnit.tileOnGridUnit = null;
         curGridUnit.isOccupied = false;
     }
@@ -435,14 +447,55 @@ public class BoardController : MonoBehaviour {
     /// <param name="curGridUnit">The grid unit that contains the tile to be moved up</param>
     void MoveTileUp(GridUnit curGridUnit)
     {
-        TileController curTile = curGridUnit.tileOnGridUnit.GetComponent<TileController>();
-        curTile.MoveTile(Vector2Int.up);
-        if(!curTile.SetTileUp())
+        GameObject curTile = curGridUnit.tileOnGridUnit;
+        PieceController.MoveTile(curTile,Vector2Int.up);
+        if(!SetTileUp(curTile))
         {
-            Destroy(curGridUnit.tileOnGridUnit);
+            Destroy(curTile);
         }
         curGridUnit.tileOnGridUnit = null;
         curGridUnit.isOccupied = false;
+    }
+
+    /// <summary>
+    /// Sets the tile in it's current position
+    /// </summary>
+    /// <returns>True if the tile is on the board. False if tile is above playing field, GAME OVER.</returns>
+    public bool SetTile(GameObject obj)
+    {
+
+        if (obj.transform.localPosition.y >= 24 || !IsPosEmpty(V3ToV2Int(obj.transform.localPosition)) || obj.transform.localPosition.x >= 10) 
+        {
+            OccupyPos(V3ToV2Int(obj.transform.localPosition), obj);
+            return false;
+        }
+
+        OccupyPos(V3ToV2Int(obj.transform.localPosition), obj);
+        return true; // when if statement up here is false, that line of code is ignored.                     ⬆ is a reason why return true; will not execute when if statement is false.
+    }
+    /// <summary>
+    /// Sets the tile in it's current position
+    /// </summary>
+    /// <returns>True if the tile is on the board. False if tile is above playing field, DESTROYED.</returns>
+    public bool SetTileUp(GameObject obj)
+    {
+        if (obj.transform.localPosition.y >= 40 || obj.transform.localPosition.x >= 10)
+        {
+            return false;
+        }
+
+        OccupyPos(V3ToV2Int(obj.transform.localPosition), obj);
+        return true;
+    }
+    public void UpdatePosition(GameObject obj, Vector2Int newPos)
+    {
+        Vector3 newV3Pos = new Vector3(newPos.x, newPos.y);
+        obj.transform.localPosition = newV3Pos;
+    }
+
+    Vector2Int V3ToV2Int(Vector3 vector3)
+    {
+        return new Vector2Int((int)vector3.x, (int)vector3.y);
     }
 
     /// <summary>
@@ -457,21 +510,21 @@ public class BoardController : MonoBehaviour {
             if(GameEngine.debugMode) Debug.LogError("Error: Cannot Clear Line: " + lineToClear);
             return;
         }
-        for(int x = 0; x < gridSizeX; x++)
-        {
-            PieceController curPC = fullGrid[x, lineToClear].tileOnGridUnit.GetComponent<TileController>().pieceController;
-            curPC.tiles[fullGrid[x, lineToClear].tileOnGridUnit.GetComponent<TileController>().tileIndex] = null;
-            int tileTexture = 0;
-            for (int i = 0; i < 28; i++)
-            {
-                if(fullGrid[x, lineToClear].tileOnGridUnit.GetComponent<SpriteRenderer>().sprite == curPC.tileSprites[i])
-                {
-                    tileTexture = i;
-                }
-            }
-            boardParticles.SummonParticles(new Vector2Int(x, lineToClear), tileTexture);
-        }
-        DestroyLine(lineToClear);
+        // for(int x = 0; x < gridSizeX; x++)
+        // {
+        //     PieceController curPC = fullGrid[x, lineToClear].tileOnGridUnit.GetComponent<TileController>().pieceController;
+        //     curPC.tiles[fullGrid[x, lineToClear].tileOnGridUnit.GetComponent<TileController>().tileIndex] = null;
+        //     int tileTexture = 0;
+        //     for (int i = 0; i < 28; i++)
+        //     {
+        //         if(fullGrid[x, lineToClear].tileOnGridUnit.GetComponent<SpriteRenderer>().sprite == curPC.tileSprites[i])
+        //         {
+        //             tileTexture = i;
+        //         }
+        //     }
+        //     boardParticles.SummonParticles(new Vector2Int(x, lineToClear), tileTexture);
+        // }
+        DestroyLine(lineToClear, true);
     }
 }
 

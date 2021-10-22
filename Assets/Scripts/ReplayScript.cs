@@ -52,4 +52,34 @@ public static class ReplayScript
             return null;
         }
     }
+    public static void SaveInputConfig(ReplayRecord replayRecord, string saveName)
+    {
+        BinaryFormatter formatter = new BinaryFormatter();
+        string path = Path.Combine(Application.persistentDataPath, "replay-" + saveName + ".clg");
+        FileStream stream = new FileStream(path, FileMode.Create);
+
+        ReplayVars data = new ReplayVars(replayRecord);
+        formatter.Serialize(stream, data);
+        stream.Close();
+    }
+
+    public static InputVars LoadInputConfig (string saveName)
+    {
+        string path = Path.Combine(Application.persistentDataPath, "replay-" + saveName + ".clg");
+        if (File.Exists(path))
+        {
+            BinaryFormatter formatter = new BinaryFormatter();
+            FileStream stream = new FileStream(path, FileMode.Open);
+
+            InputVars data = formatter.Deserialize(stream) as InputVars;
+
+            stream.Close();
+            return data;
+        }
+        else
+        {
+            Debug.LogError("Replay file is not there! Path: " + path);
+            return null;
+        }
+    }
 }

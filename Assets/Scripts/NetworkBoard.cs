@@ -341,10 +341,11 @@ public class NetworkBoard : NetworkBehaviour
         }
         else if (value.performed)
         {
-            if (value.ReadValue<Vector2>().x > 0.5 && Time.timeScale < 100)
-                Time.timeScale += 1.0f;
-            if (value.ReadValue<Vector2>().x < -0.5 && Time.timeScale > 1)
-                Time.timeScale -= 1.0f;
+            if (value.ReadValue<Vector2>().x > 0.5 && Time.timeScale < 10)
+                Time.timeScale += 0.1f;
+            if (value.ReadValue<Vector2>().x < -0.5 && Time.timeScale > .1)
+                Time.timeScale -= 0.1f;
+            GameEngine.instance.gameMusic.pitch = Time.timeScale;
         }
     }
     public void OnCounterclockwise(InputAction.CallbackContext value)
@@ -430,7 +431,7 @@ public class NetworkBoard : NetworkBehaviour
     
     void FixedUpdate()
     {
-        if(level > highestLevel) highestLevel = level;
+        if(level > highestLevel && !GameOver) highestLevel = level;
         if (IsOwner)
         {
             NetworkUpdate();
@@ -467,7 +468,7 @@ public class NetworkBoard : NetworkBehaviour
             {
                 if(time > 0)
                 ppsCounter.text = String.Format("{0} pieces/second\nLock: {1} / {2}\nResets: {3} / {4}",
-                    Math.Floor(((double) (piecesController.lockedPieces) / ((double)time/100))*100)/100, LockDelay - LockDelayf, LockDelay, maxLockResets - countLockResets, maxLockResets);
+                    Math.Floor(((double) (piecesController.lockedPieces) / ((double)time/100))*100)/100, Math.Floor((LockDelay - LockDelayf) * 1000) / 100 + "ms", Math.Floor(LockDelay * 1000) / 100 + "ms", maxLockResets - countLockResets, maxLockResets);
             }
             // if (Input.GetKey(KeyCode.X) || Input.GetKey(KeyCode.Space)) Inputs[2] = true;
             // if (Input.GetKey(KeyCode.A)) Inputs[3] = true;
@@ -477,18 +478,17 @@ public class NetworkBoard : NetworkBehaviour
             {
                 if (ReplayRecord.instance.mode == ReplayModeType.read && AREf > (int)ARE - 401)
                 {
-                    Vector2 tempmov;
-                    tempmov.x = ReplayRecord.instance.movementVector[playerID][ReplayRecord.instance.frames][0];
-                    tempmov.y = ReplayRecord.instance.movementVector[playerID][ReplayRecord.instance.frames][1];
-                    movement = tempmov;
-                    // Inputs = ReplayRecord.instance.inputs[ReplayRecord.instance.frames];
-                    Inputs[0] = ReplayRecord.instance.inputs[playerID][ReplayRecord.instance.frames][0];
-                    Inputs[1] = ReplayRecord.instance.inputs[playerID][ReplayRecord.instance.frames][1];
-                    Inputs[2] = ReplayRecord.instance.inputs[playerID][ReplayRecord.instance.frames][2];
-                    Inputs[3] = ReplayRecord.instance.inputs[playerID][ReplayRecord.instance.frames][3];
-                    Inputs[4] = ReplayRecord.instance.inputs[playerID][ReplayRecord.instance.frames][4];
-                    Inputs[5] = ReplayRecord.instance.inputs[playerID][ReplayRecord.instance.frames][5];
-                    Inputs[6] = ReplayRecord.instance.inputs[playerID][ReplayRecord.instance.frames][6];
+                    float[] tempmov;
+                    tempmov = ReplayRecord.instance.movementVector[playerID][ReplayRecord.instance.frames[playerID]];
+                    movement = new Vector2(tempmov[0], tempmov[1]);
+                    // Inputs = ReplayRecord.instance.inputs[playerID][ReplayRecord.instance.frames[playerID]];
+                    Inputs[0] = ReplayRecord.instance.inputs[playerID][ReplayRecord.instance.frames[playerID]][0];
+                    Inputs[1] = ReplayRecord.instance.inputs[playerID][ReplayRecord.instance.frames[playerID]][1];
+                    Inputs[2] = ReplayRecord.instance.inputs[playerID][ReplayRecord.instance.frames[playerID]] [ 2 ];
+                    Inputs[3] = ReplayRecord.instance.inputs[playerID][ReplayRecord.instance.frames[playerID]][3];
+                    Inputs[4] = ReplayRecord.instance.inputs[playerID][ReplayRecord.instance.frames[playerID]][4];
+                    Inputs[5] = ReplayRecord.instance.inputs[playerID][ReplayRecord.instance.frames[playerID]][5];
+                    Inputs[6] = ReplayRecord.instance.inputs[playerID][ReplayRecord.instance.frames[playerID]][6];
                     lineFreezingMechanic = ReplayRecord.instance.switches[playerID][0];
                 }
                 else if(AREf > (int)ARE - 401)
@@ -506,7 +506,7 @@ public class NetworkBoard : NetworkBehaviour
                     boardController.DestroyLine((int)whichline);
                 }
                 
-                if(ending)tileInvisTime = 20 - (rollTime / (400/6*10));
+                if(ending && AREf >= 0)tileInvisTime = 20 - (rollTime / (400/6*10));
                 else tileInvisTime = -1;
                 if (AREf == (int)ARE - 399) AudioManager.PlayClip(excellent);
                 if(AREf >= 0 && readyGoIndicator.sprite == null && rollTime < rollTimeLimit)time++;
@@ -594,8 +594,8 @@ public class NetworkBoard : NetworkBehaviour
                     rigidbody = gameObject.AddComponent<Rigidbody>();
                     rigidbody.mass = 16;
                     Vector3 explosionPos = new Vector3(transform.position.x + UnityEngine.Random.Range(-20f, 20f), transform.position.y + UnityEngine.Random.Range(-20f, 20f), transform.position.z + UnityEngine.Random.Range(-20f, 20f));
-                    rigidbody.AddExplosionForce(25, explosionPos, 50f, 2f);
-                    rigidbody.angularDrag = 0.0f;
+                    rigidbody.AddExplosionForce(150f, explosionPos, 50f, 2f, ForceMode.Impulse);
+                    rigidbody.angularDrag = 1f;
                     Destroy(gameObject.GetComponent<PlayerInput>());
                     Destroy(ppsCounter.gameObject);
                     Destroy(gameObject, 10f);
@@ -645,7 +645,7 @@ public class NetworkBoard : NetworkBehaviour
             frames++;
             if(frames == 1)
             {
-                AREf = (int)ARE - 201;
+                AREf = (int)ARE - 250;
                 if(IntentionalGameOver)Destroy(piecesController.curPieceController.gameObject);
                 MenuEngine.instance.audioSource2.PlayOneShot(MenuEngine.instance.topoutSE);
             }
@@ -667,6 +667,7 @@ public class NetworkBoard : NetworkBehaviour
                 IntentionalGameOver = false;
             }
             framestepped = false;
+            Inputs[7] = false;
         }
     }
     public void SpawnFireworks()

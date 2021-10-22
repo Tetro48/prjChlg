@@ -8,19 +8,25 @@ public class GhostPieceController : MonoBehaviour
     public GameObject tileset;
     public GameObject[] tiles;
     public GameObject[] textureReading;
-    public bool setOn;
     public bool visibility;
     SpriteRenderer sprRnd;
 
-    public void Initiate(PiecesController connector)
+    public void Initiate(PieceController connector)
     {
-        sprRnd = GetComponent<SpriteRenderer>();
         networkBoard = connector.board;
         if (networkBoard.level < networkBoard.sectionSize || networkBoard.TLS) visibility = true;
+        else Destroy(gameObject);
+        tiles = new GameObject[connector.tiles.Length];
+        textureReading = new GameObject[connector.tiles.Length];
+        for (int i = 0; i < connector.tiles.Length; i++)
+        {
+            textureReading[i] = connector.tiles[i];
+            tiles[i] = Instantiate(textureReading[i], transform);
+        }
         float transparency = 0.3f;
         for (int i = 0; i < tiles.Length; i++)
         {
-            tiles[i].GetComponent<SpriteRenderer>().color = new Color(1f, 1f, 1f, transparency);
+            tiles[i].GetComponent<MeshRenderer>().material.color = new Color(1f, 1f, 1f, transparency);
         }
     }
 
@@ -46,7 +52,7 @@ public class GhostPieceController : MonoBehaviour
         for (int i = 0; i < tiles.Length; i++)
         {
             if(textureReading[i] != null)
-            if (!CanGhostTileMove(movement + new Vector2Int(textureReading[i].GetComponent<TileController>().coordinates.x, (int)tiles[i].transform.position.y)))
+            if (!CanGhostTileMove(movement + new Vector2Int((int)textureReading[i].transform.localPosition.x, (int)tiles[i].transform.localPosition.y)))
             {
                 return false;
             }
@@ -55,13 +61,11 @@ public class GhostPieceController : MonoBehaviour
     }
     public void MoveGhostPiece(Vector2Int movement)
     {
-        setOn = false;
-        while (CanMoveGhostPiece(movement) && !setOn && gameObject.activeInHierarchy)
+        while (CanMoveGhostPiece(movement) && gameObject.activeInHierarchy)
         {
-            foreach (GameObject tile in tiles)
+            for (int i = 0; i < tiles.Length; i++)
             {
-                if (!CanMoveGhostPiece(Vector2Int.down)) setOn = true;
-                tile.transform.position += new Vector3(movement.x, movement.y, 0f);
+                tiles[i].transform.localPosition += new Vector3(movement.x, movement.y, 0f);
             }
         }
     }
@@ -71,8 +75,8 @@ public class GhostPieceController : MonoBehaviour
         {
             if(tiles[i] != null)
             {
-                tiles[i].GetComponent<SpriteRenderer>().sprite = textureReading[i].GetComponent<SpriteRenderer>().sprite;
-                tiles[i].transform.position = textureReading[i].transform.position;
+                // tiles[i].GetComponent<SpriteRenderer>().sprite = textureReading[i].GetComponent<SpriteRenderer>().sprite;
+                tiles[i].transform.localPosition = textureReading[i].transform.localPosition;
             }
         }
         MoveGhostPiece(Vector2Int.down);
@@ -83,7 +87,7 @@ public class GhostPieceController : MonoBehaviour
     {
         if (networkBoard.piecesController.piecemovementlocked || !visibility)
         {
-            Destroy(this.gameObject);
+            Destroy(gameObject);
         }
         // this.transform.position = textureReading[0].transform.position;
     }
