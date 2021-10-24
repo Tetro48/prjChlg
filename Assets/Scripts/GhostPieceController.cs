@@ -15,7 +15,11 @@ public class GhostPieceController : MonoBehaviour
     {
         networkBoard = connector.board;
         if (networkBoard.level < networkBoard.sectionSize || networkBoard.TLS) visibility = true;
-        else Destroy(gameObject);
+        else 
+        {
+            Destroy(gameObject);
+            return;
+        }
         tiles = new GameObject[connector.tiles.Length];
         textureReading = new GameObject[connector.tiles.Length];
         for (int i = 0; i < connector.tiles.Length; i++)
@@ -85,6 +89,7 @@ public class GhostPieceController : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        if (networkBoard.level >= networkBoard.sectionSize && !networkBoard.TLS) visibility = false;
         if (networkBoard.piecesController.piecemovementlocked || !visibility)
         {
             Destroy(gameObject);
