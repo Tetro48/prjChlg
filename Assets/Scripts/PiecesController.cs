@@ -185,6 +185,16 @@ public class PiecesController : MonoBehaviour {
         O_OFFSET_DATA[0, 2] = new Vector2Int(-1, -1);
         O_OFFSET_DATA[0, 3] = Vector2Int.left;
 
+
+    }
+
+    /// <summary>
+    /// Called at the first frame instance is enabled. Sets some variables.
+    /// </summary>
+    private void Start()
+    {
+        piecesInGame = new List<GameObject>();
+        availablePieces = new List<GameObject>();
         if(board.RS == RotationSystems.ARS)
         {
             JLSTZ_OFFSET_DATA = new Vector2Int[5, 4];
@@ -245,16 +255,6 @@ public class PiecesController : MonoBehaviour {
             O_OFFSET_DATA[0, 2] = new Vector2Int(-1, -1);
             O_OFFSET_DATA[0, 3] = Vector2Int.left;
         }
-
-    }
-
-    /// <summary>
-    /// Called at the first frame instance is enabled. Sets some variables.
-    /// </summary>
-    private void Start()
-    {
-        piecesInGame = new List<GameObject>();
-        availablePieces = new List<GameObject>();
     }
 
     public void InitiatePieces()

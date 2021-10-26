@@ -14815,10 +14815,10 @@ MonoBehaviour:
   - 41.6666666
   - 16.6666666
   - 25
-  - 0
+  - 0.046875
   rotationSystems: 0
   nextPieces: 7
-  switches: 
+  switches: 00
   alreadystarted: 0
   drpcSwitch: 0
   frameratebuffer: []
