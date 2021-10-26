@@ -14702,7 +14702,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ca622140ce942544fa7909b8a3a09e1d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  modifiableInputAsset: {fileID: 0}
+  modifiableInputAsset: {fileID: -944628639613478452, guid: d8dbe9088492df045911014303ed65a7,
+    type: 3}
   language: 0
   yourPlayer: {fileID: 0}
   menu: 0
