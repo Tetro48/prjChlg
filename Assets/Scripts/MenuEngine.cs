@@ -330,7 +330,7 @@ public class MenuEngine : MonoBehaviour
                 if (resolutions[i].width == Screen.currentResolution.width && resolutions[i].height == Screen.currentResolution.height && resolutions[i].refreshRate == 60)
                 {
                     currentResolutionIndex = i/resRefreshrates;
-                    reswidth = (float)(resolutions[i/resRefreshrates].width / 1920);
+                    reswidth = (float)(resolutions[i/resRefreshrates].height / 1080);
                 }
             }
             resDropdown.AddOptions(options);
@@ -340,7 +340,7 @@ public class MenuEngine : MonoBehaviour
         }
         else
         {
-            reswidth = (float)(Screen.width / 1920.0);
+            reswidth = (float)(Screen.height / 1080.0);
             settingsGUIMovement[0].gameObject.SetActive(false);
             settingsGUIPartMovement[0].gameObject.SetActive(false);
             if(!Application.isMobilePlatform)mainMenuGUIMovement[2].gameObject.SetActive(false);
@@ -396,7 +396,7 @@ public class MenuEngine : MonoBehaviour
         {
             Resolution resolution = resolutions[(resRefreshrates-1)+index*resRefreshrates];
             Screen.SetResolution(resolution.width, resolution.height, true);
-            reswidth = (float)(resolution.width / 1920.0);
+            reswidth = (float)(resolution.height / 1080.0);
         }
     }
     // void OnDestroy()
