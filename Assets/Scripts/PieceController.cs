@@ -42,6 +42,7 @@ public class PieceController : MonoBehaviour {
     public int hideTilesPerUpdates;
 
 
+    public Transform pivot;
     public GameObject[] tiles;
     [SerializeField]
     GameObject tileBlock;
@@ -73,6 +74,7 @@ public class PieceController : MonoBehaviour {
             TileController tc = tile.GetComponent<TileController>();
             tc.pieceController = this;
             tc.tileIndex = i;
+            tc.textureID = textureSelect;
             tiles[i] = tile;
             materials[i] = tiles[i].GetComponent<MeshRenderer>().material;
             materials[i].mainTextureScale = Vector2.one / scaling;
@@ -140,8 +142,9 @@ public class PieceController : MonoBehaviour {
     /// Moves the attached tiles to form the Tetris piece specified. Also sets the correct color of tile sprite.
     /// </summary>
     /// <param name="newType">Type of tetris piece to be spawned.</param>
-    public void SpawnPiece(PieceType newType, PiecesController connector, Vector2Int[] positions, GameObject obj, Vector2Int scaling, int textureSelect, Vector2Int nextPos)
+    public void SpawnPiece(PieceType newType, PiecesController connector, Vector2Int[] positions, Vector2 setPivot, GameObject obj, Vector2Int scaling, int textureSelect, Vector2Int nextPos)
     {
+        pivot.localPosition = setPivot + nextPos;
         int increaseByLevel = board.level >= 600 && board.nextibmblocks == board.nextPieces + 1 ? 14 : 0;
         int RSint = board.RS == RotationSystems.ARS ? 7 : 0;
         int combine = (increaseByLevel + RSint);
@@ -283,14 +286,10 @@ public class PieceController : MonoBehaviour {
     /// </summary>
     /// <param name="movement">X,Y amount to move the piece</param>
     /// <returns>True if the piece was able to be moved. False if the move couln't be completed.</returns>
-    public bool ForcefullyMovePiece(Vector2Int movement)
+    public void ForcefullyMovePiece(Vector2Int movement)
     {
-        for (int i = 0; i < tiles.Length; i++)
-        {
-            MoveTile(tiles[i].gameObject, movement);
-            board.LockDelayf = 0;
-        }
-        return true;
+        UnisonPieceMove(movement);
+        board.LockDelayf = 0;
     }
     /// <summary>
     /// Moves the piece by the specified amount.
@@ -312,11 +311,8 @@ public class PieceController : MonoBehaviour {
             }
         }
 
-        for (int i = 0; i < tiles.Length; i++)
-        {
-            MoveTile(tiles[i].gameObject, movement);
-            board.LockDelayf = 0;
-        }
+        UnisonPieceMove(movement);
+        board.LockDelayf = 0;
         if(movement.y >= 0) if(!offset) if(board.LockDelay > 5 || board.gravity < 19) AudioManager.PlayClip(board.moveSE);
         if(!CanMovePiece(Vector2Int.down))board.countLockResets++;
         if(board.countLockResets >= board.maxLockResets)
@@ -334,6 +330,14 @@ public class PieceController : MonoBehaviour {
 
         if (board.level < board.sectionSize || board.TLS) ghostContr.UpdateGhostPiece();
         return true;
+    }
+    public void UnisonPieceMove(Vector2Int movement)
+    {
+        for (int i = 0; i < tiles.Length; i++)
+        {
+            MoveTile(tiles[i].gameObject, movement);
+        }
+        pivot.localPosition += (Vector3)(Vector2)movement;
     }
 
     public bool isPieceLocked(){return fullyLocked;}
@@ -361,7 +365,7 @@ public class PieceController : MonoBehaviour {
 
         for(int i = 0; i < tiles.Length; i++)
         {
-            RotateObject(tiles[i].gameObject, V3ToV2Int(tiles[0].transform.localPosition), clockwise);
+            RotateObject(tiles[i].gameObject, pivot.position, clockwise);
         }
         if (UD)
         {
@@ -392,13 +396,17 @@ public class PieceController : MonoBehaviour {
         //     rotationIndex = Mod(rotationIndex, 2);
         // }
 
-        for(int i = 0; i < tiles.Length; i++)
-        {
-            RotateObject(tiles[i].gameObject, V3ToV2Int(tiles[0].transform.localPosition), clockwise);
-        }
+        // for(int i = 0; i < tiles.Length; i++)
+        // {
+        //     RotateObject(tiles[i].gameObject, pivot.position, clockwise);
+        // }
 
         if (!shouldOffset)
         {
+            for(int i = 0; i < tiles.Length; i++)
+            {
+                RotateObject(tiles[i].gameObject, pivot.position, clockwise);
+            }
             return;
         }
 
@@ -430,7 +438,6 @@ public class PieceController : MonoBehaviour {
     /// <returns>True if one of the tests passed and a final location was found. False if all test failed.</returns>
     bool Offset180(int oldRotIndex, int newRotIndex)
     {
-        Vector2Int offsetVal1, offsetVal2, endOffset;
         Vector2Int[,] curOffsetData;
         
         if(curType == PieceType.O)
@@ -446,21 +453,16 @@ public class PieceController : MonoBehaviour {
             curOffsetData = board.piecesController.JLSTZ_OFFSET_DATA;
         }
 
-        endOffset = Vector2Int.zero;
 
         bool movePossible = false;
 
-        offsetVal1 = curOffsetData[0, oldRotIndex];
-        offsetVal2 = curOffsetData[0, newRotIndex];
-        endOffset = offsetVal1 - offsetVal2;
-        if (CanMovePiece(endOffset))
+        for(int i = 0; i < tiles.Length; i++)
+        {
+            RotateObject(tiles[i].gameObject, pivot.position, oldRotIndex < newRotIndex ? true : false);
+        }
+        if (CanMovePiece(Vector2Int.zero))
         {
             movePossible = true;
-        }
-
-        if (movePossible)
-        {
-            MovePiece(endOffset, true);
         }
         if(board.LockDelay > 6 || board.gravity < 19) AudioManager.PlayClip(board.rotateSE);
         // else
@@ -500,13 +502,28 @@ public class PieceController : MonoBehaviour {
 
         for (int testIndex = 0; testIndex < 5; testIndex++)
         {
-            offsetVal1 = curOffsetData[testIndex, oldRotIndex];
-            offsetVal2 = curOffsetData[testIndex, newRotIndex];
-            endOffset = offsetVal1 - offsetVal2;
-            if (CanMovePiece(endOffset))
+            if(testIndex == 0)
             {
-                movePossible = true;
-                break;
+                for(int i = 0; i < tiles.Length; i++)
+                {
+                    RotateObject(tiles[i].gameObject, pivot.position, oldRotIndex < newRotIndex ? true : false);
+                }
+                if (CanMovePiece(endOffset))
+                {
+                    movePossible = true;
+                    break;
+                }
+            }
+            else
+            {
+                offsetVal1 = curOffsetData[testIndex, oldRotIndex];
+                offsetVal2 = curOffsetData[testIndex, newRotIndex];
+                endOffset = offsetVal1 - offsetVal2;
+                if (CanMovePiece(endOffset))
+                {
+                    movePossible = true;
+                    break;
+                }
             }
         }
 
@@ -561,17 +578,20 @@ public class PieceController : MonoBehaviour {
     /// </summary>
     /// <param name="originPos">Coordinates this tile will be rotating about.</param>
     /// <param name="clockwise">True if rotating clockwise. False if rotatitng CCW</param>
-    public static void RotateObject(GameObject obj, Vector2Int originPos, bool clockwise, int dist = 1)
+    public static void RotateObject(GameObject obj, Vector3 pivotPos, bool clockwise)
     {
-        Vector2Int relativePos = V3ToV2Int(obj.transform.localPosition) - originPos;
-        Vector2Int[] rotMatrix = clockwise ? new Vector2Int[2] { new Vector2Int(0, -dist), new Vector2Int(dist, 0) }
-                                           : new Vector2Int[2] { new Vector2Int(0, dist), new Vector2Int(-dist, 0) };
-        int newXPos = (rotMatrix[0].x * relativePos.x) + (rotMatrix[1].x * relativePos.y);
-        int newYPos = (rotMatrix[0].y * relativePos.x) + (rotMatrix[1].y * relativePos.y);
-        Vector2Int newPos = new Vector2Int(newXPos, newYPos);
+        // Vector2Int relativePos = V3ToV2Int(obj.transform.localPosition) - originPos;
+        // Vector2Int[] rotMatrix = clockwise ? new Vector2Int[2] { new Vector2Int(0, -1), new Vector2Int(1, 0) }
+        //                                    : new Vector2Int[2] { new Vector2Int(0, 1), new Vector2Int(-1, 0) };
+        // int newXPos = (rotMatrix[0].x * relativePos.x) + (rotMatrix[1].x * relativePos.y);
+        // int newYPos = (rotMatrix[0].y * relativePos.x) + (rotMatrix[1].y * relativePos.y);
+        // Vector2Int newPos = new Vector2Int(newXPos, newYPos);
 
-        newPos += originPos;
-        UpdatePosition(obj, newPos);
+        // newPos += originPos;
+        // UpdatePosition(obj, newPos);
+        int multi = clockwise ? 1 : -1;
+        obj.transform.RotateAround(pivotPos, Vector3.forward, 90 * multi);
+        // obj.transform.Rotate(new Vector3(90f * -multi, 0f, 0f), Space.Self);
     }
     public static void UpdatePosition(GameObject obj, Vector2Int newPos)
     {

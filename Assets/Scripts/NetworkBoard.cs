@@ -38,26 +38,26 @@ public class NetworkBoard : NetworkBehaviour
     public PiecesController piecesController;
     public int playerID;
     public bool GameOver, IntentionalGameOver;
-    public int time, rollTime, rollTimeLimit = 11000, notifDelay, sectionlasttime, coolprevtime;
+    public double time, rollTime, rollTimeLimit = 11000, notifDelay, sectionlasttime, coolprevtime;
 
-    public int[] sectionTime = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+    public double[] sectionTime = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
 
     public SectionState[] cools = new SectionState[21];
 
     /// <summary>
     /// Section COOL criteria Time 
     /// </summary>
-	public static int[] tableTimeCool =
+	public static double[] tableTimeCool =
 	{
-		5200, 5200, 4900, 4500, 4500, 4200, 4200, 3800, 3800, 3800, 3300, 3300, 3300, 2800, 2800, 2200, 1800, 1400, 900, 600, -1
+		52, 52, 49, 45, 45, 42, 42, 38, 38, 38, 33, 33, 33, 28, 28, 22, 18, 14, 9, 6, -1
 	};
 
     /// <summary>
     /// Section REGRET criteria Time 
     /// </summary>
-    public static int[] tableTimeRegret = 
+    public static double[] tableTimeRegret = 
     {
-        9000, 7500, 7500, 6800, 6000, 6000, 5000, 5000, 500, 5000, 4500, 4500, 4500, 4000, 4000, 3400, 3000, 2600, 1700, 800, -1
+        90, 75, 75, 68, 60, 60, 50, 50, 50, 50, 45, 45, 45, 40, 40, 34, 30, 26, 17, 8, -1
     };
 
     public int level, sectionSize = 100;
@@ -94,7 +94,7 @@ public class NetworkBoard : NetworkBehaviour
 
     public bool TLS, tSpin, ending, coolchecked, previouscool;
 
-    public bool lineFreezingMechanic;
+    public bool lineFreezingMechanic, bigMode;
     public bool LockDelayEnable;
     [Range(0,25)]
     public int countLockResets, maxLockResets = 20;
@@ -153,7 +153,7 @@ public class NetworkBoard : NetworkBehaviour
 			int section = level / sectionSize;
 
 			if( (sectionTime[section] <= tableTimeCool[section]) &&
-				((previouscool == false) || ((previouscool == true) && (sectionTime[section] <= coolprevtime + 60))) )
+				((previouscool == false) || ((previouscool == true) && (sectionTime[section] <= coolprevtime + 1))) )
 			{
 				cool = true;
 				cools[section] = SectionState.cool;
@@ -276,12 +276,7 @@ public class NetworkBoard : NetworkBehaviour
                 gravity *= 4;
             }
             // COOLг‚’еЏ–гЃЈгЃ¦гЃџг‚‰
-            if(cool == true) {
-                previouscool = true;
-
-            } else {
-                previouscool = false;
-            }
+            previouscool = cool;
 
             cool = false;
             coolchecked = false;
@@ -396,6 +391,7 @@ public class NetworkBoard : NetworkBehaviour
     }
     void Awake()
     {
+        UnityEngine.Random.InitState(SeedManager.seed);
         if(ReplayRecord.instance.mode != ReplayModeType.read)
         {
             ReplayRecord.instance.boards++;
@@ -468,7 +464,7 @@ public class NetworkBoard : NetworkBehaviour
             {
                 if(time > 0)
                 ppsCounter.text = String.Format("{0} pieces/second\nLock: {1} / {2}\nResets: {3} / {4}",
-                    Math.Floor(((double) (piecesController.lockedPieces) / ((double)time/100))*100)/100, Math.Floor((LockDelay - LockDelayf) * 1000) / 100 + "ms", Math.Floor(LockDelay * 1000) / 100 + "ms", maxLockResets - countLockResets, maxLockResets);
+                    Math.Floor(((double) piecesController.lockedPieces / time)* 100) / 100, Math.Floor((LockDelay - LockDelayf) * 1000) / 100 + "ms", Math.Floor(LockDelay * 1000) / 100 + "ms", maxLockResets - countLockResets, maxLockResets);
             }
             // if (Input.GetKey(KeyCode.X) || Input.GetKey(KeyCode.Space)) Inputs[2] = true;
             // if (Input.GetKey(KeyCode.A)) Inputs[3] = true;
@@ -506,13 +502,13 @@ public class NetworkBoard : NetworkBehaviour
                     boardController.DestroyLine((int)whichline);
                 }
                 
-                if(ending && AREf >= 0)tileInvisTime = 20 - (rollTime / (400/6*10));
+                if(ending && AREf >= 0)tileInvisTime = 20 - ((int)rollTime / (400/6*10));
                 else tileInvisTime = -1;
                 if (AREf == (int)ARE - 399) AudioManager.PlayClip(excellent);
-                if(AREf >= 0 && readyGoIndicator.sprite == null && rollTime < rollTimeLimit)time++;
+                if(AREf >= 0 && readyGoIndicator.sprite == null && rollTime < rollTimeLimit)time += Time.deltaTime;
                 if(AREf >= 0 && readyGoIndicator.sprite == null && ending && rollTime < rollTimeLimit)
                 {
-                    rollTime++;
+                    rollTime += Time.deltaTime;
                     if(rollTime >= rollTimeLimit)
                     {
                         AREf = (int)ARE - 1000;
@@ -540,10 +536,10 @@ public class NetworkBoard : NetworkBehaviour
                 if(curSect < 21)nextSecLv.text = nextsecint.ToString();
                 if(!ending)
                 {
-                    timeCounter.text = TimeConversion.timeCount(time);
-                    if(AREf >= 0 && readyGoIndicator.sprite == null && rollTime < rollTimeLimit)sectionTime[curSect]++;
+                    timeCounter.text = TimeConversion.doubleFloatTimeCount(time);
+                    if(AREf >= 0 && readyGoIndicator.sprite == null && rollTime < rollTimeLimit)sectionTime[curSect] += Time.deltaTime;
                 }
-                rollTimeCounter.text = TimeConversion.timeCount(rollTimeLimit - rollTime);
+                rollTimeCounter.text = TimeConversion.doubleFloatTimeCount(rollTimeLimit - rollTime);
                 framestepped = true;
                 // for (int i = 0; i < 7; i++)
                 // {

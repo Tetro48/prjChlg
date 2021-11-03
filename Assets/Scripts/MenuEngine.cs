@@ -147,7 +147,7 @@ public class MenuEngine : MonoBehaviour
         {"シングル：", "ダブル：", "トリプル", "テトリス：", "行：", "合計", "ピース", "成績：", "総合成績スコア", "レベル：", "時間", "", "", "", "", ""},
     };
     Language previousLang;
-    public void InstantiatePlayer(double LockDelay = 50, double ARE = 41.6666666, double AREline = 16.6666666, double lineDelay = 25, float gravity = 3/64f, RotationSystems rotationSystem = RotationSystems.SRS, int nextPieces = 7, bool lineFreezingMechanic = false)
+    public void InstantiatePlayer(double LockDelay = 50, double ARE = 41.6666666, double AREline = 16.6666666, double lineDelay = 25, float gravity = 3 / 64f, RotationSystems rotationSystem = RotationSystems.SRS, int nextPieces = 7)
     {
         GameObject newBoard = Instantiate(inGameBoard, transform);
         NetworkBoard component = newBoard.GetComponent<NetworkBoard>();
@@ -158,8 +158,9 @@ public class MenuEngine : MonoBehaviour
         component.gravity = gravity;
         component.nextPieces = nextPieces;
         component.RS = rotationSystem;
+        component.lineFreezingMechanic = switches[0];
+        component.bigMode = switches[1];
         component.piecesController.InitiatePieces();
-        component.lineFreezingMechanic = lineFreezingMechanic;
     }
     public void QuitGame()
     {
@@ -542,7 +543,7 @@ public class MenuEngine : MonoBehaviour
                     // GameEngine.instance.statGradePoints = 0;
                     // SceneManager.LoadScene("GameScene");
 
-                    InstantiatePlayer(timings[0], timings[1], timings[2], timings[3], (float)timings[4], rotationSystems, nextPieces, switches[0]);
+                    InstantiatePlayer(timings[0], timings[1], timings[2], timings[3], (float)timings[4], rotationSystems, nextPieces);
                     // GameObject board = GameObject.Instantiate(inGameBoard, transform);
                     // curBoard = board;
                     // NetworkBoard netBoard = curBoard.GetComponent<NetworkBoard>();

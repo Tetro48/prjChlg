@@ -11,6 +11,22 @@ public static class TimeConversion
     ///</summary>
     public static string timeCount(int time)
     {
-        return Math.Floor(((double)time/60000)%6).ToString() + Math.Floor(((double)time/6000)%10) + ":" + Math.Floor(((double)time%6000/1000)%6) + Math.Floor(((double)time%6000/100)%10) + ":" + Math.Floor((((double)time%100/1000)*100)%10) + Math.Floor((((double)time%100/100)*100)%10);
+        return String.Format("{0}{1}:{2}{3}:{4}{5}",
+        Math.Floor((double)time/60000)%6,
+        Math.Floor((double)time/6000)%10,
+        Math.Floor((double)time%6000/1000)%6,
+        Math.Floor((double)time%6000/100)%10,
+        Math.Floor(((double)time%100/1000)*100)%10,
+        Math.Floor(((double)time%100/100)*100)%10);
+    }
+    //Explains itself.
+    public static string doubleFloatTimeCount(double time)
+    {
+        return String.Format("{0}{1}:{2}{3}:{4}",
+        Math.Floor(time / 600) % 6,
+        Math.Floor(time / 60) % 10,
+        Math.Floor(time % 60 / 10) % 6,
+        Math.Floor(time % 60) % 10,
+        Math.Floor(time % 1 * 100));
     }
 }

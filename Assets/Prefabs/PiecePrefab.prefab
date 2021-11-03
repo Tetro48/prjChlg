@@ -498,6 +498,7 @@ MonoBehaviour:
   LockDelayf: 0
   isPieceIsInNextQueue: 0
   hideTilesPerUpdates: 0
+  pivot: {fileID: 4910789834717706}
   tiles: []
   tileBlock: {fileID: 7875926357646168440, guid: 5f76549503f7c0249ab58d74b3bffcb1,
     type: 3}

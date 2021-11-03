@@ -40,13 +40,23 @@ public class PiecesController : MonoBehaviour {
     public GameObject minoBlock;
     public List<Vector2Int[]> minoPositions = new List<Vector2Int[]>
     {
-        new Vector2Int[] {Vector2Int.zero, Vector2Int.right, Vector2Int.one, Vector2Int.up},
-        new Vector2Int[] {Vector2Int.zero, Vector2Int.left, Vector2Int.right*2, Vector2Int.right},
-        new Vector2Int[] {Vector2Int.zero, Vector2Int.left, Vector2Int.one, Vector2Int.up},
-        new Vector2Int[] {Vector2Int.zero, Vector2Int.up, new Vector2Int(-1, 1), Vector2Int.right},
-        new Vector2Int[] {Vector2Int.zero, Vector2Int.left, Vector2Int.one, Vector2Int.right},
-        new Vector2Int[] {Vector2Int.zero, Vector2Int.left, new Vector2Int(-1, 1), Vector2Int.right},
-        new Vector2Int[] {Vector2Int.zero, Vector2Int.left, Vector2Int.up, Vector2Int.right},
+        new Vector2Int[] {Vector2Int.zero, Vector2Int.right, Vector2Int.one, Vector2Int.up}, // O piece
+        new Vector2Int[] {Vector2Int.zero, Vector2Int.left, Vector2Int.right*2, Vector2Int.right}, // I piece
+        new Vector2Int[] {Vector2Int.zero, Vector2Int.left, Vector2Int.one, Vector2Int.up}, // S piece
+        new Vector2Int[] {Vector2Int.zero, Vector2Int.up, new Vector2Int(-1, 1), Vector2Int.right}, // Z piece
+        new Vector2Int[] {Vector2Int.zero, Vector2Int.left, Vector2Int.one, Vector2Int.right}, // L piece
+        new Vector2Int[] {Vector2Int.zero, Vector2Int.left, new Vector2Int(-1, 1), Vector2Int.right}, // J piece
+        new Vector2Int[] {Vector2Int.zero, Vector2Int.left, Vector2Int.up, Vector2Int.right}, // T piece
+
+        //big pieces
+        
+        bigPiece(bigMino(0,0), bigMino(1,0), bigMino(1,1), bigMino(0,1)),
+        bigPiece(bigMino(0,0), bigMino(-1,0), bigMino(2,0), bigMino(1,0)),
+        bigPiece(bigMino(0,0), bigMino(-1,0), bigMino(1,1), bigMino(0,1)),
+        bigPiece(bigMino(0,0), bigMino(0,1), bigMino(-1,1), bigMino(1,0)),
+        bigPiece(bigMino(0,0), bigMino(-1,0), bigMino(1,1), bigMino(1,0)),
+        bigPiece(bigMino(0,0), bigMino(-1,0), bigMino(-1,1), bigMino(1,0)),
+        bigPiece(bigMino(0,0), bigMino(-1,0), bigMino(0,1), bigMino(1,0)),
 
         
         // new Vector2Int[] {Vector2Int.zero},
@@ -57,6 +67,43 @@ public class PiecesController : MonoBehaviour {
         // new Vector2Int[] {Vector2Int.zero},
         // new Vector2Int[] {Vector2Int.zero},
     };
+    public List<Vector2> pivotPositions = new List<Vector2>
+    {
+        new Vector2(0.5f, 0.5f),
+        new Vector2(0.5f, -0.5f),
+        new Vector2(0f, 0f),
+        new Vector2(0f, 0f),
+        new Vector2(0f, 0f),
+        new Vector2(0f, 0f),
+        new Vector2(0f, 0f),
+        new Vector2(1.5f, 1.5f),
+        new Vector2(1.5f, -1.5f),
+        new Vector2(0.5f, 0.5f),
+        new Vector2(0.5f, 0.5f),
+        new Vector2(0.5f, 0.5f),
+        new Vector2(0.5f, 0.5f),
+        new Vector2(0.5f, 0.5f),
+
+    };
+    private static Vector2Int[] bigMino(int posX, int posY)
+    {
+        Vector2Int pos = new Vector2Int(posX, posY);
+        return new Vector2Int[] {Vector2Int.zero + pos * 2, Vector2Int.right + pos * 2, Vector2Int.one + pos * 2, Vector2Int.up + pos * 2};
+    }
+    private static Vector2Int[] bigPiece(params Vector2Int[][] positions)
+    {
+        int arraySize = positions.Length * 4;
+        Vector2Int[] result = new Vector2Int[arraySize];
+        for (int i = 0; i < positions.Length; i++)
+        {
+            result[i * 4] = positions[i][0];
+            result[i * 4 + 1] = positions[i][1];
+            result[i * 4 + 2] = positions[i][2];
+            result[i * 4 + 3] = positions[i][3];
+        }
+
+        return result;
+    }
     public Vector2Int scaling;
     public Vector2Int[,] JLSTZ_OFFSET_DATA { get; private set; }
     public Vector2Int[,] I_OFFSET_DATA { get; private set; }
@@ -121,6 +168,7 @@ public class PiecesController : MonoBehaviour {
     /// </summary>
     private void Awake()
     {
+        UnityEngine.Random.InitState(SeedManager.seed);
         // holdPieceBuffer = new GameObject();
         GameObject newPrefab = Instantiate(piecePrefab, transform);
         newPrefab.SetActive(false);
@@ -179,11 +227,31 @@ public class PiecesController : MonoBehaviour {
         I_OFFSET_DATA[4, 2] = new Vector2Int(-2, 0);
         I_OFFSET_DATA[4, 3] = new Vector2Int(0, 2);
 
-        O_OFFSET_DATA = new Vector2Int[1, 4];
+        O_OFFSET_DATA = new Vector2Int[5, 4];
         O_OFFSET_DATA[0, 0] = Vector2Int.zero;
-        O_OFFSET_DATA[0, 1] = Vector2Int.down;
-        O_OFFSET_DATA[0, 2] = new Vector2Int(-1, -1);
-        O_OFFSET_DATA[0, 3] = Vector2Int.left;
+        O_OFFSET_DATA[0, 1] = Vector2Int.zero;
+        O_OFFSET_DATA[0, 2] = Vector2Int.zero;
+        O_OFFSET_DATA[0, 3] = Vector2Int.zero;
+
+        O_OFFSET_DATA[1, 0] = Vector2Int.zero;
+        O_OFFSET_DATA[1, 1] = Vector2Int.zero;
+        O_OFFSET_DATA[1, 2] = Vector2Int.zero;
+        O_OFFSET_DATA[1, 3] = Vector2Int.zero;
+
+        O_OFFSET_DATA[2, 0] = Vector2Int.zero;
+        O_OFFSET_DATA[2, 1] = Vector2Int.zero;
+        O_OFFSET_DATA[2, 2] = Vector2Int.zero;
+        O_OFFSET_DATA[2, 3] = Vector2Int.zero;
+
+        O_OFFSET_DATA[3, 0] = Vector2Int.zero;
+        O_OFFSET_DATA[3, 1] = Vector2Int.zero;
+        O_OFFSET_DATA[3, 2] = Vector2Int.zero;
+        O_OFFSET_DATA[3, 3] = Vector2Int.zero;
+
+        O_OFFSET_DATA[4, 0] = Vector2Int.zero;
+        O_OFFSET_DATA[4, 1] = Vector2Int.zero;
+        O_OFFSET_DATA[4, 2] = Vector2Int.zero;
+        O_OFFSET_DATA[4, 3] = Vector2Int.zero;
 
 
     }
@@ -249,11 +317,31 @@ public class PiecesController : MonoBehaviour {
             I_OFFSET_DATA[4, 2] = new Vector2Int(-2, 0);
             I_OFFSET_DATA[4, 3] = new Vector2Int(0, 2);
 
-            O_OFFSET_DATA = new Vector2Int[1, 4];
+            O_OFFSET_DATA = new Vector2Int[5, 4];
             O_OFFSET_DATA[0, 0] = Vector2Int.zero;
-            O_OFFSET_DATA[0, 1] = Vector2Int.down;
-            O_OFFSET_DATA[0, 2] = new Vector2Int(-1, -1);
-            O_OFFSET_DATA[0, 3] = Vector2Int.left;
+            O_OFFSET_DATA[0, 1] = Vector2Int.zero;
+            O_OFFSET_DATA[0, 2] = Vector2Int.zero;
+            O_OFFSET_DATA[0, 3] = Vector2Int.zero;
+
+            O_OFFSET_DATA[1, 0] = Vector2Int.zero;
+            O_OFFSET_DATA[1, 1] = Vector2Int.zero;
+            O_OFFSET_DATA[1, 2] = Vector2Int.zero;
+            O_OFFSET_DATA[1, 3] = Vector2Int.zero;
+
+            O_OFFSET_DATA[2, 0] = Vector2Int.zero;
+            O_OFFSET_DATA[2, 1] = Vector2Int.zero;
+            O_OFFSET_DATA[2, 2] = Vector2Int.zero;
+            O_OFFSET_DATA[2, 3] = Vector2Int.zero;
+
+            O_OFFSET_DATA[3, 0] = Vector2Int.zero;
+            O_OFFSET_DATA[3, 1] = Vector2Int.zero;
+            O_OFFSET_DATA[3, 2] = Vector2Int.zero;
+            O_OFFSET_DATA[3, 3] = Vector2Int.zero;
+
+            O_OFFSET_DATA[4, 0] = Vector2Int.zero;
+            O_OFFSET_DATA[4, 1] = Vector2Int.zero;
+            O_OFFSET_DATA[4, 2] = Vector2Int.zero;
+            O_OFFSET_DATA[4, 3] = Vector2Int.zero;
         }
     }
 
@@ -629,7 +717,8 @@ public class PiecesController : MonoBehaviour {
         localGO.name = "Piece " + pieces + ": " + (PieceType)id;
         PieceController localpiecectrl = localGO.GetComponent<PieceController>();
         localpiecectrl.ghostContr.gameObject.SetActive(false);
-        localpiecectrl.SpawnPiece((PieceType)id, this, minoPositions[id], minoBlock, scaling, id, relativeNextPieceCoordinates[nextPiecesBuffer.Count]);
+        int incrBigPiece = board.bigMode ? 7 : 0;
+        localpiecectrl.SpawnPiece((PieceType)id, this, minoPositions[id + incrBigPiece], pivotPositions[id + incrBigPiece], minoBlock, scaling, id, relativeNextPieceCoordinates[nextPiecesBuffer.Count]);
         localpiecectrl.isPieceIsInNextQueue = true;
         nextPiecesBuffer.Add(localGO);
         if(GameEngine.debugMode) Debug.Log(nextPiecesBuffer.Count + " | " + (relativeNextPieceCoordinates.Count-1));
