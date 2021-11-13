@@ -578,7 +578,8 @@ public class NetworkBoard : NetworkBehaviour
             frames++;
             if(frames == 1)
             GameEngine.instance.gameMusic.Stop();
-            
+            if(player.Count > 1 && frames == 1)
+            frames = 300;
             if(frames > 300)
             {
                 if (frames == 301)

@@ -77,7 +77,7 @@ public class PiecesController : MonoBehaviour {
         new Vector2(0f, 0f),
         new Vector2(0f, 0f),
         new Vector2(1.5f, 1.5f),
-        new Vector2(1.5f, -1.5f),
+        new Vector2(1.5f, -0.5f),
         new Vector2(0.5f, 0.5f),
         new Vector2(0.5f, 0.5f),
         new Vector2(0.5f, 0.5f),
@@ -203,9 +203,9 @@ public class PiecesController : MonoBehaviour {
 
         I_OFFSET_DATA = new Vector2Int[5, 4];
         I_OFFSET_DATA[0, 0] = Vector2Int.zero;
-        I_OFFSET_DATA[0, 1] = new Vector2Int(-1, 0);
-        I_OFFSET_DATA[0, 2] = new Vector2Int(-1, 1);
-        I_OFFSET_DATA[0, 3] = new Vector2Int(0, 1);
+        I_OFFSET_DATA[0, 1] = new Vector2Int(0, 0);
+        I_OFFSET_DATA[0, 2] = new Vector2Int(0, 0);
+        I_OFFSET_DATA[0, 3] = new Vector2Int(0, 0);
 
         I_OFFSET_DATA[1, 0] = new Vector2Int(-1, 0);
         I_OFFSET_DATA[1, 1] = Vector2Int.zero;
@@ -293,9 +293,9 @@ public class PiecesController : MonoBehaviour {
 
             I_OFFSET_DATA = new Vector2Int[5, 4];
             I_OFFSET_DATA[0, 0] = Vector2Int.zero;
-            I_OFFSET_DATA[0, 1] = new Vector2Int(-1, 0);
-            I_OFFSET_DATA[0, 2] = new Vector2Int(-1, 0);
-            I_OFFSET_DATA[0, 3] = new Vector2Int(-1, 1);
+            I_OFFSET_DATA[0, 1] = new Vector2Int(0, 0);
+            I_OFFSET_DATA[0, 2] = new Vector2Int(0, 0);
+            I_OFFSET_DATA[0, 3] = new Vector2Int(-1, 0);
 
             I_OFFSET_DATA[1, 0] = new Vector2Int(-1, 0);
             I_OFFSET_DATA[1, 1] = Vector2Int.zero;

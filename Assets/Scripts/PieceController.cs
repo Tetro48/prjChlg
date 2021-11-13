@@ -93,7 +93,7 @@ public class PieceController : MonoBehaviour {
     }
 
     //Transitioning to dynamic timing
-    void Update()
+    void FixedUpdate()
     {
         if(!isPieceIsInNextQueue)
         {
@@ -144,7 +144,7 @@ public class PieceController : MonoBehaviour {
     /// <param name="newType">Type of tetris piece to be spawned.</param>
     public void SpawnPiece(PieceType newType, PiecesController connector, Vector2Int[] positions, Vector2 setPivot, GameObject obj, Vector2Int scaling, int textureSelect, Vector2Int nextPos)
     {
-        pivot.localPosition = setPivot + nextPos;
+        pivot.localPosition = new Vector3(0f,0f,pivot.localPosition.z) + (Vector3)setPivot + (Vector3)(Vector2)nextPos;
         int increaseByLevel = board.level >= 600 && board.nextibmblocks == board.nextPieces + 1 ? 14 : 0;
         int RSint = board.RS == RotationSystems.ARS ? 7 : 0;
         int combine = (increaseByLevel + RSint);
@@ -255,7 +255,7 @@ public class PieceController : MonoBehaviour {
     {
         for (int i = 0; i < tiles.Length; i++)
         {
-            if(tiles[i] != null) if (!CanTileMove(movement + V3ToV2Int(tiles[i].transform.localPosition)))
+            if(tiles[i] != null) if (!CanTileMove(movement + V3ToV2Int(localObjPos(tiles[i]))))
             {
                 return false;
             }
@@ -363,10 +363,10 @@ public class PieceController : MonoBehaviour {
 
         board.tSpin = (curType == PieceType.T && board.LockDelayEnable);
 
-        for(int i = 0; i < tiles.Length; i++)
-        {
-            RotateObject(tiles[i].gameObject, pivot.position, clockwise);
-        }
+        // for(int i = 0; i < tiles.Length; i++)
+        // {
+        //     RotateObject(tiles[i].gameObject, pivot.position, clockwise);
+        // }
         if (UD)
         {
             RotatePiece180(clockwise, true, firstAttempt);
@@ -377,8 +377,8 @@ public class PieceController : MonoBehaviour {
             return;
         }
 
-        bool canOffset = Offset(oldRotationIndex, rotationIndex);
-        if(UD == true) canOffset = Offset180(oldRotationIndex, rotationIndex);
+        bool canOffset = Offset(oldRotationIndex, rotationIndex, clockwise);
+        if(UD == true) canOffset = Offset180(oldRotationIndex, rotationIndex, clockwise);
 
         if (!canOffset)
         {
@@ -403,14 +403,11 @@ public class PieceController : MonoBehaviour {
 
         if (!shouldOffset)
         {
-            for(int i = 0; i < tiles.Length; i++)
-            {
-                RotateObject(tiles[i].gameObject, pivot.position, clockwise);
-            }
+            RotateInUnison(clockwise);
             return;
         }
 
-        bool canOffset = Offset(oldRotationIndex, rotationIndex);
+        bool canOffset = Offset(oldRotationIndex, rotationIndex, clockwise);
 
         if (!canOffset && firstAttempt)
         {
@@ -436,7 +433,7 @@ public class PieceController : MonoBehaviour {
     /// <param name="oldRotIndex">Original rotation index of the piece</param>
     /// <param name="newRotIndex">Rotation index the piece will be rotating to</param>
     /// <returns>True if one of the tests passed and a final location was found. False if all test failed.</returns>
-    bool Offset180(int oldRotIndex, int newRotIndex)
+    bool Offset180(int oldRotIndex, int newRotIndex, bool clockwise)
     {
         Vector2Int[,] curOffsetData;
         
@@ -455,11 +452,7 @@ public class PieceController : MonoBehaviour {
 
 
         bool movePossible = false;
-
-        for(int i = 0; i < tiles.Length; i++)
-        {
-            RotateObject(tiles[i].gameObject, pivot.position, oldRotIndex < newRotIndex ? true : false);
-        }
+        RotateInUnison(clockwise, true);
         if (CanMovePiece(Vector2Int.zero))
         {
             movePossible = true;
@@ -478,7 +471,7 @@ public class PieceController : MonoBehaviour {
     /// <param name="oldRotIndex">Original rotation index of the piece</param>
     /// <param name="newRotIndex">Rotation index the piece will be rotating to</param>
     /// <returns>True if one of the tests passed and a final location was found. False if all test failed.</returns>
-    bool Offset(int oldRotIndex, int newRotIndex)
+    bool Offset(int oldRotIndex, int newRotIndex, bool clockwise)
     {
         Vector2Int offsetVal1, offsetVal2, endOffset;
         Vector2Int[,] curOffsetData;
@@ -504,26 +497,16 @@ public class PieceController : MonoBehaviour {
         {
             if(testIndex == 0)
             {
-                for(int i = 0; i < tiles.Length; i++)
-                {
-                    RotateObject(tiles[i].gameObject, pivot.position, oldRotIndex < newRotIndex ? true : false);
-                }
-                if (CanMovePiece(endOffset))
-                {
-                    movePossible = true;
-                    break;
-                }
+                RotateInUnison(clockwise);
             }
-            else
+            offsetVal1 = curOffsetData[testIndex, oldRotIndex];
+            offsetVal2 = curOffsetData[testIndex, newRotIndex];
+            endOffset = offsetVal1 - offsetVal2;
+            if(board.bigMode) endOffset *= 2;
+            if (CanMovePiece(endOffset))
             {
-                offsetVal1 = curOffsetData[testIndex, oldRotIndex];
-                offsetVal2 = curOffsetData[testIndex, newRotIndex];
-                endOffset = offsetVal1 - offsetVal2;
-                if (CanMovePiece(endOffset))
-                {
-                    movePossible = true;
-                    break;
-                }
+                movePossible = true;
+                break;
             }
         }
 
@@ -578,7 +561,7 @@ public class PieceController : MonoBehaviour {
     /// </summary>
     /// <param name="originPos">Coordinates this tile will be rotating about.</param>
     /// <param name="clockwise">True if rotating clockwise. False if rotatitng CCW</param>
-    public static void RotateObject(GameObject obj, Vector3 pivotPos, bool clockwise)
+    public static void RotateObject(GameObject obj, Vector3 pivotPos, bool clockwise, bool UD = false)
     {
         // Vector2Int relativePos = V3ToV2Int(obj.transform.localPosition) - originPos;
         // Vector2Int[] rotMatrix = clockwise ? new Vector2Int[2] { new Vector2Int(0, -1), new Vector2Int(1, 0) }
@@ -590,8 +573,17 @@ public class PieceController : MonoBehaviour {
         // newPos += originPos;
         // UpdatePosition(obj, newPos);
         int multi = clockwise ? 1 : -1;
-        obj.transform.RotateAround(pivotPos, Vector3.forward, 90 * multi);
-        // obj.transform.Rotate(new Vector3(90f * -multi, 0f, 0f), Space.Self);
+        if(UD) multi *= 2;
+        obj.transform.RotateAround(pivotPos, Vector3.forward, -90 * multi);
+        obj.transform.Rotate(new Vector3(90f * multi, 0f, 0f), Space.Self);
+    }
+    public bool RotateInUnison(bool clockwise, bool UD = false)
+    {
+        for (int i = 0; i < tiles.Length; i++)
+        {
+            RotateObject(tiles[i].gameObject, pivot.position, clockwise, UD);
+        }
+        return CanMovePiece(Vector2Int.zero);
     }
     public static void UpdatePosition(GameObject obj, Vector2Int newPos)
     {
@@ -615,11 +607,11 @@ public class PieceController : MonoBehaviour {
     /// <returns>True if the tile can be moved there. False if the tile cannot be moved there</returns>
     public bool CanTileMove(Vector2Int endPos)
     {
-        if (!board.boardController.IsInBounds(endPos))
+        if (!board.boardController.IsPosEmpty(endPos))
         {
             return false;
         }
-        if (!board.boardController.IsPosEmpty(endPos))
+        if (!board.boardController.IsInBounds(endPos))
         {
             return false;
         }
@@ -631,9 +623,9 @@ public class PieceController : MonoBehaviour {
     }
     static Vector2Int V3ToV2Int(Vector3 vector3)
     {
-        return new Vector2Int((int)vector3.x, (int)vector3.y);
+        return new Vector2Int(Mathf.FloorToInt(vector3.x + 0.5f), Mathf.FloorToInt(vector3.y));
     }
-    int maxNumberComparison(int num1, int num2, bool flipIfNeg = false)
+    static int maxNumberComparison(int num1, int num2, bool flipIfNeg = false)
     {
         int output;
         if(num1 > num2) output = num1;
