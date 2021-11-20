@@ -24,4 +24,25 @@ public class TileController : MonoBehaviour {
     public PieceController pieceController;
     public int tileIndex;
     public int textureID;
+    Material material;
+    float transparency;
+    void Awake()
+    {
+        material = gameObject.GetComponent<MeshRenderer>().material;
+    }
+    void Update()
+    {
+        int hideTilesPerUpdates = pieceController.board.tileInvisTime;
+        if(transparency < 1) if (hideTilesPerUpdates > 0 && pieceController.isPieceLocked())
+        {
+            float percentage = 1f/hideTilesPerUpdates;
+            float alphaUpd = percentage * Time.deltaTime / Time.fixedDeltaTime;
+            if (transparency + alphaUpd > 1)
+            {
+                alphaUpd = 1 - transparency;
+            }
+            transparency += alphaUpd;
+            material.color -= new Color(0f,0f,0f, alphaUpd);
+        }
+    }
 }

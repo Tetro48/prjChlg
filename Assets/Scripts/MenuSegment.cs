@@ -22,21 +22,21 @@ public class MenuSegment : MonoBehaviour
         reswidth = MenuEngine.instance.reswidth;
         buttonMovementInSeconds = MenuEngine.instance.buttonMovementInSeconds;
     }
-    bool CheckUIScroll(bool side, int count)
+    bool CheckUIScroll(bool side, int count, double speed = 1d)
     {
         double uitimedelta = UITimeDelta;
         double buttonTime = buttonMovementInSeconds;
         bool output;
         if(side)
         {
-            uitimedelta += Time.unscaledDeltaTime;
+            uitimedelta += Time.unscaledDeltaTime * speed;
             buttonTime *= System.Math.Ceiling(UITimeDelta / buttonTime);
             if(uitimedelta >= (double)count) output = false;
             else output = uitimedelta > buttonTime;
         }
         else
         {
-            uitimedelta -= Time.unscaledDeltaTime;
+            uitimedelta -= Time.unscaledDeltaTime * speed;
             buttonTime *= System.Math.Floor(UITimeDelta / buttonTime);
             if(uitimedelta <= 0d) output = false;
             else output = uitimedelta < buttonTime;
@@ -50,7 +50,7 @@ public class MenuSegment : MonoBehaviour
     public bool MoveCoupleUIElements(bool side, float multiplication = 1f, double speed = 1d)
     {
         float time = Time.deltaTime;
-        if(multiplication == 1f) if(CheckUIScroll(side, UIElements.Length))
+        if(multiplication == 1f) if(CheckUIScroll(side, UIElements.Length, speed))
         MenuEngine.instance.audioSource.PlayOneShot(MenuEngine.instance.clip);
         // Debug.Log(time);
         float reversibleTime = time;
@@ -68,8 +68,7 @@ public class MenuSegment : MonoBehaviour
                 UIElements[i].localPosition = tempPos;
                 if(i < UIPartElements.Length)
                 {
-                    tempPos.x = Mathf.Clamp((timeToPosXPart - 300 * i) * reswidth * multiplication * 2, (-300f * reswidth * multiplication) - 50f, (400f * reswidth * multiplication) - 50f);
-                    UIPartElements[i].localPosition = tempPos;
+                    UIPartElements[i].localPosition = new Vector3(tempPos.x * 3.5f, tempPos.y, tempPos.z);
                 }
             }
             if(UITimeDelta > UIElements.Length * buttonMovementInSeconds)
@@ -88,8 +87,7 @@ public class MenuSegment : MonoBehaviour
                 UIElements[i].localPosition = tempPos;
                 if(UIPartElements.Length > i)
                 {
-                    tempPos.x = Mathf.Clamp((timeToPosXPart - 300 * i) * reswidth * multiplication * 2, (-300f * reswidth * multiplication) - 50f, (400f * reswidth * multiplication) - 50f);
-                    UIPartElements[i].localPosition = tempPos;
+                    UIPartElements[i].localPosition = new Vector3(tempPos.x * 3.5f, tempPos.y, tempPos.z);
                 }
             }
             if(UITimeDelta < 0) 

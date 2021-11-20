@@ -127,7 +127,7 @@ public class NetworkBoard : NetworkBehaviour
     [Range(0, 60)]
     public float gravity = 3/64f;
 
-    public int singles, doubles, triples, tetrises, pentrises, sixtrises, septrises, octrises;
+    public int singles, doubles, triples, tetrises, pentrises, sixtrises, septrises, octrises, allClears;
 
     public int totalLines;
 
@@ -478,18 +478,19 @@ public class NetworkBoard : NetworkBehaviour
                     tempmov = ReplayRecord.instance.movementVector[playerID][ReplayRecord.instance.frames[playerID]];
                     movement = new Vector2(tempmov[0], tempmov[1]);
                     // Inputs = ReplayRecord.instance.inputs[playerID][ReplayRecord.instance.frames[playerID]];
-                    Inputs[0] = ReplayRecord.instance.inputs[playerID][ReplayRecord.instance.frames[playerID]][0];
-                    Inputs[1] = ReplayRecord.instance.inputs[playerID][ReplayRecord.instance.frames[playerID]][1];
-                    Inputs[2] = ReplayRecord.instance.inputs[playerID][ReplayRecord.instance.frames[playerID]] [ 2 ];
-                    Inputs[3] = ReplayRecord.instance.inputs[playerID][ReplayRecord.instance.frames[playerID]][3];
-                    Inputs[4] = ReplayRecord.instance.inputs[playerID][ReplayRecord.instance.frames[playerID]][4];
-                    Inputs[5] = ReplayRecord.instance.inputs[playerID][ReplayRecord.instance.frames[playerID]][5];
-                    Inputs[6] = ReplayRecord.instance.inputs[playerID][ReplayRecord.instance.frames[playerID]][6];
+                    for (int i = 0; i < 7; i++)
+                    {
+                        Inputs[i] = ReplayRecord.instance.inputs[playerID][ReplayRecord.instance.frames[playerID]][i];
+                    }
                     lineFreezingMechanic = ReplayRecord.instance.switches[playerID][0];
                 }
                 else if(AREf > (int)ARE - 401)
                 {
-                    bool[] modInputs = Inputs;
+                    bool[] modInputs = new bool[8];
+                    for (int i = 0; i < 8; i++)
+                    {
+                        modInputs[i] = Inputs[i];
+                    }
                     modInputs[7] = false;
                     ReplayRecord.instance.inputs[playerID].Add(modInputs);
                     float[] modMovement = { movement.x, movement.y };
@@ -511,6 +512,7 @@ public class NetworkBoard : NetworkBehaviour
                     rollTime += Time.deltaTime;
                     if(rollTime >= rollTimeLimit)
                     {
+                        rollTime = rollTimeLimit;
                         AREf = (int)ARE - 1000;
                         Destroy(piecesController.piecesInGame[piecesController.piecesInGame.Count-1]);
                         piecesController.UpdatePieceBag();
@@ -518,7 +520,7 @@ public class NetworkBoard : NetworkBehaviour
                 }
                 if (AREf == (int)ARE - 401)
                 {
-
+                    lives = 1;
                     GameOver = true;
                 }
                 if(AREf < (int)ARE - 401)
@@ -582,24 +584,32 @@ public class NetworkBoard : NetworkBehaviour
             frames = 300;
             if(frames > 300)
             {
+                if(ending)
+                {
+                    transform.position += Vector3.up * Mathf.Log10(frames) * 0.043f;
+                }
                 if (frames == 301)
                 {
                     GameEngine.instance.gameMusic.Stop();
                     if(highestLevel == level) highestLevel = 0;
-                    MenuEngine.instance.audioSource2.PlayOneShot(MenuEngine.instance.topoutSE);
-                    Rigidbody rigidbody;
-                    rigidbody = gameObject.AddComponent<Rigidbody>();
-                    rigidbody.mass = 16;
-                    Vector3 explosionPos = new Vector3(transform.position.x + UnityEngine.Random.Range(-20f, 20f), transform.position.y + UnityEngine.Random.Range(-20f, 20f), transform.position.z + UnityEngine.Random.Range(-20f, 20f));
-                    rigidbody.AddExplosionForce(150f, explosionPos, 50f, 2f, ForceMode.Impulse);
-                    rigidbody.angularDrag = 1f;
+                    if(!ending)
+                    {
+                        MenuEngine.instance.audioSource2.PlayOneShot(MenuEngine.instance.topoutSE);
+                        Rigidbody rigidbody;
+                        rigidbody = gameObject.AddComponent<Rigidbody>();
+                        rigidbody.mass = 16;
+                        Vector3 explosionPos = new Vector3(transform.position.x + UnityEngine.Random.Range(-20f, 20f), transform.position.y + UnityEngine.Random.Range(-20f, 20f), transform.position.z + UnityEngine.Random.Range(-20f, 20f));
+                        rigidbody.AddExplosionForce(150f, explosionPos, 50f, 2f, ForceMode.Impulse);
+                        rigidbody.angularDrag = 1f;
+                    }
                     Destroy(gameObject.GetComponent<PlayerInput>());
                     Destroy(ppsCounter.gameObject);
                     Destroy(gameObject, 10f);
                 }
                 if (frames == 351)
                 {
-                    if(player.Count < 2) MenuEngine.instance.audioSource2.Play();
+                    if(player.Count < 2 && !ending) MenuEngine.instance.audioSource2.Play();
+                    else AudioManager.PlayClip(excellent);
                     Debug.Log(player.Count);
                 }
                 if (frames == 401)

@@ -5533,6 +5533,21 @@ MonoBehaviour:
   turnsToSac: 10
   minoBlock: {fileID: 7875926357646168440, guid: 5f76549503f7c0249ab58d74b3bffcb1,
     type: 3}
+  pivotPositions:
+  - {x: 0.5, y: 0.5}
+  - {x: 0.5, y: -0.5}
+  - {x: 0, y: 0}
+  - {x: 0, y: 0}
+  - {x: 0, y: 0}
+  - {x: 0, y: 0}
+  - {x: 0, y: 0}
+  - {x: 1.5, y: 1.5}
+  - {x: 1.5, y: -0.5}
+  - {x: 0.5, y: 0.5}
+  - {x: 0.5, y: 0.5}
+  - {x: 0.5, y: 0.5}
+  - {x: 0.5, y: 0.5}
+  - {x: 0.5, y: 0.5}
   scaling: {x: 4, y: 10}
   piecesInGame: []
   pieceToDestroy: {fileID: 0}
@@ -6115,7 +6130,7 @@ MonoBehaviour:
   IntentionalGameOver: 0
   time: 0
   rollTime: 0
-  rollTimeLimit: 11000
+  rollTimeLimit: 110
   notifDelay: 0
   sectionlasttime: 0
   coolprevtime: 0
@@ -6205,6 +6220,7 @@ MonoBehaviour:
   coolchecked: 0
   previouscool: 0
   lineFreezingMechanic: 0
+  bigMode: 0
   LockDelayEnable: 0
   countLockResets: 0
   maxLockResets: 20
@@ -6227,6 +6243,7 @@ MonoBehaviour:
   sixtrises: 0
   septrises: 0
   octrises: 0
+  allClears: 0
   totalLines: 0
   lineClonePerPiece: ffffff7fffffff7f1400000014000000140000001400000014000000140000001400000014000000100000001000000010000000080000000800000006000000050000000400000003000000020000000200000002000000
   lineClonePiecesLeft: 2147483647

@@ -168,7 +168,7 @@ public class PiecesController : MonoBehaviour {
     /// </summary>
     private void Awake()
     {
-        UnityEngine.Random.InitState(SeedManager.seed);
+        // UnityEngine.Random.InitState(SeedManager.seed);
         // holdPieceBuffer = new GameObject();
         GameObject newPrefab = Instantiate(piecePrefab, transform);
         newPrefab.SetActive(false);
@@ -203,29 +203,31 @@ public class PiecesController : MonoBehaviour {
 
         I_OFFSET_DATA = new Vector2Int[5, 4];
         I_OFFSET_DATA[0, 0] = Vector2Int.zero;
-        I_OFFSET_DATA[0, 1] = new Vector2Int(0, 0);
-        I_OFFSET_DATA[0, 2] = new Vector2Int(0, 0);
-        I_OFFSET_DATA[0, 3] = new Vector2Int(0, 0);
+        I_OFFSET_DATA[0, 1] = Vector2Int.zero;
+        I_OFFSET_DATA[0, 2] = Vector2Int.zero;
+        I_OFFSET_DATA[0, 3] = Vector2Int.zero;
 
-        I_OFFSET_DATA[1, 0] = new Vector2Int(-1, 0);
-        I_OFFSET_DATA[1, 1] = Vector2Int.zero;
-        I_OFFSET_DATA[1, 2] = new Vector2Int(1, 1);
-        I_OFFSET_DATA[1, 3] = new Vector2Int(0, 1);
+        I_OFFSET_DATA[1, 0] = Vector2Int.zero;
+        I_OFFSET_DATA[1, 1] = Vector2Int.right * 2;
+        I_OFFSET_DATA[1, 2] = Vector2Int.right * 3;
+        I_OFFSET_DATA[1, 3] = Vector2Int.left;
 
-        I_OFFSET_DATA[2, 0] = new Vector2Int(2, 0);
-        I_OFFSET_DATA[2, 1] = Vector2Int.zero;
-        I_OFFSET_DATA[2, 2] = new Vector2Int(-2, 1);
-        I_OFFSET_DATA[2, 3] = new Vector2Int(0, 1);
+        I_OFFSET_DATA[2, 0] = Vector2Int.right * 2;
+        I_OFFSET_DATA[2, 1] = Vector2Int.left;
+        I_OFFSET_DATA[2, 2] = new Vector2Int(1, 0);
+        I_OFFSET_DATA[2, 3] = new Vector2Int(0, 0);
 
-        I_OFFSET_DATA[3, 0] = new Vector2Int(-1, 0);
-        I_OFFSET_DATA[3, 1] = new Vector2Int(0, 1);
-        I_OFFSET_DATA[3, 2] = new Vector2Int(1, 0);
-        I_OFFSET_DATA[3, 3] = new Vector2Int(0, -1);
+        I_OFFSET_DATA[3, 0] = Vector2Int.left; // 0 to 1: -1,0 - 1,1 = -2,-1
+        I_OFFSET_DATA[3, 1] = new Vector2Int(1, 1); // 1 to 2: 1,1 - 2,-1 = -1,2
+        I_OFFSET_DATA[3, 2] = new Vector2Int(2, -1); // 2 to 3: 2,-1 - 0,-2 = 2,1
+        I_OFFSET_DATA[3, 3] = new Vector2Int(0, -2); // 3 to 0: 0,-2 - -1,0 = 1,-2
 
-        I_OFFSET_DATA[4, 0] = new Vector2Int(2, 0);
-        I_OFFSET_DATA[4, 1] = new Vector2Int(0, -2);
-        I_OFFSET_DATA[4, 2] = new Vector2Int(-2, 0);
-        I_OFFSET_DATA[4, 3] = new Vector2Int(0, 2);
+        // 2,0 - 0,1 = 2,-1
+        // 0,1 - 2,0 = -2,1
+        I_OFFSET_DATA[4, 0] = Vector2Int.right * 2; // 0 to 1: 2,0 - 0,-2 = 2,2
+        I_OFFSET_DATA[4, 1] = new Vector2Int(0, -2); // 1 to 2: 0,-2 - -2,0 = 2,-2
+        I_OFFSET_DATA[4, 2] = new Vector2Int(-2, 0); // 2 to 3: -2,0 - 0,2 = -2,-2
+        I_OFFSET_DATA[4, 3] = new Vector2Int(0, 2); // 3 to 0: 0,2 - 2,0 = -2, 2
 
         O_OFFSET_DATA = new Vector2Int[5, 4];
         O_OFFSET_DATA[0, 0] = Vector2Int.zero;
@@ -294,7 +296,7 @@ public class PiecesController : MonoBehaviour {
             I_OFFSET_DATA = new Vector2Int[5, 4];
             I_OFFSET_DATA[0, 0] = Vector2Int.zero;
             I_OFFSET_DATA[0, 1] = new Vector2Int(0, 0);
-            I_OFFSET_DATA[0, 2] = new Vector2Int(0, 0);
+            I_OFFSET_DATA[0, 2] = new Vector2Int(0, -1);
             I_OFFSET_DATA[0, 3] = new Vector2Int(-1, 0);
 
             I_OFFSET_DATA[1, 0] = new Vector2Int(-1, 0);
@@ -630,7 +632,7 @@ public class PiecesController : MonoBehaviour {
             }
             if (((board.Inputs[3] && !PrevInputs[3]) || IRSUD) && !piecemovementlocked)
             {
-                curPieceController.RotatePiece(true, false, true, true);
+                curPieceController.RotatePiece(true, true, true, true);
                 if (IRSUD)
                 {
                     gameAudio.PlayOneShot(audioIRS);

@@ -82,10 +82,12 @@ MonoBehaviour:
   LockDelayf: 0
   isPieceIsInNextQueue: 0
   hideTilesPerUpdates: 0
+  pivot: {fileID: 0}
   tiles:
   - {fileID: 7420098503471107637}
   tileBlock: {fileID: 0}
   materials: []
+  numberToTextureIDs: 
   spawnLocation: {x: 0, y: 0}
   fullyLocked: 1
 --- !u!1001 &843744391245815629

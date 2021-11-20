@@ -142,19 +142,21 @@ public class MenuEngine : MonoBehaviour
     }, notifLangString =
     {
         //
-        {"Singles: ", "Doubles: ", "Triples: ", "Tetrises: ", "lines: ", "Total ", "Pieces: ", "Grade: ", "Total grade score:", "Level: ", "Gravity: ", "Time: ", "500 level part complete!", "Controller is swapped", "Grade score: ", "Starting up!"},
-        {"Одиночные: ", "Двойные: ", "Тройные: ", "Тетрисы: ", "линии: ", "Всего ", "Фигур: ", "Оценка: ", "Общий счет оценки:", "Уровень: ", "Гравитация: ", "Время: ", "Достигнуто часть 500 уровней!", "Контроллер заменен", "Счет оценки: ", "Начинаем!"},
-        {"シングル：", "ダブル：", "トリプル", "テトリス：", "行：", "合計", "ピース", "成績：", "総合成績スコア", "レベル：", "時間", "", "", "", "", ""},
+        {"Singles: ", "Doubles: ", "Triples: ", "Tetrises: ", "lines: ", "Total ", "Pieces: ", "Grade: ", "Total grade score:", "Level: ", "Gravity: ", "Time: ", "500 level part complete!", "Controller is swapped", "Grade score: ", "Starting up!", "All Clears: "},
+        {"Одиночные: ", "Двойные: ", "Тройные: ", "Тетрисы: ", "линии: ", "Всего ", "Фигур: ", "Оценка: ", "Общий счет оценки:", "Уровень: ", "Гравитация: ", "Время: ", "Достигнуто часть 500 уровней!", "Контроллер заменен", "Счет оценки: ", "Начинаем!", "Полные очистки: "},
+        {"シングル：", "ダブル：", "トリプル", "テトリス：", "行：", "合計", "ピース", "成績：", "総合成績スコア", "レベル：", "時間", "", "", "", "", "", ""},
     };
     Language previousLang;
     public void InstantiatePlayer(double LockDelay = 50, double ARE = 41.6666666, double AREline = 16.6666666, double lineDelay = 25, float gravity = 3 / 64f, RotationSystems rotationSystem = RotationSystems.SRS, int nextPieces = 7)
     {
         GameObject newBoard = Instantiate(inGameBoard, transform);
+        newBoard.transform.localPosition += new Vector3(25f, 0f, 0f) * (NetworkBoard.player.Count -1);
         NetworkBoard component = newBoard.GetComponent<NetworkBoard>();
         component.LockDelay = LockDelay;
         component.ARE = ARE;
         component.AREf = (int)ARE - 300;
         component.AREline = AREline;
+        component.lineDelay = lineDelay;
         component.gravity = gravity;
         component.nextPieces = nextPieces;
         component.RS = rotationSystem;
@@ -367,6 +369,7 @@ public class MenuEngine : MonoBehaviour
         if(board.sixtrises > 0) NotificationEngine.instance.InstantiateNotification("6 " + notifLangString[(int)language, 4] + board.sixtrises, Color.white); // 6 lines
         if(board.septrises > 0) NotificationEngine.instance.InstantiateNotification("7 " + notifLangString[(int)language, 4] + board.septrises, Color.white); // 7 lines
         if(board.octrises > 0) NotificationEngine.instance.InstantiateNotification("8+ " + notifLangString[(int)language, 4] + board.octrises, Color.white); // 8+ lines
+        if(board.octrises > 0) NotificationEngine.instance.InstantiateNotification(notifLangString[(int)language, 16] + board.allClears, Color.white); // All Clears
         if(board.totalLines > 0) NotificationEngine.instance.InstantiateNotification(notifLangString[(int)language, 5] + notifLangString[(int)language, 4] + board.totalLines, Color.white); // Total lines
         if(board.piecesController.lockedPieces > 0) NotificationEngine.instance.InstantiateNotification(notifLangString[(int)language, 6] + (board.piecesController.lockedPieces), Color.white); // Pieces
         NotificationEngine.instance.InstantiateNotification(notifLangString[(int)language, 7] + gradeStringConversion[board.grade], Color.white); // Grade
@@ -443,7 +446,7 @@ public class MenuEngine : MonoBehaviour
                 Details = yourPlayer.ending ? "Roll time left: " + yourPlayer.rollTimeCounter.text 
                 : curBoard != null ? "Level " + yourPlayer.level + " | " + rpclvl + (yourPlayer.level > 800 ? ". Struggling." : string.Empty) : null,
 
-                State = !Application.genuineCheckAvailable ? "The game is tampered" : framerate > 2600 ? "Suspiciously smooth" : framerate < 10 ? "Performance issues" 
+                State = Application.genuineCheckAvailable ? "The game is tampered" : framerate > 2600 ? "Suspiciously smooth" : framerate < 10 ? "Performance issues" 
                 : yourPlayer.lives > 1 && yourPlayer.GameOver ? "Lost a life." : yourPlayer.rollTime >= yourPlayer.rollTimeLimit ? 
                 String.Format("Successful at level {0}", yourPlayer.endingLevel)
                 : yourPlayer.IntentionalGameOver ? "Exiting..." : yourPlayer.GameOver ? "Topped out" : curBoard != null && yourPlayer.paused && !yourPlayer.FrameStep ? "Paused" 
@@ -456,7 +459,7 @@ public class MenuEngine : MonoBehaviour
             };
             else activity = new Activity
             {
-                State = !Application.genuineCheckAvailable ? "The game is tampered" : framerate > 2600 ? "Suspiciously smooth" : framerate < 10 ? "Performance issues"
+                State = Application.genuineCheckAvailable ? "The game is tampered" : framerate > 2600 ? "Suspiciously smooth" : framerate < 10 ? "Performance issues"
                 : curBoard != null ? "Currently playing" : quitting ? "Quitting" : menu == 1 ? "Currently in settings menu" : "Currently in main menu",
                 Assets = {
                     LargeImage = "icon"
@@ -580,7 +583,7 @@ public class MenuEngine : MonoBehaviour
             menuSectors[0].SetActive(true);
            
             //Movement to the right
-            if(segments[0].MoveCoupleUIElements(true)) starting = false;
+            if(segments[0].MoveCoupleUIElements(true, 1f, 0.5)) starting = false;
         }
     }
     // [ServerRpc]

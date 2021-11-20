@@ -166,7 +166,8 @@ public class BoardController : MonoBehaviour {
     }
     public void CloneLineToBottom()
     {
-        for (int x = 0; x < gridSizeX; x++)
+        int isBigMode = networkBoard.bigMode ? 2 : 1;
+        for (int i = 0; i < isBigMode; i++) for (int x = 0; x < gridSizeX; x++)
         {
             for (int y = gridSizeY - 1; y >= 0 ; y--)
             {
@@ -296,16 +297,17 @@ public class BoardController : MonoBehaviour {
     /// <returns>Returns true if the coordinate is not occupied by a tetris piece</returns>
     public bool IsPosEmpty(Vector2Int coordToTest)
     {
-        if(coordToTest.y >= 40)
+        if(coordToTest.y >= gridSizeY)
         {
-            return true;
+            return false;
         }
         if (coordToTest.x < Vector2Int.zero.x || coordToTest.y < Vector2Int.zero.y)
         {
             return false;
         }
 
-        if(fullGrid[coordToTest.x, coordToTest.y].isOccupied)
+        else if(coordToTest.x >= gridSizeX) return false;
+        else if(fullGrid[coordToTest.x, coordToTest.y].isOccupied)
         {
             return false;
         }
@@ -322,6 +324,11 @@ public class BoardController : MonoBehaviour {
     /// <param name="tileGO">GameObject of the specific tile on this grid location.</param>
     public void OccupyPos(Vector2Int coords, GameObject tileGO)
     {
+        if (!IsInBounds(coords))
+        {
+            Destroy(tileGO);
+            return;
+        }
         fullGrid[coords.x, coords.y].isOccupied = true;
         if(fullGrid[coords.x, coords.y].tileOnGridUnit != null) Destroy(fullGrid[coords.x, coords.y].tileOnGridUnit);
         fullGrid[coords.x, coords.y].tileOnGridUnit = tileGO;
@@ -337,6 +344,7 @@ public class BoardController : MonoBehaviour {
             }
         }
         gameAudio.PlayOneShot(networkBoard.piecesController.levelup);
+        networkBoard.allClears++;
         allClearFireworkTime.Add(0);
         return true;
     }
@@ -493,9 +501,9 @@ public class BoardController : MonoBehaviour {
         obj.transform.localPosition = newV3Pos;
     }
 
-    Vector2Int V3ToV2Int(Vector3 vector3)
+    static Vector2Int V3ToV2Int(Vector3 vector3)
     {
-        return new Vector2Int((int)vector3.x, (int)vector3.y);
+        return new Vector2Int(Mathf.FloorToInt(vector3.x + 0.5f), Mathf.FloorToInt(vector3.y + 0.5f));
     }
 
     /// <summary>
