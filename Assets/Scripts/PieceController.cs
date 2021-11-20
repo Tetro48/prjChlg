@@ -434,12 +434,10 @@ public class PieceController : MonoBehaviour {
 
         // newPos += originPos;
         // UpdatePosition(obj, newPos);
-        Vector2Int debugNum = V3ToV2Int(localObjPos(obj));
         int multi = clockwise ? 1 : -1;
         if(UD) multi *= 2;
         obj.transform.RotateAround(pivotPos, Vector3.forward, -90 * multi);
         obj.transform.Rotate(new Vector3(90f * multi, 0f, 0f), Space.Self);
-        Debug.Log(String.Format("{0} to {1}", debugNum, V3ToV2Int(localObjPos(obj))));
     }
     public bool RotateInUnison(bool clockwise, bool UD = false)
     {

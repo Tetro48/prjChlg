@@ -724,7 +724,7 @@ public class PiecesController : MonoBehaviour {
         localpiecectrl.isPieceIsInNextQueue = true;
         nextPiecesBuffer.Add(localGO);
         if(GameEngine.debugMode) Debug.Log(nextPiecesBuffer.Count + " | " + (relativeNextPieceCoordinates.Count-1));
-        // if(board.RS == RotationSystems.ARS) localpiecectrl.RotatePiece(true, false, true, false);
+        if(board.RS == RotationSystems.ARS) localpiecectrl.RotatePiece(true, false, true, false);
         if(nextPiecesBuffer.Count > 0)for (int i = 0; i < nextPiecesBuffer.Count; i++)
         {
             nextPiecesBuffer[i].SetActive(i <= board.nextPieces);
