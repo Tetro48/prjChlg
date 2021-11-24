@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using Unity.Mathematics;
 using UnityEngine;
 
 public class GhostPieceController : MonoBehaviour
@@ -39,7 +40,7 @@ public class GhostPieceController : MonoBehaviour
     /// </summary>
     /// <param name="endPos">Coordinates of the position you are trying to move the tile to</param>
     /// <returns>True if the tile can be moved there. False if the tile cannot be moved there</returns>
-    public bool CanGhostTileMove(Vector2Int endPos)
+    public bool CanGhostTileMove(int2 endPos)
     {
         if (!networkBoard.boardController.IsInBounds(endPos))
         {
@@ -51,19 +52,19 @@ public class GhostPieceController : MonoBehaviour
         }
         return true;
     }
-    public bool CanMoveGhostPiece(Vector2Int movement)
+    public bool CanMoveGhostPiece(int2 movement)
     {
         for (int i = 0; i < tiles.Length; i++)
         {
             if(textureReading[i] != null)
-            if (!CanGhostTileMove(movement + new Vector2Int((int)textureReading[i].transform.localPosition.x, (int)tiles[i].transform.localPosition.y)))
+            if (!CanGhostTileMove(movement + new int2((int)textureReading[i].transform.localPosition.x, (int)tiles[i].transform.localPosition.y)))
             {
                 return false;
             }
         }
         return true;
     }
-    public void MoveGhostPiece(Vector2Int movement)
+    public void MoveGhostPiece(int2 movement)
     {
         while (CanMoveGhostPiece(movement) && gameObject.activeInHierarchy)
         {
@@ -83,7 +84,7 @@ public class GhostPieceController : MonoBehaviour
                 tiles[i].transform.localPosition = textureReading[i].transform.localPosition;
             }
         }
-        MoveGhostPiece(Vector2Int.down);
+        MoveGhostPiece(new int2(0,-1));
     }
     
     // Update is called once per frame

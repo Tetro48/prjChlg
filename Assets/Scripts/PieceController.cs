@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using Unity.Mathematics;
 using System.Linq;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -48,14 +49,14 @@ public class PieceController : MonoBehaviour {
     GameObject tileBlock;
     public Material[] materials;
     [SerializeField]int[] numberToTextureIDs;
-    [SerializeField] Vector2Int spawnLocation;
+    [SerializeField] int2 spawnLocation;
 
     [SerializeField] bool fullyLocked;
     int textureRelation;
     /// <summary>
     /// Called as soon as the piece is initialized. Initializes some necessary values.
     /// </summary>
-    private void Initiate(Vector2Int[] positions, GameObject obj, Vector2Int scaling, int textureSelect, Vector2Int nextPiecePosition)
+    private void Initiate(int2[] positions, GameObject obj, float2 scaling, int textureSelect, int2 nextPiecePosition)
     {
         rotationIndex = 0;
         int textureID = numberToTextureIDs[textureSelect];
@@ -69,7 +70,7 @@ public class PieceController : MonoBehaviour {
         for (int i = 0; i < positions.Length; i++)
         {
             GameObject tile = Instantiate(tileBlock, transform);
-            tile.transform.localPosition = (Vector2)(positions[i] + spawnLocation);
+            tile.transform.localPosition = (Vector2)int2ToV2Int(positions[i] + spawnLocation);
             tile.transform.localRotation = Quaternion.Euler(0,-90,0);
             TileController tc = tile.GetComponent<TileController>();
             tc.pieceController = this;
@@ -77,7 +78,7 @@ public class PieceController : MonoBehaviour {
             tc.textureID = textureSelect;
             tiles[i] = tile;
             materials[i] = tiles[i].GetComponent<MeshRenderer>().material;
-            materials[i].mainTextureScale = Vector2.one / scaling;
+            materials[i].mainTextureScale = new float2(1,1) / scaling;
             materials[i].mainTextureOffset = offset;
         }
         if(zombieContr) fullyLocked = true;
@@ -110,7 +111,7 @@ public class PieceController : MonoBehaviour {
                 // }
                 if (!board.LockDelayEnable && !board.piecesController.piecemovementlocked)  
                 {
-                    if(!CanMovePiece(Vector2Int.down) && !fullyLocked)  
+                    if(!CanMovePiece(new int2(0,-1)) && !fullyLocked)  
                     {
                         board.LockDelayf = 0;  board.LockDelayEnable = true;
                     }
@@ -142,9 +143,9 @@ public class PieceController : MonoBehaviour {
     /// Moves the attached tiles to form the Tetris piece specified. Also sets the correct color of tile sprite.
     /// </summary>
     /// <param name="newType">Type of tetris piece to be spawned.</param>
-    public void SpawnPiece(PieceType newType, PiecesController connector, Vector2Int[] positions, Vector2 setPivot, GameObject obj, Vector2Int scaling, int textureSelect, Vector2Int nextPos)
+    public void SpawnPiece(PieceType newType, PiecesController connector, int2[] positions, Vector2 setPivot, GameObject obj, int2 scaling, int textureSelect, int2 nextPos)
     {
-        pivot.localPosition = setPivot + (Vector2)nextPos;
+        pivot.localPosition = setPivot + int2ToV2Int(nextPos);
         int increaseByLevel = board.level >= 600 && board.nextibmblocks == board.nextPieces + 1 ? 14 : 0;
         int RSint = board.RS == RotationSystems.ARS ? 7 : 0;
         int combine = (increaseByLevel + RSint);
@@ -163,11 +164,11 @@ public class PieceController : MonoBehaviour {
     /// </summary>
     /// <param name="movement">X,Y amount to move the piece</param>
     /// <returns></returns>
-    public bool CanMovePiece(Vector2Int movement)
+    public bool CanMovePiece(int2 movement)
     {
         for (int i = 0; i < tiles.Length; i++)
         {
-            if(tiles[i] != null) if (!CanTileMove(movement + V3ToV2Int(localObjPos(tiles[i]))))
+            if(tiles[i] != null) if (!CanTileMove(movement + V3ToInt2(localObjPos(tiles[i]))))
             {
                 return false;
             }
@@ -198,7 +199,7 @@ public class PieceController : MonoBehaviour {
     /// </summary>
     /// <param name="movement">X,Y amount to move the piece</param>
     /// <returns>True if the piece was able to be moved. False if the move couln't be completed.</returns>
-    public void ForcefullyMovePiece(Vector2Int movement)
+    public void ForcefullyMovePiece(int2 movement)
     {
         UnisonPieceMove(movement);
         board.LockDelayf = 0;
@@ -208,14 +209,14 @@ public class PieceController : MonoBehaviour {
     /// </summary>
     /// <param name="movement">X,Y amount to move the piece</param>
     /// <returns>True if the piece was able to be moved. False if the move couln't be completed.</returns>
-    public bool MovePiece(Vector2Int movement, bool offset)
+    public bool MovePiece(int2 movement, bool offset)
     {
         for (int i = 0; i < tiles.Length; i++)
         {
-            if (!CanTileMove(movement + V3ToV2Int(tiles[i].transform.localPosition)))
+            if (!CanTileMove(movement + V3ToInt2(tiles[i].transform.localPosition)))
             {
                 // Debug.Log("Cant Go there!");
-                if(movement == Vector2Int.down && harddrop == true)
+                if(int2ToV2Int(movement) == Vector2Int.down && harddrop == true)
                 {
                     SetPiece();
                 }
@@ -226,12 +227,12 @@ public class PieceController : MonoBehaviour {
         UnisonPieceMove(movement);
         board.LockDelayf = 0;
         if(movement.y >= 0) if(!offset) if(board.LockDelay > 5 || board.gravity < 19) AudioManager.PlayClip(board.moveSE);
-        if(!CanMovePiece(Vector2Int.down))board.countLockResets++;
+        if(!CanMovePiece(new int2(0,-1)))board.countLockResets++;
         if(board.countLockResets >= board.maxLockResets)
         {
             board.LockDelayf = board.LockDelay;
         }
-        if (!CanMovePiece(Vector2Int.down) && fullyLocked == false)  
+        if (!CanMovePiece(new int2(0,-1)) && fullyLocked == false)  
         {
             if(board.LockDelayEnable == false && board.piecesController.piecemovementlocked == false)  
             {
@@ -243,13 +244,13 @@ public class PieceController : MonoBehaviour {
         if (board.level < board.sectionSize || board.TLS) ghostContr.UpdateGhostPiece();
         return true;
     }
-    public void UnisonPieceMove(Vector2Int movement)
+    public void UnisonPieceMove(int2 movement)
     {
         for (int i = 0; i < tiles.Length; i++)
         {
             MoveTile(tiles[i].gameObject, movement);
         }
-        pivot.localPosition += (Vector3)(Vector2)movement;
+        pivot.localPosition += (Vector3)(Vector2)int2ToV2Int(movement);
     }
 
     public bool isPieceLocked(){return fullyLocked;}
@@ -282,7 +283,7 @@ public class PieceController : MonoBehaviour {
 
         if (!shouldOffset)
         {
-            Vector2Int[,] curOffsetData;
+            int2[,] curOffsetData;
             if(curType == PieceType.O)
             {
                 curOffsetData = board.piecesController.O_OFFSET_DATA;
@@ -295,7 +296,7 @@ public class PieceController : MonoBehaviour {
             {
                 curOffsetData = board.piecesController.JLSTZ_OFFSET_DATA;
             }
-            Vector2Int offsetVal1, offsetVal2, endOffset;
+            int2 offsetVal1, offsetVal2, endOffset;
             offsetVal1 = curOffsetData[0, oldRotationIndex];
             offsetVal2 = curOffsetData[0, rotationIndex];
             endOffset = offsetVal1 - offsetVal2;
@@ -334,8 +335,8 @@ public class PieceController : MonoBehaviour {
     /// <returns>True if one of the tests passed and a final location was found. False if all test failed.</returns>
     bool Offset(int oldRotIndex, int newRotIndex, bool clockwise, bool UD = false)
     {
-        Vector2Int offsetVal1, offsetVal2, endOffset;
-        Vector2Int[,] curOffsetData;
+        int2 offsetVal1, offsetVal2, endOffset;
+        int2[,] curOffsetData;
         
         if(curType == PieceType.O)
         {
@@ -350,7 +351,7 @@ public class PieceController : MonoBehaviour {
             curOffsetData = board.piecesController.JLSTZ_OFFSET_DATA;
         }
 
-        endOffset = Vector2Int.zero;
+        endOffset = int2.zero;
 
         bool movePossible = false;
 
@@ -425,12 +426,12 @@ public class PieceController : MonoBehaviour {
     /// <param name="clockwise">True if rotating clockwise. False if rotatitng CCW</param>
     public static void RotateObject(GameObject obj, Vector3 pivotPos, bool clockwise, bool UD = false)
     {
-        // Vector2Int relativePos = V3ToV2Int(obj.transform.localPosition) - originPos;
-        // Vector2Int[] rotMatrix = clockwise ? new Vector2Int[2] { new Vector2Int(0, -1), new Vector2Int(1, 0) }
-        //                                    : new Vector2Int[2] { new Vector2Int(0, 1), new Vector2Int(-1, 0) };
+        // int2 relativePos = V3ToInt2(obj.transform.localPosition) - originPos;
+        // int2[] rotMatrix = clockwise ? new int2[2] { new int2(0, -1), new int2(1, 0) }
+        //                                    : new int2[2] { new int2(0, 1), new int2(-1, 0) };
         // int newXPos = (rotMatrix[0].x * relativePos.x) + (rotMatrix[1].x * relativePos.y);
         // int newYPos = (rotMatrix[0].y * relativePos.x) + (rotMatrix[1].y * relativePos.y);
-        // Vector2Int newPos = new Vector2Int(newXPos, newYPos);
+        // int2 newPos = new int2(newXPos, newYPos);
 
         // newPos += originPos;
         // UpdatePosition(obj, newPos);
@@ -445,9 +446,9 @@ public class PieceController : MonoBehaviour {
         {
             RotateObject(tiles[i].gameObject, pivot.position, clockwise, UD);
         }
-        return CanMovePiece(Vector2Int.zero);
+        return CanMovePiece(int2.zero);
     }
-    public static void UpdatePosition(GameObject obj, Vector2Int newPos)
+    public static void UpdatePosition(GameObject obj, int2 newPos)
     {
         Vector3 newV3Pos = new Vector3(newPos.x, newPos.y);
         obj.transform.localPosition = newV3Pos;
@@ -457,9 +458,9 @@ public class PieceController : MonoBehaviour {
     /// Moves the tile by the specified amount
     /// </summary>
     /// <param name="movement">X,Y amount the tile will be moved by</param>
-    public static void MoveTile(GameObject obj, Vector2Int movement)
+    public static void MoveTile(GameObject obj, int2 movement)
     {
-        Vector2Int endPos = V3ToV2Int(localObjPos(obj)) + movement;
+        int2 endPos = V3ToInt2(localObjPos(obj)) + movement;
         UpdatePosition(obj, endPos);
     }
     /// <summary>
@@ -467,7 +468,7 @@ public class PieceController : MonoBehaviour {
     /// </summary>
     /// <param name="endPos">Coordinates of the position you are trying to move the tile to</param>
     /// <returns>True if the tile can be moved there. False if the tile cannot be moved there</returns>
-    public bool CanTileMove(Vector2Int endPos)
+    public bool CanTileMove(int2 endPos)
     {
         // if (endPos.y < 0) return false;
         // if (!board.boardController.IsPosEmpty(endPos))
@@ -485,10 +486,12 @@ public class PieceController : MonoBehaviour {
     {
         return obj.transform.localPosition;
     }
-    static Vector2Int V3ToV2Int(Vector3 vector3)
+    static int2 V3ToInt2(Vector3 vector3)
     {
-        return new Vector2Int(Mathf.FloorToInt(vector3.x + 0.5f), Mathf.FloorToInt(vector3.y + 0.5f));
+        return new int2(Mathf.FloorToInt(vector3.x + 0.5f), Mathf.FloorToInt(vector3.y + 0.5f));
     }
+    static Vector2Int int2ToV2Int(int2 integers)
+    {return new Vector2Int(integers.x, integers.y);}
     static int maxNumberComparison(int num1, int num2, bool flipIfNeg = false)
     {
         int output;
@@ -506,6 +509,6 @@ public class PieceController : MonoBehaviour {
         harddrop = true;
         board.piecesController.PrevInputs[0] = true;
         AudioManager.PlayClip(board.hardDropSE);
-        while (MovePiece(Vector2Int.down, true)) {}
+        while (MovePiece(new int2(0,-1), true)) {}
     }
 }

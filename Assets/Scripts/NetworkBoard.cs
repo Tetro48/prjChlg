@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using Unity.Mathematics;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using MLAPI;
@@ -143,7 +144,7 @@ public class NetworkBoard : NetworkBehaviour
 
     public int tileInvisTime = -1;
 
-    public Vector2 movement;
+    public float2 movement;
     [SerializeField] GameObject rolltimeObject;
     
     bool cool, cooldisplayed;
@@ -331,14 +332,14 @@ public class NetworkBoard : NetworkBehaviour
         if (ReplayRecord.instance.mode != ReplayModeType.read)
         {
             movement = value.ReadValue<Vector2>();
-            if (value.ReadValue<Vector2>().y > 0.5) {Inputs[0] = true;}
+            if (movement.y > 0.5) {Inputs[0] = true;}
             else {Inputs[0] = false;}
         }
         else if (value.performed)
         {
-            if (value.ReadValue<Vector2>().x > 0.5 && Time.timeScale < 10)
+            if (movement.x > 0.5 && Time.timeScale < 10)
                 Time.timeScale += 0.1f;
-            if (value.ReadValue<Vector2>().x < -0.5 && Time.timeScale > .1)
+            if (movement.x < -0.5 && Time.timeScale > .1)
                 Time.timeScale -= 0.1f;
             GameEngine.instance.gameMusic.pitch = Time.timeScale;
         }
@@ -395,7 +396,7 @@ public class NetworkBoard : NetworkBehaviour
         if(ReplayRecord.instance.mode != ReplayModeType.read)
         {
             ReplayRecord.instance.boards++;
-            ReplayRecord.instance.movementVector.Add(new List<float[]>());
+            ReplayRecord.instance.movementVector.Add(new List<float2>());
             ReplayRecord.instance.inputs.Add(new List<bool[]>());
             bool[] tempSwitches = {false, false};
             ReplayRecord.instance.switches.Add(tempSwitches);
@@ -474,7 +475,7 @@ public class NetworkBoard : NetworkBehaviour
             {
                 if (ReplayRecord.instance.mode == ReplayModeType.read && AREf > (int)ARE - 401)
                 {
-                    float[] tempmov;
+                    float2 tempmov;
                     tempmov = ReplayRecord.instance.movementVector[playerID][ReplayRecord.instance.frames[playerID]];
                     movement = new Vector2(tempmov[0], tempmov[1]);
                     // Inputs = ReplayRecord.instance.inputs[playerID][ReplayRecord.instance.frames[playerID]];
@@ -493,7 +494,7 @@ public class NetworkBoard : NetworkBehaviour
                     }
                     modInputs[7] = false;
                     ReplayRecord.instance.inputs[playerID].Add(modInputs);
-                    float[] modMovement = { movement.x, movement.y };
+                    float2 modMovement = new float2(movement.x, movement.y);
                     ReplayRecord.instance.movementVector[playerID].Add(modMovement);
                 }
                 if (level >= endingLevel && AREf < (int)ARE && AREf > (int)ARE - 400)

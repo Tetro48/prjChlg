@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using Unity.Mathematics;
 using System.Linq;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -33,20 +34,16 @@ public class PiecesController : MonoBehaviour {
     public int playerID;
 
     public GameObject piecePrefab;
-    public Vector2Int spawnPos;
-    public float dropTime;
-    public int turnsToSac;
-    public Coroutine dropCurPiece;
     public GameObject minoBlock;
-    public List<Vector2Int[]> minoPositions = new List<Vector2Int[]>
+    public List<int2[]> minoPositions = new List<int2[]>
     {
-        new Vector2Int[] {Vector2Int.zero, Vector2Int.right, Vector2Int.one, Vector2Int.up}, // O piece
-        new Vector2Int[] {Vector2Int.zero, Vector2Int.left, Vector2Int.right*2, Vector2Int.right}, // I piece
-        new Vector2Int[] {Vector2Int.zero, Vector2Int.left, Vector2Int.one, Vector2Int.up}, // S piece
-        new Vector2Int[] {Vector2Int.zero, Vector2Int.up, new Vector2Int(-1, 1), Vector2Int.right}, // Z piece
-        new Vector2Int[] {Vector2Int.zero, Vector2Int.left, Vector2Int.one, Vector2Int.right}, // L piece
-        new Vector2Int[] {Vector2Int.zero, Vector2Int.left, new Vector2Int(-1, 1), Vector2Int.right}, // J piece
-        new Vector2Int[] {Vector2Int.zero, Vector2Int.left, Vector2Int.up, Vector2Int.right}, // T piece
+        new int2[] {int2.zero, new int2(1,0), new int2(1,1), new int2(0,1)}, // O piece
+        new int2[] {int2.zero, new int2(-1,0), new int2(2,0), new int2(1,0)}, // I piece
+        new int2[] {int2.zero, new int2(-1,0), new int2(1,1), new int2(0,1)}, // S piece
+        new int2[] {int2.zero, new int2(0,1), new int2(-1, 1), new int2(1,0)}, // Z piece
+        new int2[] {int2.zero, new int2(-1,0), new int2(1,1), new int2(1,0)}, // L piece
+        new int2[] {int2.zero, new int2(-1,0), new int2(-1, 1), new int2(1,0)}, // J piece
+        new int2[] {int2.zero, new int2(-1,0), new int2(0,1), new int2(1,0)}, // T piece
 
         //big pieces
         
@@ -59,13 +56,13 @@ public class PiecesController : MonoBehaviour {
         bigPiece(bigMino(0,0), bigMino(-1,0), bigMino(0,1), bigMino(1,0)),
 
         
-        // new Vector2Int[] {Vector2Int.zero},
-        // new Vector2Int[] {Vector2Int.zero},
-        // new Vector2Int[] {Vector2Int.zero},
-        // new Vector2Int[] {Vector2Int.zero},
-        // new Vector2Int[] {Vector2Int.zero},
-        // new Vector2Int[] {Vector2Int.zero},
-        // new Vector2Int[] {Vector2Int.zero},
+        // new int2[] {int2.zero},
+        // new int2[] {int2.zero},
+        // new int2[] {int2.zero},
+        // new int2[] {int2.zero},
+        // new int2[] {int2.zero},
+        // new int2[] {int2.zero},
+        // new int2[] {int2.zero},
     };
     public List<Vector2> pivotPositions = new List<Vector2>
     {
@@ -85,15 +82,15 @@ public class PiecesController : MonoBehaviour {
         new Vector2(0.5f, 0.5f),
 
     };
-    private static Vector2Int[] bigMino(int posX, int posY)
+    private static int2[] bigMino(int posX, int posY)
     {
-        Vector2Int pos = new Vector2Int(posX, posY);
-        return new Vector2Int[] {Vector2Int.zero + pos * 2, Vector2Int.right + pos * 2, Vector2Int.one + pos * 2, Vector2Int.up + pos * 2};
+        int2 pos = new int2(posX, posY);
+        return new int2[] {int2.zero + pos * 2, new int2(1,0) + pos * 2, new int2(1,1) + pos * 2, new int2(0,1) + pos * 2};
     }
-    private static Vector2Int[] bigPiece(params Vector2Int[][] positions)
+    private static int2[] bigPiece(params int2[][] positions)
     {
         int arraySize = positions.Length * 4;
-        Vector2Int[] result = new Vector2Int[arraySize];
+        int2[] result = new int2[arraySize];
         for (int i = 0; i < positions.Length; i++)
         {
             result[i * 4] = positions[i][0];
@@ -104,10 +101,10 @@ public class PiecesController : MonoBehaviour {
 
         return result;
     }
-    public Vector2Int scaling;
-    public Vector2Int[,] JLSTZ_OFFSET_DATA { get; private set; }
-    public Vector2Int[,] I_OFFSET_DATA { get; private set; }
-    public Vector2Int[,] O_OFFSET_DATA { get; private set; }
+    public int2 scaling;
+    public int2[,] JLSTZ_OFFSET_DATA { get; private set; }
+    public int2[,] I_OFFSET_DATA { get; private set; }
+    public int2[,] O_OFFSET_DATA { get; private set; }
     public List<GameObject> piecesInGame;
     public GameObject pieceToDestroy = null;
     public GameObject sacText, gameOverText;
@@ -119,13 +116,13 @@ public class PiecesController : MonoBehaviour {
     public AudioClip[] nextpieceSE;
     public AudioClip audioIRS, audioIHS, bell, levelup, holdSE;
     [SerializeField]
-    Vector2Int relativeHoldPieceCoordinate;
+    int2 relativeHoldPieceCoordinate;
 
     [SerializeField] 
     GameObject holdPieceBuffer;
 
     [SerializeField] 
-    public List<Vector2Int> relativeNextPieceCoordinates;
+    public List<int2> relativeNextPieceCoordinates;
 
     [SerializeField] 
     List<GameObject> nextPiecesBuffer;
@@ -175,85 +172,85 @@ public class PiecesController : MonoBehaviour {
         piecePrefab = newPrefab;
         piecePrefab.GetComponent<PieceController>().board = board;
         
-        JLSTZ_OFFSET_DATA = new Vector2Int[5, 4];
-        JLSTZ_OFFSET_DATA[0, 0] = Vector2Int.zero;
-        JLSTZ_OFFSET_DATA[0, 1] = Vector2Int.zero;
-        JLSTZ_OFFSET_DATA[0, 2] = Vector2Int.zero;
-        JLSTZ_OFFSET_DATA[0, 3] = Vector2Int.zero;
+        JLSTZ_OFFSET_DATA = new int2[5, 4];
+        JLSTZ_OFFSET_DATA[0, 0] = int2.zero;
+        JLSTZ_OFFSET_DATA[0, 1] = int2.zero;
+        JLSTZ_OFFSET_DATA[0, 2] = int2.zero;
+        JLSTZ_OFFSET_DATA[0, 3] = int2.zero;
 
-        JLSTZ_OFFSET_DATA[1, 0] = Vector2Int.zero;
-        JLSTZ_OFFSET_DATA[1, 1] = new Vector2Int(1,0);
-        JLSTZ_OFFSET_DATA[1, 2] = Vector2Int.zero;
-        JLSTZ_OFFSET_DATA[1, 3] = new Vector2Int(-1, 0);
+        JLSTZ_OFFSET_DATA[1, 0] = int2.zero;
+        JLSTZ_OFFSET_DATA[1, 1] = new int2(1,0);
+        JLSTZ_OFFSET_DATA[1, 2] = int2.zero;
+        JLSTZ_OFFSET_DATA[1, 3] = new int2(-1, 0);
 
-        JLSTZ_OFFSET_DATA[2, 0] = Vector2Int.zero;
-        JLSTZ_OFFSET_DATA[2, 1] = new Vector2Int(1, -1);
-        JLSTZ_OFFSET_DATA[2, 2] = Vector2Int.zero;
-        JLSTZ_OFFSET_DATA[2, 3] = new Vector2Int(-1, -1);
+        JLSTZ_OFFSET_DATA[2, 0] = int2.zero;
+        JLSTZ_OFFSET_DATA[2, 1] = new int2(1, -1);
+        JLSTZ_OFFSET_DATA[2, 2] = int2.zero;
+        JLSTZ_OFFSET_DATA[2, 3] = new int2(-1, -1);
 
-        JLSTZ_OFFSET_DATA[3, 0] = Vector2Int.zero;
-        JLSTZ_OFFSET_DATA[3, 1] = new Vector2Int(0, 2);
-        JLSTZ_OFFSET_DATA[3, 2] = Vector2Int.zero;
-        JLSTZ_OFFSET_DATA[3, 3] = new Vector2Int(0, 2);
+        JLSTZ_OFFSET_DATA[3, 0] = int2.zero;
+        JLSTZ_OFFSET_DATA[3, 1] = new int2(0, 2);
+        JLSTZ_OFFSET_DATA[3, 2] = int2.zero;
+        JLSTZ_OFFSET_DATA[3, 3] = new int2(0, 2);
 
-        JLSTZ_OFFSET_DATA[4, 0] = Vector2Int.zero;
-        JLSTZ_OFFSET_DATA[4, 1] = new Vector2Int(1, 2);
-        JLSTZ_OFFSET_DATA[4, 2] = Vector2Int.zero;
-        JLSTZ_OFFSET_DATA[4, 3] = new Vector2Int(-1, 2);
+        JLSTZ_OFFSET_DATA[4, 0] = int2.zero;
+        JLSTZ_OFFSET_DATA[4, 1] = new int2(1, 2);
+        JLSTZ_OFFSET_DATA[4, 2] = int2.zero;
+        JLSTZ_OFFSET_DATA[4, 3] = new int2(-1, 2);
 
-        I_OFFSET_DATA = new Vector2Int[5, 4];
-        I_OFFSET_DATA[0, 0] = Vector2Int.zero;
-        I_OFFSET_DATA[0, 1] = Vector2Int.zero;
-        I_OFFSET_DATA[0, 2] = Vector2Int.zero;
-        I_OFFSET_DATA[0, 3] = Vector2Int.zero;
+        I_OFFSET_DATA = new int2[5, 4];
+        I_OFFSET_DATA[0, 0] = int2.zero;
+        I_OFFSET_DATA[0, 1] = int2.zero;
+        I_OFFSET_DATA[0, 2] = int2.zero;
+        I_OFFSET_DATA[0, 3] = int2.zero;
 
-        I_OFFSET_DATA[1, 0] = Vector2Int.zero;
-        I_OFFSET_DATA[1, 1] = Vector2Int.right * 2;
-        I_OFFSET_DATA[1, 2] = Vector2Int.right * 3;
-        I_OFFSET_DATA[1, 3] = Vector2Int.left;
+        I_OFFSET_DATA[1, 0] = int2.zero;
+        I_OFFSET_DATA[1, 1] = new int2(1,0) * 2;
+        I_OFFSET_DATA[1, 2] = new int2(1,0) * 3;
+        I_OFFSET_DATA[1, 3] = new int2(-1,0);
 
-        I_OFFSET_DATA[2, 0] = Vector2Int.right * 2;
-        I_OFFSET_DATA[2, 1] = Vector2Int.left;
-        I_OFFSET_DATA[2, 2] = new Vector2Int(1, 0);
-        I_OFFSET_DATA[2, 3] = new Vector2Int(0, 0);
+        I_OFFSET_DATA[2, 0] = new int2(1,0) * 2;
+        I_OFFSET_DATA[2, 1] = new int2(-1,0);
+        I_OFFSET_DATA[2, 2] = new int2(1, 0);
+        I_OFFSET_DATA[2, 3] = new int2(0, 0);
 
-        I_OFFSET_DATA[3, 0] = Vector2Int.left; // 0 to 1: -1,0 - 1,1 = -2,-1
-        I_OFFSET_DATA[3, 1] = new Vector2Int(1, 1); // 1 to 2: 1,1 - 2,-1 = -1,2
-        I_OFFSET_DATA[3, 2] = new Vector2Int(2, -1); // 2 to 3: 2,-1 - 0,-2 = 2,1
-        I_OFFSET_DATA[3, 3] = new Vector2Int(0, -2); // 3 to 0: 0,-2 - -1,0 = 1,-2
+        I_OFFSET_DATA[3, 0] = new int2(-1,0); // 0 to 1: -1,0 - 1,1 = -2,-1
+        I_OFFSET_DATA[3, 1] = new int2(1, 1); // 1 to 2: 1,1 - 2,-1 = -1,2
+        I_OFFSET_DATA[3, 2] = new int2(2, -1); // 2 to 3: 2,-1 - 0,-2 = 2,1
+        I_OFFSET_DATA[3, 3] = new int2(0, -2); // 3 to 0: 0,-2 - -1,0 = 1,-2
 
         // 2,0 - 0,1 = 2,-1
         // 0,1 - 2,0 = -2,1
-        I_OFFSET_DATA[4, 0] = Vector2Int.right * 2; // 0 to 1: 2,0 - 0,-2 = 2,2
-        I_OFFSET_DATA[4, 1] = new Vector2Int(0, -2); // 1 to 2: 0,-2 - -2,0 = 2,-2
-        I_OFFSET_DATA[4, 2] = new Vector2Int(-2, 0); // 2 to 3: -2,0 - 0,2 = -2,-2
-        I_OFFSET_DATA[4, 3] = new Vector2Int(0, 2); // 3 to 0: 0,2 - 2,0 = -2, 2
+        I_OFFSET_DATA[4, 0] = new int2(1,0) * 2; // 0 to 1: 2,0 - 0,-2 = 2,2
+        I_OFFSET_DATA[4, 1] = new int2(0, -2); // 1 to 2: 0,-2 - -2,0 = 2,-2
+        I_OFFSET_DATA[4, 2] = new int2(-2, 0); // 2 to 3: -2,0 - 0,2 = -2,-2
+        I_OFFSET_DATA[4, 3] = new int2(0, 2); // 3 to 0: 0,2 - 2,0 = -2, 2
 
-        O_OFFSET_DATA = new Vector2Int[5, 4];
-        O_OFFSET_DATA[0, 0] = Vector2Int.zero;
-        O_OFFSET_DATA[0, 1] = Vector2Int.zero;
-        O_OFFSET_DATA[0, 2] = Vector2Int.zero;
-        O_OFFSET_DATA[0, 3] = Vector2Int.zero;
+        O_OFFSET_DATA = new int2[5, 4];
+        O_OFFSET_DATA[0, 0] = int2.zero;
+        O_OFFSET_DATA[0, 1] = int2.zero;
+        O_OFFSET_DATA[0, 2] = int2.zero;
+        O_OFFSET_DATA[0, 3] = int2.zero;
 
-        O_OFFSET_DATA[1, 0] = Vector2Int.zero;
-        O_OFFSET_DATA[1, 1] = Vector2Int.zero;
-        O_OFFSET_DATA[1, 2] = Vector2Int.zero;
-        O_OFFSET_DATA[1, 3] = Vector2Int.zero;
+        O_OFFSET_DATA[1, 0] = int2.zero;
+        O_OFFSET_DATA[1, 1] = int2.zero;
+        O_OFFSET_DATA[1, 2] = int2.zero;
+        O_OFFSET_DATA[1, 3] = int2.zero;
 
-        O_OFFSET_DATA[2, 0] = Vector2Int.zero;
-        O_OFFSET_DATA[2, 1] = Vector2Int.zero;
-        O_OFFSET_DATA[2, 2] = Vector2Int.zero;
-        O_OFFSET_DATA[2, 3] = Vector2Int.zero;
+        O_OFFSET_DATA[2, 0] = int2.zero;
+        O_OFFSET_DATA[2, 1] = int2.zero;
+        O_OFFSET_DATA[2, 2] = int2.zero;
+        O_OFFSET_DATA[2, 3] = int2.zero;
 
-        O_OFFSET_DATA[3, 0] = Vector2Int.zero;
-        O_OFFSET_DATA[3, 1] = Vector2Int.zero;
-        O_OFFSET_DATA[3, 2] = Vector2Int.zero;
-        O_OFFSET_DATA[3, 3] = Vector2Int.zero;
+        O_OFFSET_DATA[3, 0] = int2.zero;
+        O_OFFSET_DATA[3, 1] = int2.zero;
+        O_OFFSET_DATA[3, 2] = int2.zero;
+        O_OFFSET_DATA[3, 3] = int2.zero;
 
-        O_OFFSET_DATA[4, 0] = Vector2Int.zero;
-        O_OFFSET_DATA[4, 1] = Vector2Int.zero;
-        O_OFFSET_DATA[4, 2] = Vector2Int.zero;
-        O_OFFSET_DATA[4, 3] = Vector2Int.zero;
+        O_OFFSET_DATA[4, 0] = int2.zero;
+        O_OFFSET_DATA[4, 1] = int2.zero;
+        O_OFFSET_DATA[4, 2] = int2.zero;
+        O_OFFSET_DATA[4, 3] = int2.zero;
 
 
     }
@@ -267,83 +264,83 @@ public class PiecesController : MonoBehaviour {
         availablePieces = new List<GameObject>();
         if(board.RS == RotationSystems.ARS)
         {
-            JLSTZ_OFFSET_DATA = new Vector2Int[5, 4];
-            JLSTZ_OFFSET_DATA[0, 0] = Vector2Int.up;
-            JLSTZ_OFFSET_DATA[0, 1] = Vector2Int.zero;
-            JLSTZ_OFFSET_DATA[0, 2] = Vector2Int.zero;
-            JLSTZ_OFFSET_DATA[0, 3] = Vector2Int.zero;
+            JLSTZ_OFFSET_DATA = new int2[5, 4];
+            JLSTZ_OFFSET_DATA[0, 0] = new int2(0,1);
+            JLSTZ_OFFSET_DATA[0, 1] = int2.zero;
+            JLSTZ_OFFSET_DATA[0, 2] = int2.zero;
+            JLSTZ_OFFSET_DATA[0, 3] = int2.zero;
 
-            JLSTZ_OFFSET_DATA[1, 0] = new Vector2Int(-1, 1);
-            JLSTZ_OFFSET_DATA[1, 1] = new Vector2Int(0, 0);
-            JLSTZ_OFFSET_DATA[1, 2] = new Vector2Int(-1, 0);
-            JLSTZ_OFFSET_DATA[1, 3] = new Vector2Int(-2, 0);
+            JLSTZ_OFFSET_DATA[1, 0] = new int2(-1, 1);
+            JLSTZ_OFFSET_DATA[1, 1] = new int2(0, 0);
+            JLSTZ_OFFSET_DATA[1, 2] = new int2(-1, 0);
+            JLSTZ_OFFSET_DATA[1, 3] = new int2(-2, 0);
 
-            JLSTZ_OFFSET_DATA[2, 0] = new Vector2Int(-1, 1);
-            JLSTZ_OFFSET_DATA[2, 1] = new Vector2Int(-2, 0);
-            JLSTZ_OFFSET_DATA[2, 2] = new Vector2Int(-1, 0);
-            JLSTZ_OFFSET_DATA[2, 3] = new Vector2Int(0, 0);
+            JLSTZ_OFFSET_DATA[2, 0] = new int2(-1, 1);
+            JLSTZ_OFFSET_DATA[2, 1] = new int2(-2, 0);
+            JLSTZ_OFFSET_DATA[2, 2] = new int2(-1, 0);
+            JLSTZ_OFFSET_DATA[2, 3] = new int2(0, 0);
 
-            JLSTZ_OFFSET_DATA[3, 0] = new Vector2Int(0, 0);
-            JLSTZ_OFFSET_DATA[3, 1] = new Vector2Int(0, 0);
-            JLSTZ_OFFSET_DATA[3, 2] = new Vector2Int(0, 0);
-            JLSTZ_OFFSET_DATA[3, 3] = new Vector2Int(0, 0);
+            JLSTZ_OFFSET_DATA[3, 0] = new int2(0, 0);
+            JLSTZ_OFFSET_DATA[3, 1] = new int2(0, 0);
+            JLSTZ_OFFSET_DATA[3, 2] = new int2(0, 0);
+            JLSTZ_OFFSET_DATA[3, 3] = new int2(0, 0);
 
-            JLSTZ_OFFSET_DATA[4, 0] = Vector2Int.zero;
-            JLSTZ_OFFSET_DATA[4, 1] = Vector2Int.zero;
-            JLSTZ_OFFSET_DATA[4, 2] = Vector2Int.zero;
-            JLSTZ_OFFSET_DATA[4, 3] = Vector2Int.zero;
+            JLSTZ_OFFSET_DATA[4, 0] = int2.zero;
+            JLSTZ_OFFSET_DATA[4, 1] = int2.zero;
+            JLSTZ_OFFSET_DATA[4, 2] = int2.zero;
+            JLSTZ_OFFSET_DATA[4, 3] = int2.zero;
 
-            I_OFFSET_DATA = new Vector2Int[5, 4];
-            I_OFFSET_DATA[0, 0] = Vector2Int.zero;
-            I_OFFSET_DATA[0, 1] = new Vector2Int(0, 0);
-            I_OFFSET_DATA[0, 2] = new Vector2Int(0, -1);
-            I_OFFSET_DATA[0, 3] = new Vector2Int(-1, 0);
+            I_OFFSET_DATA = new int2[5, 4];
+            I_OFFSET_DATA[0, 0] = int2.zero;
+            I_OFFSET_DATA[0, 1] = new int2(0, 0);
+            I_OFFSET_DATA[0, 2] = new int2(0, -1);
+            I_OFFSET_DATA[0, 3] = new int2(-1, 0);
 
-            I_OFFSET_DATA[1, 0] = new Vector2Int(-1, 0);
-            I_OFFSET_DATA[1, 1] = Vector2Int.zero;
-            I_OFFSET_DATA[1, 2] = new Vector2Int(1, 1);
-            I_OFFSET_DATA[1, 3] = new Vector2Int(0, 1);
+            I_OFFSET_DATA[1, 0] = new int2(-1, 0);
+            I_OFFSET_DATA[1, 1] = int2.zero;
+            I_OFFSET_DATA[1, 2] = new int2(1, 1);
+            I_OFFSET_DATA[1, 3] = new int2(0, 1);
 
-            I_OFFSET_DATA[2, 0] = new Vector2Int(2, 0);
-            I_OFFSET_DATA[2, 1] = Vector2Int.zero;
-            I_OFFSET_DATA[2, 2] = new Vector2Int(-2, 1);
-            I_OFFSET_DATA[2, 3] = new Vector2Int(0, 1);
+            I_OFFSET_DATA[2, 0] = new int2(2, 0);
+            I_OFFSET_DATA[2, 1] = int2.zero;
+            I_OFFSET_DATA[2, 2] = new int2(-2, 1);
+            I_OFFSET_DATA[2, 3] = new int2(0, 1);
 
-            I_OFFSET_DATA[3, 0] = new Vector2Int(-1, 0);
-            I_OFFSET_DATA[3, 1] = new Vector2Int(0, 1);
-            I_OFFSET_DATA[3, 2] = new Vector2Int(1, 0);
-            I_OFFSET_DATA[3, 3] = new Vector2Int(0, -1);
+            I_OFFSET_DATA[3, 0] = new int2(-1, 0);
+            I_OFFSET_DATA[3, 1] = new int2(0, 1);
+            I_OFFSET_DATA[3, 2] = new int2(1, 0);
+            I_OFFSET_DATA[3, 3] = new int2(0, -1);
 
-            I_OFFSET_DATA[4, 0] = new Vector2Int(2, 0);
-            I_OFFSET_DATA[4, 1] = new Vector2Int(0, -2);
-            I_OFFSET_DATA[4, 2] = new Vector2Int(-2, 0);
-            I_OFFSET_DATA[4, 3] = new Vector2Int(0, 2);
+            I_OFFSET_DATA[4, 0] = new int2(2, 0);
+            I_OFFSET_DATA[4, 1] = new int2(0, -2);
+            I_OFFSET_DATA[4, 2] = new int2(-2, 0);
+            I_OFFSET_DATA[4, 3] = new int2(0, 2);
 
-            O_OFFSET_DATA = new Vector2Int[5, 4];
-            O_OFFSET_DATA[0, 0] = Vector2Int.zero;
-            O_OFFSET_DATA[0, 1] = Vector2Int.zero;
-            O_OFFSET_DATA[0, 2] = Vector2Int.zero;
-            O_OFFSET_DATA[0, 3] = Vector2Int.zero;
+            O_OFFSET_DATA = new int2[5, 4];
+            O_OFFSET_DATA[0, 0] = int2.zero;
+            O_OFFSET_DATA[0, 1] = int2.zero;
+            O_OFFSET_DATA[0, 2] = int2.zero;
+            O_OFFSET_DATA[0, 3] = int2.zero;
 
-            O_OFFSET_DATA[1, 0] = Vector2Int.zero;
-            O_OFFSET_DATA[1, 1] = Vector2Int.zero;
-            O_OFFSET_DATA[1, 2] = Vector2Int.zero;
-            O_OFFSET_DATA[1, 3] = Vector2Int.zero;
+            O_OFFSET_DATA[1, 0] = int2.zero;
+            O_OFFSET_DATA[1, 1] = int2.zero;
+            O_OFFSET_DATA[1, 2] = int2.zero;
+            O_OFFSET_DATA[1, 3] = int2.zero;
 
-            O_OFFSET_DATA[2, 0] = Vector2Int.zero;
-            O_OFFSET_DATA[2, 1] = Vector2Int.zero;
-            O_OFFSET_DATA[2, 2] = Vector2Int.zero;
-            O_OFFSET_DATA[2, 3] = Vector2Int.zero;
+            O_OFFSET_DATA[2, 0] = int2.zero;
+            O_OFFSET_DATA[2, 1] = int2.zero;
+            O_OFFSET_DATA[2, 2] = int2.zero;
+            O_OFFSET_DATA[2, 3] = int2.zero;
 
-            O_OFFSET_DATA[3, 0] = Vector2Int.zero;
-            O_OFFSET_DATA[3, 1] = Vector2Int.zero;
-            O_OFFSET_DATA[3, 2] = Vector2Int.zero;
-            O_OFFSET_DATA[3, 3] = Vector2Int.zero;
+            O_OFFSET_DATA[3, 0] = int2.zero;
+            O_OFFSET_DATA[3, 1] = int2.zero;
+            O_OFFSET_DATA[3, 2] = int2.zero;
+            O_OFFSET_DATA[3, 3] = int2.zero;
 
-            O_OFFSET_DATA[4, 0] = Vector2Int.zero;
-            O_OFFSET_DATA[4, 1] = Vector2Int.zero;
-            O_OFFSET_DATA[4, 2] = Vector2Int.zero;
-            O_OFFSET_DATA[4, 3] = Vector2Int.zero;
+            O_OFFSET_DATA[4, 0] = int2.zero;
+            O_OFFSET_DATA[4, 1] = int2.zero;
+            O_OFFSET_DATA[4, 2] = int2.zero;
+            O_OFFSET_DATA[4, 3] = int2.zero;
         }
     }
 
@@ -396,7 +393,7 @@ public class PiecesController : MonoBehaviour {
                     SpawnPiece();
                     for (int i = 0; i < (int)Math.Floor(gravityTiles); i++)
                     {
-                        if(piecemovementlocked == false)MoveCurPiece(Vector2Int.down);
+                        if(piecemovementlocked == false)MoveCurPiece(new int2(0,-1));
                     }
                     gravityTiles -= (float)Math.Floor(gravityTiles);
                 }
@@ -555,15 +552,15 @@ public class PiecesController : MonoBehaviour {
                 DASfl++;
                 if(!piecemovementlocked)
                 {
-                    if (DASfl == 1) MoveCurPiece(Vector2Int.left);
+                    if (DASfl == 1) MoveCurPiece(new int2(-1,0));
                     if (DASfl > DAStuning && (ARRtuning == 0 || DASfl % ARRtuning == 0))
                     {
-                        MoveCurPiece(Vector2Int.left);
+                        MoveCurPiece(new int2(-1,0));
                         if (ARRtuning == 0)
                         {
                             for (int i = 0; i < 10; i++)
                             {
-                                MoveCurPiece(Vector2Int.left);
+                                MoveCurPiece(new int2(-1,0));
                             }
                         }
                     }
@@ -575,15 +572,15 @@ public class PiecesController : MonoBehaviour {
                 DASfr++;
                 if(!piecemovementlocked)
                 {
-                    if (DASfr == 1) MoveCurPiece(Vector2Int.right);
+                    if (DASfr == 1) MoveCurPiece(new int2(1,0));
                     if (DASfr > DAStuning && (ARRtuning == 0 || DASfr % ARRtuning == 0))
                     {
-                        MoveCurPiece(Vector2Int.right);
+                        MoveCurPiece(new int2(1,0));
                         if (ARRtuning == 0)
                         {
                             for (int i = 0; i < 10; i++)
                             {
-                                MoveCurPiece(Vector2Int.right);
+                                MoveCurPiece(new int2(1,0));
                             }
                         }
                     }
@@ -647,16 +644,16 @@ public class PiecesController : MonoBehaviour {
             }
             if(curPieceController != null) 
             {
-                if (!curPieceController.CanMovePiece(Vector2Int.zero) && !piecemovementlocked) curPieceController.SendPieceToFloor();
+                if (!curPieceController.CanMovePiece(int2.zero) && !piecemovementlocked) curPieceController.SendPieceToFloor();
                 if(piecemovementlocked == false) while (gravityTiles >= 1)
                 {
-                    if (!curPieceController.CanMovePiece(Vector2Int.down))
+                    if (!curPieceController.CanMovePiece(new int2(0,-1)))
                     {
                         gravityTiles = 0;
                     }
                     else
                     {
-                        MoveCurPiece(Vector2Int.down);
+                        MoveCurPiece(new int2(0,-1));
                         gravityTiles--;
                     }
                 }
@@ -828,19 +825,20 @@ public class PiecesController : MonoBehaviour {
     //     piecesInGame.Add(localGO);
     // }
 
-    Vector2Int V3ToV2Int(Vector3 vector3)
+    int2 V3ToV2Int(Vector3 vector3)
     {
-        return new Vector2Int((int)vector3.x, (int)vector3.y);
+        return new int2((int)vector3.x, (int)vector3.y);
     }
     /// <summary>
     /// Moves the current piece controlled by the player.
     /// </summary>
     /// <param name="movement">X,Y amount the piece should be moved by</param>
-    public void MoveCurPiece(Vector2Int movement)
+    public void MoveCurPiece(int2 movement)
     {
         if (curPiece != null && curPieceController != null)
         {
             curPieceController.MovePiece(movement, false);
+            if(board.bigMode)curPieceController.MovePiece(movement, false);
         }
     }
 }

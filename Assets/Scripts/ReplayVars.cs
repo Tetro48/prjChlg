@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using Unity.Mathematics;
 
 /*
     Project Challenger, an challenging Tetris game.
@@ -25,7 +26,7 @@ public class ReplayVars
     public int boards;
     public int seed;
     public List<double[]> timings;
-    public List<List<float[]>> movementVector;
+    public List<List<float2>> movementVector;
     public List<List<bool[]>> inputs;
     public List<bool[]> switches;
     

@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using Unity.Mathematics;
 using UnityEngine;
 using TMPro;
 
@@ -28,7 +29,7 @@ public class ReplayRecord : MonoBehaviour
     public ReplayModeType mode;
     public List<int> frames;
     public int boards;
-    public List<List<float[]>> movementVector;
+    public List<List<float2>> movementVector;
     public List<List<bool[]>> inputs;
     public List<bool[]> switches;
     public static int seed;
@@ -48,7 +49,7 @@ public class ReplayRecord : MonoBehaviour
         movementVector = data.movementVector;
         inputs = data.inputs;
         switches = data.switches;
-        Random.InitState(data.seed);
+        UnityEngine.Random.InitState(data.seed);
         for (int i = 0; i < NetworkBoard.player.Count; i++)
         {
             NetworkBoard.player[i].lineFreezingMechanic = switches[i][0];
@@ -73,7 +74,7 @@ public class ReplayRecord : MonoBehaviour
     public void Reset()
     {
         boards = new int();
-        movementVector = new List<List<float[]>>();
+        movementVector = new List<List<float2>>();
         inputs = new List<List<bool[]>>();
         switches = new List<bool[]>();
         seed = new int();

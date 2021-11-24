@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using Unity.Mathematics;
 
 /*
     Project Challenger, an challenging Tetris game.
@@ -58,14 +59,14 @@ public class BoardParticleSystem : MonoBehaviour
     
     public void SummonFirework(Vector2 coordinates, Vector2 borderSize)
     {
-        MenuEngine.instance.audioSource.PlayOneShot(fireworkSoundEffects[Random.Range(0, fireworkSoundEffects.Length-1)]);
+        MenuEngine.instance.audioSource.PlayOneShot(fireworkSoundEffects[UnityEngine.Random.Range(0, fireworkSoundEffects.Length-1)]);
         GameObject newFirework = Instantiate(fireworkPrefab, transform);
-        newFirework.transform.position = new Vector3(Random.Range(coordinates.x, coordinates.x + borderSize.x), Random.Range(coordinates.y, coordinates.y + borderSize.y), 0.0f);
+        newFirework.transform.position = new Vector3(UnityEngine.Random.Range(coordinates.x, coordinates.x + borderSize.x), UnityEngine.Random.Range(coordinates.y, coordinates.y + borderSize.y), 0.0f);
         ParticleSystem particlesModify = newFirework.GetComponent<ParticleSystem>();
-        particlesModify.startColor = new Color(Random.Range(0f,1f), Random.Range(0f,1f), Random.Range(0f,1f),1f);
+        particlesModify.startColor = new Color(UnityEngine.Random.Range(0f,1f), UnityEngine.Random.Range(0f,1f), UnityEngine.Random.Range(0f,1f),1f);
         particlesModify.Play();
     }
-    public void SummonParticles(Vector2Int coords, int tileTexture)
+    public void SummonParticles(int2 coords, int tileTexture)
     {
         // Any parameters we assign in emitParams will override the current system's when we call Emit.
         // Here we will override the start color and size.
