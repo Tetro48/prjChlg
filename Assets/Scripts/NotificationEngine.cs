@@ -28,7 +28,7 @@ public class NotificationEngine : MonoBehaviour
     public AudioClip notifyAudio;
     public List<TextMeshProUGUI> textNotification;
     public List<GameObject> notificationInstance;
-    public List<int> notifAnimFrames;
+    public List<float> notifAnimFrames;
     
 
     public void InstantiateNotification(string text, Color color = default)
@@ -54,18 +54,18 @@ public class NotificationEngine : MonoBehaviour
     }
 
     // Update is called once per frame
-    void FixedUpdate()
+    void Update()
     {
         if(notificationInstance.Count > 0) for (int i = 0; i < notificationInstance.Count; i++)
         {
-            notifAnimFrames[i]++;
+            notifAnimFrames[i] += Time.deltaTime / Time.fixedDeltaTime;
             if (notifAnimFrames[i] < 50)
             {
-                notificationInstance[i].transform.position -= new Vector3((384/25)*MenuEngine.instance.reswidth, 0, 0);
+                notificationInstance[i].transform.position -= new Vector3((384/25)*MenuEngine.instance.reswidth * (Time.deltaTime / Time.fixedDeltaTime), 0, 0);
             }
             if (notifAnimFrames[i] > 449)
             {
-                notificationInstance[i].transform.position += new Vector3((384/25)*MenuEngine.instance.reswidth, 0, 0);
+                notificationInstance[i].transform.position += new Vector3((384/25)*MenuEngine.instance.reswidth * (Time.deltaTime / Time.fixedDeltaTime), 0, 0);
             }
             if (notifAnimFrames[i] > 500)
             {

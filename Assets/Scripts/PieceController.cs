@@ -300,18 +300,14 @@ public class PieceController : MonoBehaviour {
             offsetVal1 = curOffsetData[0, oldRotationIndex];
             offsetVal2 = curOffsetData[0, rotationIndex];
             endOffset = offsetVal1 - offsetVal2;
-            for(int i = 0; i < tiles.Length; i++)
-            {
-                RotateObject(tiles[i].gameObject, pivot.position, clockwise, UD);
-            }
-            return;
+            RotateInUnison(clockwise, UD);
         }
 
         bool canOffset = Offset(oldRotationIndex, rotationIndex, clockwise, UD);
 
         if (!canOffset)
         {
-            RotatePiece(!clockwise, false, UD, false);
+            rotationIndex = oldRotationIndex;
         }
         if (board.level < board.sectionSize || board.TLS) ghostContr.UpdateGhostPiece();
     }
@@ -363,8 +359,7 @@ public class PieceController : MonoBehaviour {
             if(board.bigMode) endOffset *= 2;
             if(testIndex == 0)
             {
-                if(!RotateInUnison(clockwise, UD))
-                movePossible = false;
+                RotateInUnison(clockwise, UD);
             }
             if (CanMovePiece(endOffset))
             {
@@ -377,6 +372,7 @@ public class PieceController : MonoBehaviour {
         {
             MovePiece(endOffset, true);
         }
+        else RotateInUnison(!clockwise, UD);
         if(board.LockDelay > 6 || board.gravity < 19) AudioManager.PlayClip(board.rotateSE);
         // else
         // {

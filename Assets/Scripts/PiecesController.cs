@@ -205,11 +205,11 @@ public class PiecesController : MonoBehaviour {
         I_OFFSET_DATA[0, 3] = int2.zero;
 
         I_OFFSET_DATA[1, 0] = int2.zero;
-        I_OFFSET_DATA[1, 1] = new int2(1,0) * 2;
-        I_OFFSET_DATA[1, 2] = new int2(1,0) * 3;
+        I_OFFSET_DATA[1, 1] = new int2(2,0);
+        I_OFFSET_DATA[1, 2] = new int2(3,0);
         I_OFFSET_DATA[1, 3] = new int2(-1,0);
 
-        I_OFFSET_DATA[2, 0] = new int2(1,0) * 2;
+        I_OFFSET_DATA[2, 0] = new int2(2,0);
         I_OFFSET_DATA[2, 1] = new int2(-1,0);
         I_OFFSET_DATA[2, 2] = new int2(1, 0);
         I_OFFSET_DATA[2, 3] = new int2(0, 0);
@@ -221,7 +221,7 @@ public class PiecesController : MonoBehaviour {
 
         // 2,0 - 0,1 = 2,-1
         // 0,1 - 2,0 = -2,1
-        I_OFFSET_DATA[4, 0] = new int2(1,0) * 2; // 0 to 1: 2,0 - 0,-2 = 2,2
+        I_OFFSET_DATA[4, 0] = new int2(2,0); // 0 to 1: 2,0 - 0,-2 = 2,2
         I_OFFSET_DATA[4, 1] = new int2(0, -2); // 1 to 2: 0,-2 - -2,0 = 2,-2
         I_OFFSET_DATA[4, 2] = new int2(-2, 0); // 2 to 3: -2,0 - 0,2 = -2,-2
         I_OFFSET_DATA[4, 3] = new int2(0, 2); // 3 to 0: 0,2 - 2,0 = -2, 2
@@ -419,44 +419,6 @@ public class PiecesController : MonoBehaviour {
         bagPieceRetrieved = false;
     }
     bool IHSexecuted;
-    // public void UpdateShownPieces()
-    // {
-    //     int nxtibmPieces = (board.nextibmblocks > board.nextPieces)  ? board.nextPieces : board.nextibmblocks;
-    //     for (int i = 0; i < board.nextPieces; i++)
-    //     {
-    //         if (board.RS == RotationSystems.SRS)
-    //         {
-    //             if(board.level < 600)
-    //             {
-    //                 if(pieces > 0)nextPieceUI[i*7+bag[i+pieces-1]].SetActive(false);
-    //                 nextPieceUI[i*7+bag[i+pieces]].SetActive(true);
-    //             }
-    //             else
-    //             {
-    //                 if(pieces > 0)nextPieceUI[i*7+bag[i+pieces-1]].SetActive(false);
-    //                 if(pieces > 0)nextIBMWPieceUI[i*7+bag[i+pieces-1]].SetActive(false);
-    //                 if(i>= board.nextPieces - nxtibmPieces)nextIBMWPieceUI[i*7+bag[i+pieces]].SetActive(true);
-    //                 else nextPieceUI[i*7+bag[i+pieces]].SetActive(true);
-    //             }
-    //         }
-    //         else if (board.RS == RotationSystems.ARS)
-    //         {
-    //             if(board.level < 600)
-    //             {
-    //                 if(pieces > 0)nextARSPieceUI[i*7+bag[i+pieces-1]].SetActive(false);
-    //                 nextARSPieceUI[i*7+bag[i+pieces]].SetActive(true);
-    //             }
-    //             else
-    //             {
-    //                 if(pieces > 0)nextARSPieceUI[i*7+bag[i+pieces-1]].SetActive(false);
-    //                 if(pieces > 0)nextIBMPieceUI[i*7+bag[i+pieces-1]].SetActive(false);
-    //                 if(i>= board.nextPieces - nxtibmPieces)nextIBMPieceUI[i*7+bag[i+pieces]].SetActive(true);
-    //                 else nextARSPieceUI[i*7+bag[i+pieces]].SetActive(true);
-    //             }
-    //         }
-    //     }
-    //     if (pieceHold < 28)holdPieceUI[pieceHold].SetActive(true);
-    // }
     private void NextPiece()
     {
         if (allowHold == true)

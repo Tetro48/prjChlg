@@ -334,7 +334,7 @@ public class MenuEngine : MonoBehaviour
                 if (resolutions[i].width == Screen.currentResolution.width && resolutions[i].height == Screen.currentResolution.height && resolutions[i].refreshRate == 60)
                 {
                     currentResolutionIndex = i/resRefreshrates;
-                    reswidth = (float)(resolutions[i/resRefreshrates].height / 1080);
+                    reswidth = (float)(resolutions[i/resRefreshrates].width / 1920);
                 }
             }
             resDropdown.AddOptions(options);
@@ -344,7 +344,7 @@ public class MenuEngine : MonoBehaviour
         }
         else
         {
-            reswidth = (float)(Screen.height / 1080.0);
+            reswidth = (float)(Screen.width / 1920.0);
             settingsGUIMovement[0].gameObject.SetActive(false);
             settingsGUIPartMovement[0].gameObject.SetActive(false);
             if(!Application.isMobilePlatform)mainMenuGUIMovement[2].gameObject.SetActive(false);
@@ -401,7 +401,7 @@ public class MenuEngine : MonoBehaviour
         {
             Resolution resolution = resolutions[(resRefreshrates-1)+index*resRefreshrates];
             Screen.SetResolution(resolution.width, resolution.height, true);
-            reswidth = (float)(resolution.height / 1080.0);
+            reswidth = (float)(resolution.width / 1920.0);
         }
     }
     // void OnDestroy()
@@ -415,7 +415,7 @@ public class MenuEngine : MonoBehaviour
     double framerate;
     [SerializeField] List<double> frameratebuffer;
     bool executedOnce = false;
-    // rough framerate measurement
+    // Updates once every frame.
     void Update()
     {
         double rawframetime = Time.unscaledDeltaTime;

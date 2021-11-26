@@ -19,7 +19,8 @@ public class MenuSegment : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        reswidth = MenuEngine.instance.reswidth;
+        reswidth = 1;
+        // reswidth = MenuEngine.instance.reswidth;
         buttonMovementInSeconds = MenuEngine.instance.buttonMovementInSeconds;
     }
     bool CheckUIScroll(bool side, int count, double speed = 1d)
