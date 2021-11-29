@@ -30,7 +30,10 @@ public class NotificationEngine : MonoBehaviour
     public List<GameObject> notificationInstance;
     public List<float> notifAnimFrames;
     
-
+    public static void Notify(string text, Color color = default)
+    {
+        instance.InstantiateNotification(text, color);
+    }
     public void InstantiateNotification(string text, Color color = default)
     {
         if(GameEngine.debugMode) Debug.Log(text);

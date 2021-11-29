@@ -43,8 +43,9 @@ public class PieceController : MonoBehaviour {
     public int hideTilesPerUpdates;
 
 
-    public Transform pivot;
+    public float2 pivot;
     public GameObject[] tiles;
+    public TileController[] tileContainers;
     [SerializeField]
     GameObject tileBlock;
     public Material[] materials;
@@ -62,6 +63,7 @@ public class PieceController : MonoBehaviour {
         int textureID = numberToTextureIDs[textureSelect];
 
         tiles = new GameObject[positions.Length];
+        tileContainers = new TileController[positions.Length];
         materials = new Material[positions.Length];
         Vector2 offset = new Vector2();
         offset = Vector2.right;
@@ -72,10 +74,6 @@ public class PieceController : MonoBehaviour {
             GameObject tile = Instantiate(tileBlock, transform);
             tile.transform.localPosition = (Vector2)int2ToV2Int(positions[i] + spawnLocation);
             tile.transform.localRotation = Quaternion.Euler(0,-90,0);
-            TileController tc = tile.GetComponent<TileController>();
-            tc.pieceController = this;
-            tc.tileIndex = i;
-            tc.textureID = textureSelect;
             tiles[i] = tile;
             materials[i] = tiles[i].GetComponent<MeshRenderer>().material;
             materials[i].mainTextureScale = new float2(1,1) / scaling;
@@ -96,43 +94,43 @@ public class PieceController : MonoBehaviour {
     //Transitioning to dynamic timing
     void FixedUpdate()
     {
-        if(!isPieceIsInNextQueue)
-        {
-            if(board.framestepped)
-            {
-                // hideTilesPerUpdates = board.tileInvisTime;
-                // if (hideTilesPerUpdates > 0 && fullyLocked)
-                // {
-                //     float percentage = 1f/hideTilesPerUpdates;
-                //     for (int i = 0; i < tiles.Length; i++)
-                //     {
-                //         if(tiles[i] != null)materials[i].color -= new Color(0f,0f,0f, percentage * Time.deltaTime / Time.fixedDeltaTime);
-                //     }
-                // }
-                if (!board.LockDelayEnable && !board.piecesController.piecemovementlocked)  
-                {
-                    if(!CanMovePiece(new int2(0,-1)) && !fullyLocked)  
-                    {
-                        board.LockDelayf = 0;  board.LockDelayEnable = true;
-                    }
-                    else board.LockDelayEnable = false;
-                }
+        // if(!isPieceIsInNextQueue)
+        // {
+        //     if(board.framestepped)
+        //     {
+        //         // hideTilesPerUpdates = board.tileInvisTime;
+        //         // if (hideTilesPerUpdates > 0 && fullyLocked)
+        //         // {
+        //         //     float percentage = 1f/hideTilesPerUpdates;
+        //         //     for (int i = 0; i < tiles.Length; i++)
+        //         //     {
+        //         //         if(tiles[i] != null)materials[i].color -= new Color(0f,0f,0f, percentage * Time.deltaTime / Time.fixedDeltaTime);
+        //         //     }
+        //         // }
+        //         if (!board.LockDelayEnable && !board.piecesController.piecemovementlocked)  
+        //         {
+        //             if(!CanMovePiece(new int2(0,-1)) && !fullyLocked)  
+        //             {
+        //                 board.LockDelayf = 0;  board.LockDelayEnable = true;
+        //             }
+        //             else board.LockDelayEnable = false;
+        //         }
             
-                if(board.LockDelayEnable && !harddrop && !fullyLocked)
-                {
-                    if(board.LockDelayf == 0 && board.LockDelay > 4)
-                    {
-                        AudioManager.PlayClip(board.audioPieceStep);
-                    }
-                    board.LockDelayf += Time.deltaTime / Time.fixedDeltaTime;
-                    if (board.LockDelayf >= board.LockDelay)
-                    {
-                        board.LockDelayEnable = false;
-                        SetPiece();
-                    }
-                }
-            }
-        }
+        //         if(board.LockDelayEnable && !harddrop && !fullyLocked)
+        //         {
+        //             if(board.LockDelayf == 0 && board.LockDelay > 4)
+        //             {
+        //                 AudioManager.PlayClip(board.audioPieceStep);
+        //             }
+        //             board.LockDelayf += Time.deltaTime / Time.fixedDeltaTime;
+        //             if (board.LockDelayf >= board.LockDelay)
+        //             {
+        //                 board.LockDelayEnable = false;
+        //                 SetPiece();
+        //             }
+        //         }
+        //     }
+        // }
     }
     // private void InitiateLockDelay()
     // {
@@ -143,18 +141,16 @@ public class PieceController : MonoBehaviour {
     /// Moves the attached tiles to form the Tetris piece specified. Also sets the correct color of tile sprite.
     /// </summary>
     /// <param name="newType">Type of tetris piece to be spawned.</param>
-    public void SpawnPiece(PieceType newType, PiecesController connector, int2[] positions, Vector2 setPivot, GameObject obj, int2 scaling, int textureSelect, int2 nextPos)
+    public void SpawnPiece(PieceType newType, int2[] positions, float2 setPivot, GameObject obj, int2 scaling, int textureSelect, int2 nextPos)
     {
-        pivot.localPosition = setPivot + int2ToV2Int(nextPos);
-        int increaseByLevel = board.level >= 600 && board.nextibmblocks == board.nextPieces + 1 ? 14 : 0;
-        int RSint = board.RS == RotationSystems.ARS ? 7 : 0;
-        int combine = (increaseByLevel + RSint);
+        pivot = setPivot + nextPos;
+        // int increaseByLevel = board.level >= 600 && board.nextibmblocks == board.nextPieces + 1 ? 14 : 0;
+        // int RSint = board.RS == RotationSystems.ARS ? 7 : 0;
+        // int combine = (increaseByLevel + RSint);
         spawnLocation = nextPos;
-        board = connector.board;
-        Initiate(positions, obj, scaling, textureSelect + combine, nextPos);
-        ghostContr.Initiate(this);
+        Initiate(positions, obj, scaling, textureSelect, nextPos);
         curType = newType;
-        textureRelation = combine + textureSelect;
+        textureRelation = textureSelect;
         // UpdatePosition(tiles[0], spawnLocation);
     }
 
@@ -166,9 +162,9 @@ public class PieceController : MonoBehaviour {
     /// <returns></returns>
     public bool CanMovePiece(int2 movement)
     {
-        for (int i = 0; i < tiles.Length; i++)
+        for (int i = 0; i < tileContainers.Length; i++)
         {
-            if(tiles[i] != null) if (!CanTileMove(movement + V3ToInt2(localObjPos(tiles[i]))))
+            if (!CanTileMove(movement + tileContainers[i].position))
             {
                 return false;
             }
@@ -177,28 +173,9 @@ public class PieceController : MonoBehaviour {
     }
 
     /// <summary>
-    /// Checks to see if there are any tiles left for the given piece.
-    /// </summary>
-    /// <returns>True if there are still tiles left. False if the piece has no remaining tiles.</returns>
-    public bool AnyTilesLeft()
-    {
-        for(int i = 0; i < tiles.Length; i++)
-        {
-            if(tiles[i] != null)
-            {
-                return true;
-            }
-        }
-        if(GameEngine.debugMode) Debug.Log("no tiles left");
-        board.piecesController.RemovePiece(gameObject);
-        return false;
-    }
-
-    /// <summary>
-    /// Moves the piece by the specified amount.
+    /// Moves the piece by the specified amount forcefully.
     /// </summary>
     /// <param name="movement">X,Y amount to move the piece</param>
-    /// <returns>True if the piece was able to be moved. False if the move couln't be completed.</returns>
     public void ForcefullyMovePiece(int2 movement)
     {
         UnisonPieceMove(movement);
@@ -211,9 +188,9 @@ public class PieceController : MonoBehaviour {
     /// <returns>True if the piece was able to be moved. False if the move couln't be completed.</returns>
     public bool MovePiece(int2 movement, bool offset)
     {
-        for (int i = 0; i < tiles.Length; i++)
+        for (int i = 0; i < tileContainers.Length; i++)
         {
-            if (!CanTileMove(movement + V3ToInt2(tiles[i].transform.localPosition)))
+            if (!CanTileMove(movement + tileContainers[i].position))
             {
                 // Debug.Log("Cant Go there!");
                 if(int2ToV2Int(movement) == Vector2Int.down && harddrop == true)
@@ -241,16 +218,15 @@ public class PieceController : MonoBehaviour {
         }
         else board.LockDelayEnable = false;
 
-        if (board.level < board.sectionSize || board.TLS) ghostContr.UpdateGhostPiece();
         return true;
     }
     public void UnisonPieceMove(int2 movement)
     {
-        for (int i = 0; i < tiles.Length; i++)
+        for (int i = 0; i < tileContainers.Length; i++)
         {
-            MoveTile(tiles[i].gameObject, movement);
+            tileContainers[i].position = MoveTile(tileContainers[i].position, movement);
         }
-        pivot.localPosition += (Vector3)(Vector2)int2ToV2Int(movement);
+        pivot += movement;
     }
 
     public bool isPieceLocked(){return fullyLocked;}
@@ -309,7 +285,6 @@ public class PieceController : MonoBehaviour {
         {
             rotationIndex = oldRotationIndex;
         }
-        if (board.level < board.sectionSize || board.TLS) ghostContr.UpdateGhostPiece();
     }
 
     /// <summary>
@@ -391,9 +366,9 @@ public class PieceController : MonoBehaviour {
         board.piecesController.lockedPieces++;
         fullyLocked = true;
         board.countLockResets = 0;
-        for(int i = 0; i < tiles.Length; i++)
+        for(int i = 0; i < tileContainers.Length; i++)
         {
-            if (!board.boardController.SetTile(tiles[i].gameObject))
+            if (!board.boardController.SetTile(tileContainers[i].position.xyx))
             {
                 if(GameEngine.debugMode) Debug.Log("GAME OVER!");
                 board.GameOver = true;
@@ -420,7 +395,7 @@ public class PieceController : MonoBehaviour {
     /// </summary>
     /// <param name="originPos">Coordinates this tile will be rotating about.</param>
     /// <param name="clockwise">True if rotating clockwise. False if rotatitng CCW</param>
-    public static void RotateObject(GameObject obj, Vector3 pivotPos, bool clockwise, bool UD = false)
+    public static int2 RotateObject(GameObject obj, int2 tilePos, Vector2 pivotPos, bool clockwise, bool UD = false)
     {
         // int2 relativePos = V3ToInt2(obj.transform.localPosition) - originPos;
         // int2[] rotMatrix = clockwise ? new int2[2] { new int2(0, -1), new int2(1, 0) }
@@ -433,31 +408,27 @@ public class PieceController : MonoBehaviour {
         // UpdatePosition(obj, newPos);
         int multi = clockwise ? 1 : -1;
         if(UD) multi *= 2;
+        obj.transform.position = (Vector2)int2ToV2Int(tilePos);
         obj.transform.RotateAround(pivotPos, Vector3.forward, -90 * multi);
         obj.transform.Rotate(new Vector3(90f * multi, 0f, 0f), Space.Self);
+        return (int2)(float2)(Vector2)obj.transform.position;
     }
     public bool RotateInUnison(bool clockwise, bool UD = false)
     {
-        for (int i = 0; i < tiles.Length; i++)
+        for (int i = 0; i < tileContainers.Length; i++)
         {
-            RotateObject(tiles[i].gameObject, pivot.position, clockwise, UD);
+            tileContainers[i].position = RotateObject(tiles[i], tileContainers[i].position, pivot, clockwise, UD);
         }
         return CanMovePiece(int2.zero);
-    }
-    public static void UpdatePosition(GameObject obj, int2 newPos)
-    {
-        Vector3 newV3Pos = new Vector3(newPos.x, newPos.y);
-        obj.transform.localPosition = newV3Pos;
     }
 
     /// <summary>
     /// Moves the tile by the specified amount
     /// </summary>
     /// <param name="movement">X,Y amount the tile will be moved by</param>
-    public static void MoveTile(GameObject obj, int2 movement)
+    public static int2 MoveTile(int2 position, int2 movement)
     {
-        int2 endPos = V3ToInt2(localObjPos(obj)) + movement;
-        UpdatePosition(obj, endPos);
+        return position + movement;
     }
     /// <summary>
     /// Checks to see if the tile can be moved to the specified positon.
@@ -466,16 +437,6 @@ public class PieceController : MonoBehaviour {
     /// <returns>True if the tile can be moved there. False if the tile cannot be moved there</returns>
     public bool CanTileMove(int2 endPos)
     {
-        // if (endPos.y < 0) return false;
-        // if (!board.boardController.IsPosEmpty(endPos))
-        // {
-        //     return false;
-        // }
-        // if (!board.boardController.IsInBounds(endPos))
-        // {
-        //     return false;
-        // }
-        // return true;
         return board.boardController.IsPosEmpty(endPos) && board.boardController.IsInBounds(endPos);
     }
     static Vector3 localObjPos(GameObject obj)

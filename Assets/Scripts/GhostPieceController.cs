@@ -35,66 +35,66 @@ public class GhostPieceController : MonoBehaviour
         }
     }
 
-    /// <summary>
-    /// Checks to see if the tile can be moved to the specified positon.
-    /// </summary>
-    /// <param name="endPos">Coordinates of the position you are trying to move the tile to</param>
-    /// <returns>True if the tile can be moved there. False if the tile cannot be moved there</returns>
-    public bool CanGhostTileMove(int2 endPos)
-    {
-        if (!networkBoard.boardController.IsInBounds(endPos))
-        {
-            return false;
-        }
-        if (!networkBoard.boardController.IsPosEmpty(endPos))
-        {
-            return false;
-        }
-        return true;
-    }
-    public bool CanMoveGhostPiece(int2 movement)
-    {
-        for (int i = 0; i < tiles.Length; i++)
-        {
-            if(textureReading[i] != null)
-            if (!CanGhostTileMove(movement + new int2((int)textureReading[i].transform.localPosition.x, (int)tiles[i].transform.localPosition.y)))
-            {
-                return false;
-            }
-        }
-        return true;
-    }
-    public void MoveGhostPiece(int2 movement)
-    {
-        while (CanMoveGhostPiece(movement) && gameObject.activeInHierarchy)
-        {
-            for (int i = 0; i < tiles.Length; i++)
-            {
-                tiles[i].transform.localPosition += new Vector3(movement.x, movement.y, 0f);
-            }
-        }
-    }
-    public void UpdateGhostPiece()
-    {
-        for (int i = 0; i < tiles.Length; i++)
-        {
-            if(tiles[i] != null)
-            {
-                // tiles[i].GetComponent<SpriteRenderer>().sprite = textureReading[i].GetComponent<SpriteRenderer>().sprite;
-                tiles[i].transform.localPosition = textureReading[i].transform.localPosition;
-            }
-        }
-        MoveGhostPiece(new int2(0,-1));
-    }
+    // /// <summary>
+    // /// Checks to see if the tile can be moved to the specified positon.
+    // /// </summary>
+    // /// <param name="endPos">Coordinates of the position you are trying to move the tile to</param>
+    // /// <returns>True if the tile can be moved there. False if the tile cannot be moved there</returns>
+    // public bool CanGhostTileMove(int2 endPos)
+    // {
+    //     if (!networkBoard.boardController.IsInBounds(endPos))
+    //     {
+    //         return false;
+    //     }
+    //     if (!networkBoard.boardController.IsPosEmpty(endPos))
+    //     {
+    //         return false;
+    //     }
+    //     return true;
+    // }
+    // public bool CanMoveGhostPiece(int2 movement)
+    // {
+    //     for (int i = 0; i < tiles.Length; i++)
+    //     {
+    //         if(textureReading[i] != null)
+    //         if (!CanGhostTileMove(movement + new int2((int)textureReading[i].transform.localPosition.x, (int)tiles[i].transform.localPosition.y)))
+    //         {
+    //             return false;
+    //         }
+    //     }
+    //     return true;
+    // }
+    // public void MoveGhostPiece(int2 movement)
+    // {
+    //     while (CanMoveGhostPiece(movement) && gameObject.activeInHierarchy)
+    //     {
+    //         for (int i = 0; i < tiles.Length; i++)
+    //         {
+    //             tiles[i].transform.localPosition += new Vector3(movement.x, movement.y, 0f);
+    //         }
+    //     }
+    // }
+    // public void UpdateGhostPiece()
+    // {
+    //     for (int i = 0; i < tiles.Length; i++)
+    //     {
+    //         if(tiles[i] != null)
+    //         {
+    //             // tiles[i].GetComponent<SpriteRenderer>().sprite = textureReading[i].GetComponent<SpriteRenderer>().sprite;
+    //             tiles[i].transform.localPosition = textureReading[i].transform.localPosition;
+    //         }
+    //     }
+    //     MoveGhostPiece(new int2(0,-1));
+    // }
     
-    // Update is called once per frame
-    void Update()
-    {
-        if (networkBoard.level >= networkBoard.sectionSize && !networkBoard.TLS) visibility = false;
-        if (networkBoard.piecesController.piecemovementlocked || !visibility)
-        {
-            Destroy(gameObject);
-        }
-        // this.transform.position = textureReading[0].transform.position;
-    }
+    // // Update is called once per frame
+    // void Update()
+    // {
+    //     if (networkBoard.level >= networkBoard.sectionSize && !networkBoard.TLS) visibility = false;
+    //     if (networkBoard.piecesController.piecemovementlocked || !visibility)
+    //     {
+    //         Destroy(gameObject);
+    //     }
+    //     // this.transform.position = textureReading[0].transform.position;
+    // }
 }

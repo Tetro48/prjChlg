@@ -3520,7 +3520,7 @@ MonoBehaviour:
   notifyAudio: {fileID: 8300000, guid: 8547ff4dea933e841a962612086b3313, type: 3}
   textNotification: []
   notificationInstance: []
-  notifAnimFrames: 
+  notifAnimFrames: []
 --- !u!1 &484171424
 GameObject:
   m_ObjectHideFlags: 0

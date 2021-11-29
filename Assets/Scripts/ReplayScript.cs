@@ -78,7 +78,7 @@ public static class ReplayScript
         }
         else
         {
-            Debug.LogError("Replay file is not there! Path: " + path);
+            Debug.LogError("File is not there! Path: " + path);
             return null;
         }
     }

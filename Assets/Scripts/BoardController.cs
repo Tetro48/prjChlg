@@ -30,7 +30,7 @@ public class BoardController : MonoBehaviour {
 
     public int playerID;
 
-    public GameObject gridUnitPrefab;
+    public GameObject gridUnitPrefab, tileBlock;
     public int gridSizeX, gridSizeY;
     public AudioSource gameAudio;
     public AudioClip[] audioLineClear, audioTSpinClear;
@@ -47,22 +47,18 @@ public class BoardController : MonoBehaviour {
     List<int> allClearFireworkTime = new List<int>();
 
     GridUnit[,] fullGrid;
+    int[,] prevTextureIDGrid;
     Material[,] gridOfMaterials;
 
     private void Start()
     {
         CreateGrid();
-        GameObject newTileClone = GameObject.Instantiate(tileClone, transform);
-        newTileClone.name = "Garbage tile";
-        newTileClone.SetActive(false);
-        PieceController tileCtrl = newTileClone.GetComponent<PieceController>();
-        tileCtrl.board = networkBoard;
-        tileClone = newTileClone;
     }
 
     private void FixedUpdate()
     {
         TopoutWarning();
+        UpdateDisplay();
         for (int fire = 0; fire < allClearFireworkTime.Count; fire++)
         {
             if (allClearFireworkTime[fire] % 20 == 0)
@@ -88,6 +84,61 @@ public class BoardController : MonoBehaviour {
                 networkBoard.lineDelayf = 0;
                 if(networkBoard.level < networkBoard.endingLevel - 1)networkBoard.AREf = (int)Math.Floor(networkBoard.ARE - networkBoard.AREline);
             }
+        }
+    }
+    void UpdateDisplay()
+    {
+        bool ghostPieceHit = false;
+        int2[] ghostPieceCoords;
+        int3[] ignoreProcessing = default;
+        if(networkBoard.activePiece == null) return;
+        ghostPieceCoords = new int2[networkBoard.activePiece.Length];
+        ignoreProcessing = networkBoard.activePiece;
+        for (int i = 0; i < networkBoard.activePiece.Length; i++)
+        {
+            ignoreProcessing[i] = networkBoard.activePiece[i];
+            ghostPieceCoords[i] = ignoreProcessing[i].xy;
+            int tempTextureID = ignoreProcessing[i].z;
+            int2 pos = ignoreProcessing[i].xy;
+            
+            Vector2 offset = new Vector2(-(float)(tempTextureID % 4) / 4, (float)Math.Floor((double)tempTextureID/4+1) / 10);
+            fullGrid[pos.x,pos.y].material.mainTextureOffset = Vector2.right - offset;
+            if(i == networkBoard.activePiece.Length - 1)
+            {
+                while(!ghostPieceHit)
+                {
+                    for (int j = 0; j < networkBoard.activePiece.Length; j++)
+                    {
+                        if(!ghostPieceHit) ghostPieceHit = !IsPosEmpty(ghostPieceCoords[j] - new int2(0,1));
+                        ghostPieceCoords[j] -= new int2(0,1);
+                    }
+                }
+            }
+        }
+        
+        for (int i = 0; i < gridSizeX; i++)
+        {
+            for (int j = 0; j < gridSizeY; j++)
+            {
+                if (prevTextureIDGrid[i,j] != fullGrid[i,j].textureID)
+                {
+                    prevTextureIDGrid[i,j] = fullGrid[i,j].textureID;
+                    
+                    Vector2 offset = new Vector2(-(float)(fullGrid[i,j].textureID % 4) / 4, (float)Math.Floor((double)fullGrid[i,j].textureID/4+1) / 10);
+                    fullGrid[i,j].material.mainTextureOffset = Vector2.right - offset;
+                }
+                if(fullGrid[i,j].isOccupied)
+                {
+                    fullGrid[i,j].material.color = new Color(1,1,1,1f-fullGrid[i,j].transparency);
+                }
+                else fullGrid[i,j].material.color = new Color(1,1,1,0f);
+            }
+        }
+        if(!networkBoard.piecesController.piecemovementlocked)for (int i = 0; i < ignoreProcessing.Length; i++)
+        {
+            Vector2 offset = new Vector2(-(float)(ignoreProcessing[i].z % 4) / 4, (float)Math.Floor((double)ignoreProcessing[i].z/4+1) / 10);
+            fullGrid[ignoreProcessing[i].x, ignoreProcessing[i].y].material.mainTextureOffset = Vector2.right - offset;
+            fullGrid[ignoreProcessing[i].x, ignoreProcessing[i].y].material.color = new Color(1,1,1,1f);
         }
     }
 
@@ -131,9 +182,10 @@ public class BoardController : MonoBehaviour {
                     for (int x = 0; x < gridSizeX; x++)
                     {
                         GridUnit curGridUnit = fullGrid[x, lineToDrop];
+                        GridUnit newGridUnit = fullGrid[x, lineToDrop - 1];
                         if (curGridUnit.isOccupied)
                         {
-                            MoveTileDown(curGridUnit);
+                            MoveTile(curGridUnit, newGridUnit);
                         }
                     }
                 }
@@ -156,12 +208,9 @@ public class BoardController : MonoBehaviour {
             GridUnit curGridUnit = fullGrid[x,line];
             if (!curGridUnit.isOccupied)
             {
-                GameObject clonedTile = GameObject.Instantiate(tileClone, transform);
-                PieceController tileContr = clonedTile.GetComponent<PieceController>();
-                if(networkBoard.sectAfter20g > 1) tileContr.tiles[0].GetComponent<MeshRenderer>().material.mainTextureOffset = networkBoard.RS == RotationSystems.ARS ? boneblock : boneblockw;
-                UpdatePosition(tileContr.tiles[0],new int2(x,line));
-                SetTileUp(tileContr.tiles[0].gameObject);
-                networkBoard.piecesController.piecesInGame.Add(clonedTile);
+                curGridUnit.isOccupied = true;
+                curGridUnit.material.mainTextureOffset = new Vector2(0,0);
+                curGridUnit.textureID = 28;
             }
         }
     }
@@ -173,18 +222,15 @@ public class BoardController : MonoBehaviour {
             for (int y = gridSizeY - 1; y >= 0 ; y--)
             {
                 GridUnit curGridUnit = fullGrid[x,y];
+                GridUnit newGridUnit = fullGrid[x,y+1];
                 if (curGridUnit.isOccupied)
                 {
-                    MoveTileUp(curGridUnit);
+                    MoveTile(curGridUnit, newGridUnit);
                     if (y == 0)
                     {
-                        GameObject clonedTile = GameObject.Instantiate(tileClone, transform);
-                        clonedTile.SetActive(true);
-                        PieceController tileContr = clonedTile.GetComponent<PieceController>();
-                        if(networkBoard.sectAfter20g > 1) tileContr.tiles[0].GetComponent<MeshRenderer>().material.mainTextureOffset = networkBoard.RS == RotationSystems.ARS ? boneblock : boneblockw;
-                        UpdatePosition(tileContr.tiles[0],new int2(x,y));
-                        SetTileUp(tileContr.tiles[0].gameObject);
-                        networkBoard.piecesController.piecesInGame.Add(clonedTile);
+                        curGridUnit.isOccupied = true;
+                        curGridUnit.material.mainTextureOffset = new Vector2(0,0);
+                        if(networkBoard.sectAfter20g > 1) curGridUnit.textureID = 0;
                     }
                 }        
             }
@@ -199,22 +245,14 @@ public class BoardController : MonoBehaviour {
     {
         for (int i = 0; i < gridSizeX; i++)
         {
-            if(fullGrid[i,line].tileOnGridUnit == null) continue;
-            TileController tile = fullGrid[i, line].tileOnGridUnit.GetComponent<TileController>();
+            if(!fullGrid[i, line].isOccupied) continue;
+            GridUnit tile = fullGrid[i, line];
             if(particles)
             {
-                PieceController curPC = tile.pieceController;
-                curPC.tiles[tile.tileIndex] = null;
                 int tileTexture = tile.textureID;
                 boardParticles.SummonParticles(new int2(i, line), tileTexture);
             }
-            if(fullGrid[i,line].tileOnGridUnit != null)if(fullGrid[i,line].isOccupied){PieceController curPC = tile.pieceController;
-            curPC.tiles[tile.tileIndex] = null;
-            Destroy(fullGrid[i, line].tileOnGridUnit);
-            
-            if (!curPC.AnyTilesLeft()) { Destroy(curPC.gameObject); }}
-            fullGrid[i, line].tileOnGridUnit = null;
-            fullGrid[i,line].isOccupied = false;
+            fullGrid[i, line].ClearGridUnit();
         }
     }
     /// <summary>
@@ -236,24 +274,18 @@ public class BoardController : MonoBehaviour {
     /// <param name="percentage">Decrease tile's alpha color by percentage.</param>
     public void DecayTile(int2 coords, float percentage)
     {
-        if(fullGrid[coords.x, coords.y].tileOnGridUnit != null)if(fullGrid[coords.x, coords.y].isOccupied == true)gridOfMaterials[coords.x, coords.y].color -= new Color(0f,0f,0f,percentage);
+        if(fullGrid[coords.x, coords.y].isOccupied)
+        fullGrid[coords.x, coords.y].transparency += percentage;
     }
     /// <summary>
-    /// Resets a line of tiles' alpha color.
+    /// Resets a line of tiles' transparency
     /// </summary>
     public void ResetLineTransparency(int line)
     {
         for (int i = 0; i < gridSizeX; i++)
         {
-            ResetTileTransparency(new int2(i, line));
+            fullGrid[i, line].transparency = 0f;
         }
-    }
-    /// <summary>
-    /// Self explanatory.
-    /// </summary>
-    public void ResetTileTransparency(int2 coords)
-    {
-        if(fullGrid[coords.x, coords.y].isOccupied == true)gridOfMaterials[coords.x, coords.y].color = new Color(1f,1f,1f,1f);
     }
 
     /// <summary>
@@ -262,13 +294,13 @@ public class BoardController : MonoBehaviour {
     private void CreateGrid()
     {
         fullGrid = new GridUnit[gridSizeX, gridSizeY];
-        gridOfMaterials = new Material[gridSizeX, gridSizeY];
+        prevTextureIDGrid = new int[gridSizeX, gridSizeY];
 
         for(int y = 0; y < gridSizeY; y++)
         {
             for(int x = 0; x < gridSizeX; x++)
             {
-                GridUnit newGridUnit = new GridUnit(gridUnitPrefab, transform, x, y);
+                GridUnit newGridUnit = new GridUnit(gridUnitPrefab, tileBlock, transform, x, y);
                 fullGrid[x, y] = newGridUnit;
             }
         }
@@ -308,14 +340,7 @@ public class BoardController : MonoBehaviour {
         }
 
         else if(coordToTest.x >= gridSizeX) return false;
-        else if(fullGrid[coordToTest.x, coordToTest.y].isOccupied)
-        {
-            return false;
-        }
-        else
-        {
-            return true;
-        }
+        else return !fullGrid[coordToTest.x, coordToTest.y].isOccupied;
     }
 
     /// <summary>
@@ -323,17 +348,16 @@ public class BoardController : MonoBehaviour {
     /// </summary>
     /// <param name="coords">The x,y coordinates to be occupied.</param>
     /// <param name="tileGO">GameObject of the specific tile on this grid location.</param>
-    public void OccupyPos(int2 coords, GameObject tileGO)
+    public void OccupyPos(int3 tile)
     {
-        if (!IsInBounds(coords))
+        if (!IsInBounds(tile.xy))
         {
-            Destroy(tileGO);
             return;
         }
-        fullGrid[coords.x, coords.y].isOccupied = true;
-        if(fullGrid[coords.x, coords.y].tileOnGridUnit != null) Destroy(fullGrid[coords.x, coords.y].tileOnGridUnit);
-        fullGrid[coords.x, coords.y].tileOnGridUnit = tileGO;
-        gridOfMaterials[coords.x, coords.y] = tileGO.GetComponent<MeshRenderer>().material;
+        Vector2 offset = new Vector2(-(float)(tile.z % 4) / 4, (float)Math.Floor((double)tile.z/4+1) / 10);
+        fullGrid[tile.x, tile.y].isOccupied = true;
+        fullGrid[tile.x, tile.y].textureID = tile.z;
+        fullGrid[tile.x, tile.y].material.mainTextureOffset = Vector2.right - offset;
     }
     public bool CheckAllClear()
     {
@@ -428,9 +452,10 @@ public class BoardController : MonoBehaviour {
                         for (int x = 0; x < gridSizeX; x++)
                         {
                             GridUnit curGridUnit = fullGrid[x, lineToDrop];
+                            GridUnit newGridUnit = fullGrid[x, lineToDrop - 1];
                             if (curGridUnit.isOccupied)
                             {
-                                MoveTileDown(curGridUnit);
+                                MoveTile(curGridUnit, newGridUnit);
                             }
                         }
                     }
@@ -439,72 +464,44 @@ public class BoardController : MonoBehaviour {
         }
     }
     /// <summary>
-    /// Moves an individual tile down one unit.
-    /// </summary>
-    /// <param name="curGridUnit">The grid unit that contains the tile to be moved down</param>
-    void MoveTileDown(GridUnit curGridUnit)
-    {
-        GameObject curTile = curGridUnit.tileOnGridUnit;
-        PieceController.MoveTile(curTile,new int2(0,-1));
-        SetTile(curTile.gameObject);
-        curGridUnit.tileOnGridUnit = null;
-        curGridUnit.isOccupied = false;
-    }
-    /// <summary>
     /// Moves an individual tile up one unit.
     /// </summary>
     /// <param name="curGridUnit">The grid unit that contains the tile to be moved up</param>
-    void MoveTileUp(GridUnit curGridUnit)
+    void MoveTile(GridUnit curGridUnit, GridUnit newGridUnit)
     {
-        GameObject curTile = curGridUnit.tileOnGridUnit;
-        PieceController.MoveTile(curTile,new int2(0,1));
-        if(!SetTileUp(curTile))
-        {
-            Destroy(curTile);
-        }
-        curGridUnit.tileOnGridUnit = null;
-        curGridUnit.isOccupied = false;
+        newGridUnit.CopyFrom(curGridUnit);
+        curGridUnit.ClearGridUnit();
     }
 
     /// <summary>
     /// Sets the tile in it's current position
     /// </summary>
     /// <returns>True if the tile is on the board. False if tile is above playing field, GAME OVER.</returns>
-    public bool SetTile(GameObject obj)
+    public bool SetTile(int3 tile)
     {
 
-        if (obj.transform.localPosition.y >= 24 || !IsPosEmpty(V3ToV2Int(obj.transform.localPosition)) || obj.transform.localPosition.x >= 10) 
+        if (tile.y >= 24 || !IsPosEmpty(tile.xy) || tile.x >= 10) 
         {
-            OccupyPos(V3ToV2Int(obj.transform.localPosition), obj);
+            OccupyPos(tile);
             return false;
         }
 
-        OccupyPos(V3ToV2Int(obj.transform.localPosition), obj);
+        OccupyPos(tile);
         return true; // when if statement up here is false, that line of code is ignored.                     ⬆ is a reason why return true; will not execute when if statement is false.
     }
     /// <summary>
     /// Sets the tile in it's current position
     /// </summary>
     /// <returns>True if the tile is on the board. False if tile is above playing field, DESTROYED.</returns>
-    public bool SetTileUp(GameObject obj)
+    public bool SetTileUp(int3 tile)
     {
-        if (obj.transform.localPosition.y >= 40 || obj.transform.localPosition.x >= 10)
+        if (tile.y >= gridSizeY || tile.x >= gridSizeX)
         {
             return false;
         }
 
-        OccupyPos(V3ToV2Int(obj.transform.localPosition), obj);
+        OccupyPos(tile);
         return true;
-    }
-    public void UpdatePosition(GameObject obj, int2 newPos)
-    {
-        Vector3 newV3Pos = new Vector3(newPos.x, newPos.y);
-        obj.transform.localPosition = newV3Pos;
-    }
-
-    static int2 V3ToV2Int(Vector3 vector3)
-    {
-        return new int2(Mathf.FloorToInt(vector3.x + 0.5f), Mathf.FloorToInt(vector3.y + 0.5f));
     }
 
     /// <summary>
@@ -540,17 +537,35 @@ public class BoardController : MonoBehaviour {
 public class GridUnit
 {
     public GameObject gameObject { get; private set; }
-    public GameObject tileOnGridUnit;
-    public int2 location { get; private set; }
+    public int2 position;
+    public int textureID;
+    public Material material;
+    public float transparency; //strange
     public bool isOccupied;
 
-    public GridUnit(GameObject newGameObject, Transform boardParent, int x, int y)
+    public GridUnit(GameObject newGameObject, GameObject tile, Transform boardParent, int x, int y)
     {
+        transparency = 0f;
         gameObject = GameObject.Instantiate(newGameObject, boardParent);
+        tile = GameObject.Instantiate(tile, gameObject.transform);
+        material = tile.GetComponent<MeshRenderer>().material;
+        material.color = new Color(1,1,1,0f);
         if(y>19) gameObject.GetComponent<SpriteRenderer>().sprite = null;
-        location = new int2(x, y);
         isOccupied = false;
+        position = new int2(x,y);
 
-        gameObject.transform.localPosition = new Vector3(location.x, location.y);
+        gameObject.transform.localPosition = new Vector3(x, y);
+    }
+    public void CopyFrom(GridUnit grid)
+    {
+        textureID = grid.textureID;
+        material.mainTextureOffset = grid.material.mainTextureOffset;
+        isOccupied = grid.isOccupied;
+    }
+    public void ClearGridUnit()
+    {
+        textureID = 0;
+        transparency = 0f;
+        isOccupied = false;
     }
 }

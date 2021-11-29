@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using Unity.Mathematics;
 using UnityEngine;
+using UnityEngine.Pool;
 using UnityEngine.InputSystem;
 using MLAPI;
 using MLAPI.Messaging;
@@ -142,6 +143,282 @@ public class NetworkBoard : NetworkBehaviour
 
     public bool[] Inputs;
 
+    #region Piece handling
+    public int3[] activePiece {get; set;}
+    public float2 pivot {get; private set;}
+    private static ObjectPool<GameObject> tilesRotation;
+    [SerializeField]
+    GameObject tileRotationPrefab;
+
+    static Vector2Int int2ToV2Int(int2 integers)
+    {return new Vector2Int(integers.x, integers.y);}
+    public void SpawnPiece(int textureID, int2[] tiles, float2 setPivot, PieceType type)
+    {
+        rotationIndex = 0;
+        piecesController.piecemovementlocked = false;
+        fullyLocked = false;
+        harddrop = false;
+        pivot = setPivot + new float2(4,22);
+        curType = type;
+        activePiece = new int3[tiles.Length];
+        for (int i = 0; i < tiles.Length; i++)
+        {
+            activePiece[i] = new int3(tiles[i] + new int2(4,22),textureID);
+        }
+    }
+    public void SwapPiece(int3[] tiles, float2 setPivot, PieceType type)
+    {
+        rotationIndex = 0;
+        piecesController.piecemovementlocked = false;
+        fullyLocked = false;
+        harddrop = false;
+        pivot = setPivot + new float2(4,22);
+        curType = type;
+        activePiece = tiles;
+    }
+    public bool MovePiece(int2 movement, bool offset)
+    {
+        for (int i = 0; i < activePiece.Length; i++)
+        {
+            if (!CanTileMove(movement + activePiece[i].xy))
+            {
+                Debug.Log("Cant Go there!");
+                if(int2ToV2Int(movement) == Vector2Int.down && harddrop == true)
+                {
+                    SetPiece();
+                }
+                return false;
+            }
+        }
+
+        UnisonPieceMove(movement);
+        LockDelayf = 0;
+        if(movement.y >= 0) if(!offset) if(LockDelay > 5 || gravity < 19) AudioManager.PlayClip(moveSE);
+        if(!CanMovePiece(new int2(0,-1)))countLockResets++;
+        if(countLockResets >= maxLockResets)
+        {
+            LockDelayf = LockDelay;
+        }
+        if (!CanMovePiece(new int2(0,-1)) && fullyLocked == false)  
+        {
+            if(LockDelayEnable == false && piecesController.piecemovementlocked == false)  
+            {
+                LockDelayf = 0;  LockDelayEnable = true;
+            }
+        }
+        else LockDelayEnable = false;
+        return true;
+    }
+    public void UnisonPieceMove(int2 movement)
+    {
+        for (int i = 0; i < activePiece.Length; i++)
+        {
+            activePiece[i].xy += movement;
+        }
+        pivot += movement;
+    }
+    public bool RotateInUnison(bool clockwise, bool UD = false)
+    {
+        GameObject temporaryObject = tilesRotation.Get();
+        for (int i = 0; i < activePiece.Length; i++)
+        {
+            activePiece[i].xy = RotateObject(temporaryObject, activePiece[i].xy, pivot, clockwise, UD);
+        }
+        tilesRotation.Release(temporaryObject);
+        return CanMovePiece(int2.zero);
+    }
+    public bool CanMovePiece(int2 movement)
+    {
+        for (int i = 0; i < activePiece.Length; i++)
+        {
+            if (!CanTileMove(movement + activePiece[i].xy))
+            {
+                return false;
+            }
+        }
+        return true;
+    }
+    public bool CanTileMove(int2 endPos)
+    {
+        return boardController.IsPosEmpty(endPos) && boardController.IsInBounds(endPos);
+    }
+    public static int2 RotateObject(GameObject obj, int2 tilePos, Vector2 pivotPos, bool clockwise, bool UD = false)
+    {
+        // int2 relativePos = V3ToInt2(obj.transform.localPosition) - originPos;
+        // int2[] rotMatrix = clockwise ? new int2[2] { new int2(0, -1), new int2(1, 0) }
+        //                                    : new int2[2] { new int2(0, 1), new int2(-1, 0) };
+        // int newXPos = (rotMatrix[0].x * relativePos.x) + (rotMatrix[1].x * relativePos.y);
+        // int newYPos = (rotMatrix[0].y * relativePos.x) + (rotMatrix[1].y * relativePos.y);
+        // int2 newPos = new int2(newXPos, newYPos);
+
+        // newPos += originPos;
+        // UpdatePosition(obj, newPos);
+        int multi = clockwise ? 1 : -1;
+        if(UD) multi *= 2;
+        obj.transform.position = new float3((float2)tilePos, 0f);
+        obj.transform.RotateAround(pivotPos, Vector3.forward, -90 * multi);
+        obj.transform.Rotate(new Vector3(90f * multi, 0f, 0f), Space.Self);
+        return V3ToInt2(obj.transform.position);
+    }
+    static int2 V3ToInt2(Vector3 vector3)
+    {
+        return new int2(Mathf.FloorToInt(vector3.x + 0.5f), Mathf.FloorToInt(vector3.y + 0.5f));
+    }
+    public PieceType curType;
+    public int rotationIndex { get; private set; }
+    bool fullyLocked, harddrop;
+    /// <summary>
+    /// Rotates the piece by 90 degrees in specified direction. Offest operations should almost always be attempted,
+    /// unless you are rotating the piece back to its original position.
+    /// </summary>
+    /// <param name="clockwise">Set to true if rotating clockwise. Set to False if rotating CCW</param>
+    /// <param name="shouldOffset">Set to true if offset operations should be attempted.</param>
+    /// <param name="UD">Set to true if rotating 180 degrees.</param>
+    public void RotatePiece(bool clockwise, bool shouldOffset, bool UD)
+    {
+        int oldRotationIndex = rotationIndex;
+        rotationIndex += clockwise ? 1 : -1;
+        if (UD)rotationIndex += clockwise ? 1 : -1;
+
+        rotationIndex = Mod(rotationIndex, 4);
+        // if (GameEngine.instance.RS == RotationSystems.ARS && (curType == PieceType.S || curType == PieceType.Z))
+        // {
+        //     rotationIndex = Mod(rotationIndex, 2);
+        // }
+
+        tSpin = (curType == PieceType.T && LockDelayEnable);
+
+        // if (UD)
+        // {
+        //     RotatePiece180(clockwise, true, firstAttempt);
+        // }
+
+        if (!shouldOffset)
+        {
+            int2[,] curOffsetData;
+            if(curType == PieceType.O)
+            {
+                curOffsetData = piecesController.O_OFFSET_DATA;
+            }
+            else if(curType == PieceType.I)
+            {
+                curOffsetData = piecesController.I_OFFSET_DATA;
+            }
+            else
+            {
+                curOffsetData = piecesController.JLSTZ_OFFSET_DATA;
+            }
+            int2 offsetVal1, offsetVal2, endOffset;
+            offsetVal1 = curOffsetData[0, oldRotationIndex];
+            offsetVal2 = curOffsetData[0, rotationIndex];
+            endOffset = offsetVal1 - offsetVal2;
+            RotateInUnison(clockwise, UD);
+        }
+
+        bool canOffset = Offset(oldRotationIndex, rotationIndex, clockwise, UD);
+
+        if (!canOffset)
+        {
+            Debug.Log("Couldn't offset");
+            rotationIndex = oldRotationIndex;
+        }
+    }
+    static int Mod(int x, int m)
+    {
+        return (x % m + m) % m;
+    }
+    bool Offset(int oldRotIndex, int newRotIndex, bool clockwise, bool UD = false)
+    {
+        int2 offsetVal1, offsetVal2, endOffset;
+        int2[,] curOffsetData;
+        
+        if(curType == PieceType.O)
+        {
+            curOffsetData = piecesController.O_OFFSET_DATA;
+        }
+        else if(curType == PieceType.I)
+        {
+            curOffsetData = piecesController.I_OFFSET_DATA;
+        }
+        else
+        {
+            curOffsetData = piecesController.JLSTZ_OFFSET_DATA;
+        }
+
+        endOffset = int2.zero;
+
+        bool movePossible = false;
+
+        for (int testIndex = 0; testIndex < 5; testIndex++)
+        {
+            offsetVal1 = curOffsetData[testIndex, oldRotIndex];
+            offsetVal2 = curOffsetData[testIndex, newRotIndex];
+            endOffset = offsetVal1 - offsetVal2;
+            if(bigMode) endOffset *= 2;
+            if(testIndex == 0)
+            {
+                RotateInUnison(clockwise, UD);
+            }
+            // Debug.Log("Test " + testIndex + " out of 4");
+            if (CanMovePiece(endOffset))
+            {
+                movePossible = true;
+                // Debug.Log("Success!");
+                break;
+            }
+        }
+
+        if (movePossible)
+        {
+            MovePiece(endOffset, true);
+        }
+        else RotateInUnison(!clockwise, UD);
+        if(LockDelay > 6 || gravity < 19) AudioManager.PlayClip(rotateSE);
+        // else
+        // {
+        //     Debug.Log("Move impossible");
+        // }
+        return movePossible;
+    }
+    public void SetPiece()
+    {
+        AudioManager.PlayClip(audioPieceLock);
+        piecesController.piecemovementlocked = true;
+        piecesController.lockedPieces++;
+        fullyLocked = true;
+        countLockResets = 0;
+        for(int i = 0; i < activePiece.Length; i++)
+        {
+            if (!boardController.SetTile(activePiece[i]))
+            {
+                if(GameEngine.debugMode) Debug.Log("GAME OVER!");
+                GameOver = true;
+                piecesController.GameOver();
+            }
+        }
+        if (GameOver == false)
+        {
+            if (Input.GetKey(KeyCode.E) && GameEngine.debugMode)
+            {
+                int incrementbyfrozenlines = lineFreezingMechanic ? linesFrozen[curSect] : 0;
+                boardController.FillLine(0+incrementbyfrozenlines);
+                boardController.FillLine(1+incrementbyfrozenlines);
+                boardController.FillLine(2+incrementbyfrozenlines);
+                boardController.FillLine(3+incrementbyfrozenlines);
+            }
+            boardController.CheckLineClears();
+            piecesController.UpdatePieceBag();
+        }
+    }
+    public void SendPieceToFloor()
+    {
+        harddrop = true;
+        piecesController.PrevInputs[0] = true;
+        AudioManager.PlayClip(hardDropSE);
+        while (MovePiece(new int2(0,-1), true)) {}
+    }
+    #endregion
+
     public int tileInvisTime = -1;
 
     public float2 movement;
@@ -258,7 +535,7 @@ public class NetworkBoard : NetworkBehaviour
             {
                 BackgroundController.bginstance.TriggerBackgroundChange(curSect);
             }
-            if(curSect % 5 == 0) NotificationEngine.instance.InstantiateNotification(MenuEngine.instance.notifLangString[(int)MenuEngine.instance.language, 12],Color.white);
+            if(curSect % 5 == 0) NotificationEngine.Notify(LanguageList.Extract(LangArray.notifications, MenuEngine.instance.language, 12),Color.white);
             if (gravity >= 10)
             {
                 ARE *= percentage;
@@ -392,6 +669,10 @@ public class NetworkBoard : NetworkBehaviour
     }
     void Awake()
     {
+        tilesRotation = new ObjectPool<GameObject>(() => {
+            return Instantiate(tileRotationPrefab);
+        }, obj => obj.SetActive(true),
+        obj => obj.SetActive(false), obj => Destroy(obj), true, 4);
         UnityEngine.Random.InitState(SeedManager.seed);
         if(ReplayRecord.instance.mode != ReplayModeType.read)
         {
@@ -456,6 +737,31 @@ public class NetworkBoard : NetworkBehaviour
         if (AREf == (-400 + ARE)+16)  transform.position = new Vector3(0.0f, 0f, 0.0f);
         if(!GameOver)
         {
+            if(framestepped && activePiece != null)
+            {
+                if (!LockDelayEnable && !piecesController.piecemovementlocked)  
+                {
+                    if(!CanMovePiece(new int2(0,-1)) && !fullyLocked)  
+                    {
+                        LockDelayf = 0;  LockDelayEnable = true;
+                    }
+                    else LockDelayEnable = false;
+                }
+            
+                if(LockDelayEnable && !harddrop && !fullyLocked)
+                {
+                    if(LockDelayf == 0 && LockDelay > 4)
+                    {
+                        AudioManager.PlayClip(audioPieceStep);
+                    }
+                    LockDelayf += Time.deltaTime / Time.fixedDeltaTime;
+                    if (LockDelayf >= LockDelay)
+                    {
+                        LockDelayEnable = false;
+                        SetPiece();
+                    }
+                }
+            }
             checkCool();
             if(level > endingLevel) level = endingLevel;
             rolltimeObject.SetActive(ending);
@@ -690,16 +996,16 @@ public class NetworkBoard : NetworkBehaviour
     {
         if (MenuEngine.instance.curBoard != null && notifDelay == 0) 
         {
-            NotificationEngine.instance.InstantiateNotification(MenuEngine.instance.notifLangString[(int)MenuEngine.instance.language, 13], Color.white); notifDelay = 300;
+            NotificationEngine.Notify(LanguageList.Extract(LangArray.notifications, MenuEngine.instance.language, 13), Color.white); notifDelay = 300;
         } 
     }
     public void ShowGradeScore() 
     {
         if (notifDelay == 0) 
         {
-            NotificationEngine.instance.InstantiateNotification(MenuEngine.instance.notifLangString[(int)MenuEngine.instance.language, 14], Color.white);
-            NotificationEngine.instance.InstantiateNotification(Math.Floor(gradePoints).ToString(), Color.white);
-            NotificationEngine.instance.InstantiateNotification("/" + Math.Floor(gradePointRequirement), Color.white);
+            NotificationEngine.Notify(LanguageList.Extract(LangArray.notifications, MenuEngine.instance.language, 14), Color.white);
+            NotificationEngine.Notify(Math.Floor(gradePoints).ToString(), Color.white);
+            NotificationEngine.Notify("/" + Math.Floor(gradePointRequirement), Color.white);
             notifDelay = 200;
         }
     }

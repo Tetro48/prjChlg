@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using Unity.Mathematics;
 using System.Linq;
 using UnityEngine;
+using UnityEngine.Pool;
 using UnityEngine.SceneManagement;
 using UnityEngine.InputSystem;
 using UnityEngine.InputSystem.Utilities;
@@ -119,18 +120,16 @@ public class PiecesController : MonoBehaviour {
     int2 relativeHoldPieceCoordinate;
 
     [SerializeField] 
-    GameObject holdPieceBuffer;
+    int3[] holdPieceBuffer;
+    PieceType holdPieceType;
 
     [SerializeField] 
     public List<int2> relativeNextPieceCoordinates;
 
     [SerializeField] 
-    List<GameObject> nextPiecesBuffer;
-    // public GameObject[] nextPieceUI;
-    // public GameObject[] nextIBMWPieceUI;
-    // public GameObject[] nextARSPieceUI;
-    // public GameObject[] nextIBMPieceUI;
-    // public GameObject[] holdPieceUI;
+    GameObject nextPieceManagerPrefab;
+    List<NextPieceManager> nextPieceManagers;
+    NextPieceManager holdPieceManager;
     //{ Up, CW, CCW, UD, Hold }
     public bool[] PrevInputs;
     
@@ -154,6 +153,7 @@ public class PiecesController : MonoBehaviour {
     GameObject curPiece = null;
     public PieceController curPieceController = null;
     List<GameObject> availablePieces;
+    [SerializeField]int[] numberToTextureIDs;
 
 
     public bool IsHoldEmpty()
@@ -161,16 +161,13 @@ public class PiecesController : MonoBehaviour {
         return holdPieceBuffer == null;
     }
     /// <summary>
-    /// Called as soon as the instance is enabled. Sets the singleton and offset data arrays.
+    /// Called as soon as the instance is enabled. Sets offset data arrays and object pools.
     /// </summary>
     private void Awake()
     {
-        // UnityEngine.Random.InitState(SeedManager.seed);
-        // holdPieceBuffer = new GameObject();
-        GameObject newPrefab = Instantiate(piecePrefab, transform);
-        newPrefab.SetActive(false);
-        piecePrefab = newPrefab;
-        piecePrefab.GetComponent<PieceController>().board = board;
+        UnityEngine.Random.InitState(SeedManager.seed);
+        nextPieceManagers = new List<NextPieceManager>();
+        holdPieceBuffer = null;
         
         JLSTZ_OFFSET_DATA = new int2[5, 4];
         JLSTZ_OFFSET_DATA[0, 0] = int2.zero;
@@ -226,37 +223,16 @@ public class PiecesController : MonoBehaviour {
         I_OFFSET_DATA[4, 2] = new int2(-2, 0); // 2 to 3: -2,0 - 0,2 = -2,-2
         I_OFFSET_DATA[4, 3] = new int2(0, 2); // 3 to 0: 0,2 - 2,0 = -2, 2
 
-        O_OFFSET_DATA = new int2[5, 4];
+        O_OFFSET_DATA = new int2[1, 4];
         O_OFFSET_DATA[0, 0] = int2.zero;
         O_OFFSET_DATA[0, 1] = int2.zero;
         O_OFFSET_DATA[0, 2] = int2.zero;
         O_OFFSET_DATA[0, 3] = int2.zero;
 
-        O_OFFSET_DATA[1, 0] = int2.zero;
-        O_OFFSET_DATA[1, 1] = int2.zero;
-        O_OFFSET_DATA[1, 2] = int2.zero;
-        O_OFFSET_DATA[1, 3] = int2.zero;
-
-        O_OFFSET_DATA[2, 0] = int2.zero;
-        O_OFFSET_DATA[2, 1] = int2.zero;
-        O_OFFSET_DATA[2, 2] = int2.zero;
-        O_OFFSET_DATA[2, 3] = int2.zero;
-
-        O_OFFSET_DATA[3, 0] = int2.zero;
-        O_OFFSET_DATA[3, 1] = int2.zero;
-        O_OFFSET_DATA[3, 2] = int2.zero;
-        O_OFFSET_DATA[3, 3] = int2.zero;
-
-        O_OFFSET_DATA[4, 0] = int2.zero;
-        O_OFFSET_DATA[4, 1] = int2.zero;
-        O_OFFSET_DATA[4, 2] = int2.zero;
-        O_OFFSET_DATA[4, 3] = int2.zero;
-
-
     }
 
     /// <summary>
-    /// Called at the first frame instance is enabled. Sets some variables.
+    /// Called at the first frame instance is enabled. Sets some variables and object pools.
     /// </summary>
     private void Start()
     {
@@ -316,38 +292,26 @@ public class PiecesController : MonoBehaviour {
             I_OFFSET_DATA[4, 2] = new int2(-2, 0);
             I_OFFSET_DATA[4, 3] = new int2(0, 2);
 
-            O_OFFSET_DATA = new int2[5, 4];
+            O_OFFSET_DATA = new int2[1, 4];
             O_OFFSET_DATA[0, 0] = int2.zero;
             O_OFFSET_DATA[0, 1] = int2.zero;
             O_OFFSET_DATA[0, 2] = int2.zero;
             O_OFFSET_DATA[0, 3] = int2.zero;
 
-            O_OFFSET_DATA[1, 0] = int2.zero;
-            O_OFFSET_DATA[1, 1] = int2.zero;
-            O_OFFSET_DATA[1, 2] = int2.zero;
-            O_OFFSET_DATA[1, 3] = int2.zero;
-
-            O_OFFSET_DATA[2, 0] = int2.zero;
-            O_OFFSET_DATA[2, 1] = int2.zero;
-            O_OFFSET_DATA[2, 2] = int2.zero;
-            O_OFFSET_DATA[2, 3] = int2.zero;
-
-            O_OFFSET_DATA[3, 0] = int2.zero;
-            O_OFFSET_DATA[3, 1] = int2.zero;
-            O_OFFSET_DATA[3, 2] = int2.zero;
-            O_OFFSET_DATA[3, 3] = int2.zero;
-
-            O_OFFSET_DATA[4, 0] = int2.zero;
-            O_OFFSET_DATA[4, 1] = int2.zero;
-            O_OFFSET_DATA[4, 2] = int2.zero;
-            O_OFFSET_DATA[4, 3] = int2.zero;
         }
     }
 
     public void InitiatePieces()
     {
-        nextPiecesBuffer = new List<GameObject>();
         bag = new List<int>();
+        holdPieceManager = Instantiate(nextPieceManagerPrefab, transform).GetComponent<NextPieceManager>();
+        holdPieceManager.transform.localPosition = new Vector2(relativeHoldPieceCoordinate.x, relativeHoldPieceCoordinate.y);
+        for (int i = 1; i < relativeNextPieceCoordinates.Count + 1; i++)
+        {
+            GameObject gameObject = Instantiate(nextPieceManagerPrefab, transform);
+            nextPieceManagers.Add(gameObject.GetComponent<NextPieceManager>());
+            gameObject.transform.localPosition = new Vector2(relativeNextPieceCoordinates[i-1].x, relativeNextPieceCoordinates[i-1].y);
+        }
         for (int i = 0; i < 16; i++)
         {
             // bag.Add(new List<int> { 0, 1, 2, 3, 4, 5, 6 });
@@ -360,10 +324,7 @@ public class PiecesController : MonoBehaviour {
                 bag.Add(piece);
             }
         }
-        for (int i = 0; i < relativeNextPieceCoordinates.Count -1; i++)
-        {
-            SpawnNextPiece(bag[i]);
-        }
+        RefreshNextPieces();
         UpdatePieceBag();
     }
 
@@ -393,7 +354,7 @@ public class PiecesController : MonoBehaviour {
                     SpawnPiece();
                     for (int i = 0; i < (int)Math.Floor(gravityTiles); i++)
                     {
-                        if(piecemovementlocked == false)MoveCurPiece(new int2(0,-1));
+                        if(!piecemovementlocked)MoveCurPiece(new int2(0,-1));
                     }
                     gravityTiles -= (float)Math.Floor(gravityTiles);
                 }
@@ -423,14 +384,14 @@ public class PiecesController : MonoBehaviour {
     {
         if (allowHold == true)
         {
-            SpawnNextPiece(bag[pieces]);
+            RefreshNextPieces();
             if (board.level >= 600 && board.nextibmblocks < board.nextPieces + 1)
             {
                 board.nextibmblocks++;
             }
         }
         else if(holdPieceBuffer == null) 
-            SpawnNextPiece(bag[pieces]);
+            RefreshNextPieces();
         // UpdateShownPieces();
         int extraPiece = holdPieceBuffer != null ? 2 : 1;
         if (!IHSexecuted)
@@ -475,7 +436,7 @@ public class PiecesController : MonoBehaviour {
         if (board.framestepped && !board.GameOver)
         {
             frames++;
-            if(piecemovementlocked == false)gravityTiles += board.gravity;
+            if(!piecemovementlocked)gravityTiles += board.gravity;
             if (nextpiecequeued == true)
             {
                 board.AREf++;
@@ -575,7 +536,7 @@ public class PiecesController : MonoBehaviour {
             }
             if (((board.Inputs[2] && !PrevInputs[2]) || (board.Inputs[6] && !PrevInputs[6]) || IRSCW) && !piecemovementlocked)
             {
-                curPieceController.RotatePiece(true, true, false);
+                board.RotatePiece(true, true, false);
                 if (IRSCW)
                 {
                     gameAudio.PlayOneShot(audioIRS);
@@ -583,7 +544,7 @@ public class PiecesController : MonoBehaviour {
             }
             if (((board.Inputs[1] && !PrevInputs[1]) || IRSCCW) && !piecemovementlocked)
             {
-                curPieceController.RotatePiece(false, true, false);
+                board.RotatePiece(false, true, false);
                 if (IRSCCW)
                 {
                     gameAudio.PlayOneShot(audioIRS);
@@ -591,7 +552,7 @@ public class PiecesController : MonoBehaviour {
             }
             if (((board.Inputs[3] && !PrevInputs[3]) || IRSUD) && !piecemovementlocked)
             {
-                curPieceController.RotatePiece(true, true, true, true);
+                board.RotatePiece(true, true, true);
                 if (IRSUD)
                 {
                     gameAudio.PlayOneShot(audioIRS);
@@ -604,25 +565,25 @@ public class PiecesController : MonoBehaviour {
             {
                 GameEngine.debugMode = !GameEngine.debugMode;
             }
-            if(curPieceController != null) 
+            if(board.activePiece != null) 
             {
-                if (!curPieceController.CanMovePiece(int2.zero) && !piecemovementlocked) curPieceController.SendPieceToFloor();
+                if (!board.CanMovePiece(int2.zero) && !piecemovementlocked) board.SendPieceToFloor();
                 if(piecemovementlocked == false) while (gravityTiles >= 1)
                 {
-                    if (!curPieceController.CanMovePiece(new int2(0,-1)))
+                    if (!board.CanMovePiece(new int2(0,-1)))
                     {
                         gravityTiles = 0;
                     }
                     else
                     {
-                        MoveCurPiece(new int2(0,-1));
+                        board.MovePiece(new int2(0,-1), true);
                         gravityTiles--;
                     }
                 }
             }
             if (board.Inputs[0] && !PrevInputs[0] && !piecemovementlocked)
             {
-                curPieceController.SendPieceToFloor();
+                board.SendPieceToFloor();
             }
             for (int i = 1; i < 7; i++)
             {
@@ -671,33 +632,17 @@ public class PiecesController : MonoBehaviour {
             executedHold = false;
         }
     }
-    public void SpawnNextPiece(int id)
+    void RefreshNextPieces()
     {
-        GameObject localGO = GameObject.Instantiate(piecePrefab, transform);
-        localGO.SetActive(true);
-        localGO.name = "Piece " + pieces + ": " + (PieceType)id;
-        PieceController localpiecectrl = localGO.GetComponent<PieceController>();
-        localpiecectrl.ghostContr.gameObject.SetActive(false);
-        int incrBigPiece = board.bigMode ? 7 : 0;
-        localpiecectrl.SpawnPiece((PieceType)id, this, minoPositions[id + incrBigPiece], pivotPositions[id + incrBigPiece], minoBlock, scaling, id, relativeNextPieceCoordinates[nextPiecesBuffer.Count]);
-        localpiecectrl.isPieceIsInNextQueue = true;
-        nextPiecesBuffer.Add(localGO);
-        if(GameEngine.debugMode) Debug.Log(nextPiecesBuffer.Count + " | " + (relativeNextPieceCoordinates.Count-1));
-        if(board.RS == RotationSystems.ARS) localpiecectrl.RotatePiece(true, false, true, false);
-        if(nextPiecesBuffer.Count > 0)for (int i = 0; i < nextPiecesBuffer.Count; i++)
+        for (int i = 0; i < nextPieceManagers.Count; i++)
         {
-            nextPiecesBuffer[i].SetActive(i <= board.nextPieces);
+            int isBigMode = board.bigMode ? 7 : 0;
+            int textureSel = board.RS == RotationSystems.ARS ? 7 : 0;
+            int ibmTextureSel = board.sectAfter20g > 1 ? 14 : 0;
+            int combine = textureSel + ibmTextureSel;
+            if(i < board.nextPieces)nextPieceManagers[i].SetNextPiece(minoPositions[bag[pieces+i] + isBigMode], numberToTextureIDs[bag[pieces+i] + combine]);
+            else nextPieceManagers[i].SetNextPiece(null);
         }
-        if (nextPiecesBuffer.Count > relativeNextPieceCoordinates.Count-1)
-        {
-            nextPiecesBuffer.RemoveAt(0);
-            for (int index = 0; index < relativeNextPieceCoordinates.Count -1; index++)
-            {
-                nextPiecesBuffer[index].GetComponent<PieceController>().ForcefullyMovePiece(relativeNextPieceCoordinates[index] - relativeNextPieceCoordinates[index+1]);
-                // nextPiecesBuffer[index].transform.localPosition = (Vector2)relativeNextPieceCoordinates[index];
-            }
-        }
-        pieces++;
     }
     /// <summary>
     /// Spawns a new Tetris piece.
@@ -715,19 +660,17 @@ public class PiecesController : MonoBehaviour {
         {
             gravityTiles = 22.0f;
         }
-        // pieces++;
+        pieces++;
         if(board.comboKeepCounter > 0)board.comboKeepCounter--;
         IHSexecuted = false;
-        GameObject localGO = nextPiecesBuffer[0];
-        curPiece = localGO;
-        // localGO.GetComponent<PieceController>().ghostContr.gameObject.SetActive(false);
-        // PieceType randPiece = (PieceType)id;
-        curPieceController = curPiece.GetComponent<PieceController>();
-        curPieceController.isPieceIsInNextQueue = false;
-        if(curPieceController.ghostContr != null)curPieceController.ghostContr.gameObject.SetActive(true);
-        // curPieceController.SpawnPiece(randPiece, this);
+        int isHoldEmpty = IsHoldEmpty() ? 0 : 1;
+        int textureSel = board.RS == RotationSystems.ARS ? 7 : 0;
+        int ibmTextureSel = board.sectAfter20g > 1 ? 14 : 0;
+        int isBigMode = board.bigMode ? 7 : 0;
+        int combine = textureSel + ibmTextureSel;
+        int result = bag[lockedPieces+isHoldEmpty];
+        board.SpawnPiece(numberToTextureIDs[result] + combine, minoPositions[result+isBigMode], pivotPositions[result], (PieceType)result);
         piecemovementlocked = false;
-        piecesInGame.Add(localGO);
         NextPiece();
     }
     /// <summary>
@@ -736,35 +679,32 @@ public class PiecesController : MonoBehaviour {
     public void SpawnHoldPiece()
     {
         if(!IHSexecuted) AudioManager.PlayClip(holdSE);
-        curPieceController.isPieceIsInNextQueue = true;
-        if(curPieceController.ghostContr != null)curPieceController.ghostContr.gameObject.SetActive(false);
-        if(curPieceController.rotationIndex == 2) curPieceController.RotatePiece(true, true, true);
-        if(curPieceController.rotationIndex % 2 == 1) curPieceController.RotatePiece(curPieceController.rotationIndex / 2 == 1, false, false);
-        curPieceController.ForcefullyMovePiece(relativeHoldPieceCoordinate - V3ToV2Int(curPieceController.tiles[0].transform.localPosition));
+        if(board.rotationIndex == 2) board.RotatePiece(true, true, true);
+        if(board.rotationIndex % 2 == 1) board.RotatePiece(board.rotationIndex / 2 == 1, false, false);
+        board.UnisonPieceMove(relativeNextPieceCoordinates[0]-board.activePiece[0].xy);
+        piecemovementlocked = true;
         gravityTiles = 1.0f;
         if (board.gravity >= 19.99999)
         {
             gravityTiles = 22.0f;
         }
-        GameObject localGO;
-        if (holdPieceBuffer != null)
+        int3[] localInt3Array = board.activePiece;
+        holdPieceType = board.curType;
+        if (holdPieceBuffer != null && holdPieceBuffer.Length > 0)
         {
-            localGO = holdPieceBuffer;
+            board.SwapPiece(holdPieceBuffer, pivotPositions[(int)holdPieceType], holdPieceType);
         }
-        else 
+        else
         {
-            localGO = nextPiecesBuffer[0];
-            
-            NextPiece();
+            SpawnPiece();
         }
-        holdPieceBuffer = curPieceController.gameObject;
-        curPiece = localGO;
-        curPiece.SetActive(true);
-        // PieceType randPiece = (PieceType)id;
-        curPieceController = curPiece.GetComponent<PieceController>();
-        curPieceController.MovePiece(relativeNextPieceCoordinates[0] - V3ToV2Int(curPieceController.tiles[0].transform.localPosition), false);
-        curPieceController.isPieceIsInNextQueue = false;
-        if(curPieceController.ghostContr != null)curPieceController.ghostContr.gameObject.SetActive(true);
+        holdPieceBuffer = localInt3Array;
+        int2[] holdPieceRender = new int2[holdPieceBuffer.Length];
+        for (int i = 0; i < holdPieceBuffer.Length; i++)
+        {
+            holdPieceRender[i] = holdPieceBuffer[i].xy - relativeNextPieceCoordinates[0];
+        }
+        holdPieceManager.SetNextPiece(holdPieceRender, holdPieceBuffer[0].z);
         // curPieceController.SpawnPiece(randPiece, this);
         piecemovementlocked = false;
         if ((board.Inputs[2] || board.Inputs[6]) && (!board.Inputs[1]) && (!board.Inputs[3])) {IRSCW = true; IRSCCW = false; IRSUD = false;}
@@ -772,8 +712,6 @@ public class PiecesController : MonoBehaviour {
         else if ((!board.Inputs[2] && !board.Inputs[6]) && (!board.Inputs[1]) && (board.Inputs[3])) {IRSCCW = false; IRSCW = false; IRSUD = true;}
         else {IRSCCW = false; IRSCW = false; IRSUD = false;}
         if (board.RS == RotationSystems.ARS) IARS = true;
-        
-        piecesInGame.Add(localGO);
     }
 
     // public void SpawnDebug(int id)
@@ -797,10 +735,7 @@ public class PiecesController : MonoBehaviour {
     /// <param name="movement">X,Y amount the piece should be moved by</param>
     public void MoveCurPiece(int2 movement)
     {
-        if (curPiece != null && curPieceController != null)
-        {
-            curPieceController.MovePiece(movement, false);
-            if(board.bigMode)curPieceController.MovePiece(movement, false);
-        }
+        board.MovePiece(movement, false);
+        if(board.bigMode)board.MovePiece(movement, false);
     }
 }

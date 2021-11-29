@@ -114,38 +114,13 @@ public class MenuEngine : MonoBehaviour
         .WithControlsExcluding("*/escape")
         .OnMatchWaitForAnother(1f)
         .OnComplete(callback => {
-            NotificationEngine.instance.InstantiateNotification("Rebound! Currently it'll reset when the game is closed.", Color.green);
+            Notify("Rebound! Currently it'll reset when the game is closed.", Color.green);
             callback.Dispose();
             modifiableInputAsset.Enable();})
         .Start();
     }
     #endregion
 
-    public String[,] mainMenuLangString =
-    {
-        {"Play!", "Settings", "Quit"},
-        {"Играть!", "Настройки", "Выйти"},
-        {"プレイ!", "セッチング", "終了する"},
-
-    }, settingsLangString = 
-    {
-        {"Resolution:", "Inputs", "Rotation Systems", "Custom Mode settings", "Preferences settings", "Tuning", "< Back"},
-        {"Разрешение:", "Вводы", "Системы вращения", "Настройки режима", "Настройки предпотчении", "Тьюнинг", "< Назад"},
-        {"解像度", "入力", "回転システム", "カスタムモードの設定", "プリファレンス設定", "チューニング", "< バック"},
-
-    }, inputsLangString = 
-    {
-        {"", "", "", "", "", "", ""},
-        {"", "", "", "", "", "", ""},
-        {"", "", "", "", "", "", ""},
-
-    }, notifLangString =
-    {
-        //
-        {"Singles: ", "Doubles: ", "Triples: ", "Tetrises: ", "lines: ", "Total ", "Pieces: ", "Grade: ", "Total grade score:", "Level: ", "Gravity: ", "Time: ", "500 level part complete!", "Controller is swapped", "Grade score: ", "Starting up!", "All Clears: "},
-        {"Одиночные: ", "Двойные: ", "Тройные: ", "Тетрисы: ", "линии: ", "Всего ", "Фигур: ", "Оценка: ", "Общий счет оценки:", "Уровень: ", "Гравитация: ", "Время: ", "Достигнуто часть 500 уровней!", "Контроллер заменен", "Счет оценки: ", "Начинаем!", "Полные очистки: "},
-        {"シングル：", "ダブル：", "トリプル", "テトリス：", "行：", "合計", "ピース", "成績：", "総合成績スコア", "レベル：", "時間", "", "", "", "", "", ""},
-    };
     Language previousLang;
     public void InstantiatePlayer(double LockDelay = 50, double ARE = 41.6666666, double AREline = 16.6666666, double lineDelay = 25, float gravity = 3 / 64f, RotationSystems rotationSystem = RotationSystems.SRS, int nextPieces = 7)
     {
@@ -179,7 +154,7 @@ public class MenuEngine : MonoBehaviour
     }
     public void PlayGame()
     {
-        if(!starting && !startGame) {startGame = true;  NotificationEngine.instance.InstantiateNotification(notifLangString[(int)language, 15], Color.white);}
+        if(!starting && !startGame) {startGame = true;  Notify(LanguageList.LangString[(int)LangArray.notifications][(int)language, 15], Color.white);}
     }
     public void SubMenu(int subMenuContext)
     {
@@ -361,38 +336,42 @@ public class MenuEngine : MonoBehaviour
     }
     public void ExtractStatsToNotifications(NetworkBoard board)
     {
-        if(board.singles > 0) NotificationEngine.instance.InstantiateNotification(notifLangString[(int)language, 0] + board.singles, Color.white); // Singles
-        if(board.doubles > 0) NotificationEngine.instance.InstantiateNotification(notifLangString[(int)language, 1] + board.doubles, Color.white); // Doubles
-        if(board.triples > 0) NotificationEngine.instance.InstantiateNotification(notifLangString[(int)language, 2] + board.triples, Color.white); // Triples
-        if(board.tetrises > 0) NotificationEngine.instance.InstantiateNotification(notifLangString[(int)language, 3] + board.tetrises, Color.white); // Tetrises
-        if(board.pentrises > 0) NotificationEngine.instance.InstantiateNotification("5 " + notifLangString[(int)language, 4] + board.pentrises, Color.white); // 5 lines
-        if(board.sixtrises > 0) NotificationEngine.instance.InstantiateNotification("6 " + notifLangString[(int)language, 4] + board.sixtrises, Color.white); // 6 lines
-        if(board.septrises > 0) NotificationEngine.instance.InstantiateNotification("7 " + notifLangString[(int)language, 4] + board.septrises, Color.white); // 7 lines
-        if(board.octrises > 0) NotificationEngine.instance.InstantiateNotification("8+ " + notifLangString[(int)language, 4] + board.octrises, Color.white); // 8+ lines
-        if(board.octrises > 0) NotificationEngine.instance.InstantiateNotification(notifLangString[(int)language, 16] + board.allClears, Color.white); // All Clears
-        if(board.totalLines > 0) NotificationEngine.instance.InstantiateNotification(notifLangString[(int)language, 5] + notifLangString[(int)language, 4] + board.totalLines, Color.white); // Total lines
-        if(board.piecesController.lockedPieces > 0) NotificationEngine.instance.InstantiateNotification(notifLangString[(int)language, 6] + (board.piecesController.lockedPieces), Color.white); // Pieces
-        NotificationEngine.instance.InstantiateNotification(notifLangString[(int)language, 7] + gradeStringConversion[board.grade], Color.white); // Grade
-        if(board.statGradePoints > 0) {NotificationEngine.instance.InstantiateNotification(notifLangString[(int)language, 8], Color.white); // Total grade score
-        NotificationEngine.instance.InstantiateNotification(Math.Floor(board.statGradePoints).ToString(), Color.white);}
-        NotificationEngine.instance.InstantiateNotification(notifLangString[(int)language, 9] + board.level + "/" + (board.level < 2100 ? (board.curSect + 1) * 100 : 2100), Color.white); // Level
-        NotificationEngine.instance.InstantiateNotification(notifLangString[(int)language, 10] + (board.gravity / 6 * Time.fixedDeltaTime * 1000), Color.white); // Gravity
-        NotificationEngine.instance.InstantiateNotification(notifLangString[(int)language, 11] + board.timeCounter.text, Color.white);
+        if(board.singles > 0) Notify(LanguageList.Extract(LangArray.notifications, language, 0) + board.singles, Color.white); // Singles
+        if(board.doubles > 0) Notify(LanguageList.Extract(LangArray.notifications, language, 1) + board.doubles, Color.white); // Doubles
+        if(board.triples > 0) Notify(LanguageList.Extract(LangArray.notifications, language, 2) + board.triples, Color.white); // Triples
+        if(board.tetrises > 0) Notify(LanguageList.Extract(LangArray.notifications, language, 3) + board.tetrises, Color.white); // Tetrises
+        if(board.pentrises > 0) Notify("5 " + LanguageList.Extract(LangArray.notifications, language, 4) + board.pentrises, Color.white); // 5 lines
+        if(board.sixtrises > 0) Notify("6 " + LanguageList.Extract(LangArray.notifications, language, 4) + board.sixtrises, Color.white); // 6 lines
+        if(board.septrises > 0) Notify("7 " + LanguageList.Extract(LangArray.notifications, language, 4) + board.septrises, Color.white); // 7 lines
+        if(board.octrises > 0) Notify("8+ " + LanguageList.Extract(LangArray.notifications, language, 4) + board.octrises, Color.white); // 8+ lines
+        if(board.allClears > 0) Notify(LanguageList.Extract(LangArray.notifications, language, 16) + board.allClears, Color.white); // All Clears
+        if(board.totalLines > 0) Notify(LanguageList.Extract(LangArray.notifications, language, 5) + LanguageList.Extract(LangArray.notifications, language, 4) + board.totalLines, Color.white); // Total lines
+        if(board.piecesController.lockedPieces > 0) Notify(LanguageList.LangString[(int)LangArray.notifications][(int)language, 6] + (board.piecesController.lockedPieces), Color.white); // Pieces
+        Notify(LanguageList.LangString[(int)LangArray.notifications][(int)language, 7] + gradeStringConversion[board.grade], Color.white); // Grade
+        if(board.statGradePoints > 0) {Notify(LanguageList.LangString[(int)LangArray.notifications][(int)language, 8], Color.white); // Total grade score
+        Notify(Math.Floor(board.statGradePoints).ToString(), Color.white);}
+        Notify(LanguageList.LangString[(int)LangArray.notifications][(int)language, 9] + board.level + "/" + (board.level < 2100 ? (board.curSect + 1) * 100 : 2100), Color.white); // Level
+        Notify(LanguageList.LangString[(int)LangArray.notifications][(int)language, 10] + (board.gravity / 6 * Time.fixedDeltaTime * 1000), Color.white); // Gravity
+        Notify(LanguageList.Extract(LangArray.notifications, language, 11) + board.timeCounter.text, Color.white);
+    }
+    public void Notify(string text, Color color = default)
+    {
+        NotificationEngine.Notify(text, color);
     }
     public void UpdateLang()
     {
         if(language == Language.日本語)
         {
-            NotificationEngine.instance.InstantiateNotification("Notice! Japanese translation is not perfect.");
-            NotificationEngine.instance.InstantiateNotification("通知！ 日本語の翻訳は完璧ではありません。");
+            Notify("Notice! Japanese translation is not perfect.");
+            Notify("通知！ 日本語の翻訳は完璧ではありません。");
         }
         for (int mmguiIndex = 0; mmguiIndex < mainMenuGUIMovement.Length; mmguiIndex++)
         {
-            mainMenuGUIText[mmguiIndex].text = mainMenuLangString[(int)language, mmguiIndex];
+            mainMenuGUIText[mmguiIndex].text = LanguageList.Extract(LangArray.mainMenu, language, mmguiIndex);
         }
         for (int sguiIndex = 0; sguiIndex < settingsGUIMovement.Length; sguiIndex++)
         {
-            settingsGUIText[sguiIndex].text = settingsLangString[(int)language, sguiIndex];
+            settingsGUIText[sguiIndex].text = LanguageList.Extract(LangArray.settingsMenu, language, sguiIndex);
         }
     }
     public void SetResolution (int index)
