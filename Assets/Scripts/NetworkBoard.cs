@@ -146,9 +146,8 @@ public class NetworkBoard : NetworkBehaviour
     #region Piece handling
     public int3[] activePiece {get; set;}
     public float2 pivot {get; private set;}
-    private static ObjectPool<GameObject> tilesRotation;
     [SerializeField]
-    GameObject tileRotationPrefab;
+    GameObject tileRotation;
 
     static Vector2Int int2ToV2Int(int2 integers)
     {return new Vector2Int(integers.x, integers.y);}
@@ -211,20 +210,21 @@ public class NetworkBoard : NetworkBehaviour
     }
     public void UnisonPieceMove(int2 movement)
     {
+        boardController.UpdateActivePiece(activePiece, true);
         for (int i = 0; i < activePiece.Length; i++)
         {
             activePiece[i].xy += movement;
         }
         pivot += movement;
+        boardController.UpdateActivePiece(activePiece);
     }
     public bool RotateInUnison(bool clockwise, bool UD = false)
     {
-        GameObject temporaryObject = tilesRotation.Get();
+        boardController.UpdateActivePiece(activePiece, true);
         for (int i = 0; i < activePiece.Length; i++)
         {
-            activePiece[i].xy = RotateObject(temporaryObject, activePiece[i].xy, pivot, clockwise, UD);
+            activePiece[i].xy = RotateObject(tileRotation, activePiece[i].xy, pivot, clockwise, UD);
         }
-        tilesRotation.Release(temporaryObject);
         return CanMovePiece(int2.zero);
     }
     public bool CanMovePiece(int2 movement)
@@ -669,10 +669,6 @@ public class NetworkBoard : NetworkBehaviour
     }
     void Awake()
     {
-        tilesRotation = new ObjectPool<GameObject>(() => {
-            return Instantiate(tileRotationPrefab);
-        }, obj => obj.SetActive(true),
-        obj => obj.SetActive(false), obj => Destroy(obj), true, 4);
         UnityEngine.Random.InitState(SeedManager.seed);
         if(ReplayRecord.instance.mode != ReplayModeType.read)
         {

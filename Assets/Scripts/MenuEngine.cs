@@ -449,22 +449,6 @@ public class MenuEngine : MonoBehaviour
             });
             if(drpcSwitch)discord.RunCallbacks();
         }
-        // // Dealing with varied lengths.
-        // var MMf = mainMenuGUI.Length * 8;
-        // var SBf = settingsMenuGUI.Length * 8;
-        // var IPf = inputsMenuGUI.Length * 8;
-        // var RSf = rotationSystemsMenuGUI.Length * 8;
-        // var CMSf = customModeSettingsMenuGUI.Length * 8;
-        // var PRf = preferencesMenuGUI.Length * 8;
-        // var TUf = tuningMenuGUI.Length * 8;
-        // var SBVf = settingsGUIMovement.Length * 8;
-        // var MMSBf = MMf + SBf;
-        // var SBIPf = SBf + IPf;
-        // var SBRSf = SBf + RSf;
-        // var SBCMSf = SBf + CMSf;
-        // var SBPRf = SBf + PRf;
-        // var SBTUf = SBf + TUf;
-        // var MMSf = MMf + 50;
 
         if(curBoard == null && Input.GetKeyDown(KeyCode.Escape))
         {
@@ -488,21 +472,6 @@ public class MenuEngine : MonoBehaviour
                 Application.Quit();
             }
             else if(!segments[0].MoveCoupleUIElements(false)) return;
-            // if (frames == 1)
-            // {
-            //     mainMenu.SetActive(true);
-            //     audioSource.PlayOneShot(clip);
-            // }
-            // else if(frames % 8 == 7 && frames < MMf -1)
-            // {
-            //     if(mainMenuGUI[(frames-1)/8].activeSelf)audioSource.PlayOneShot(clip);
-            // }
-            // if(frames < MMf + 1)
-            // {
-            //     posMMGUI[(frames-1)/8] = mainMenuGUIMovement[(frames-1)/8].position;
-            //     posMMGUI[(frames-1)/8].x -= (float)(62.5 * reswidth);
-            //     mainMenuGUIMovement[(frames-1)/8].position = posMMGUI[(frames-1)/8];
-            // }
             else if (startGame && UITimeDeltas[0] <= 0)
             {
                 UITimeDeltas[0] -= Time.deltaTime;
@@ -520,30 +489,17 @@ public class MenuEngine : MonoBehaviour
                     }
                     menuSectors[0].SetActive(false);
                     executedOnce = true;
-                    // GameEngine.instance.gradePoints = 0;
-                    // GameEngine.instance.gradePointRequirement = 100;
-                    // GameEngine.instance.statGradePoints = 0;
-                    // SceneManager.LoadScene("GameScene");
 
                     InstantiatePlayer(timings[0], timings[1], timings[2], timings[3], (float)timings[4], rotationSystems, nextPieces);
-                    // GameObject board = GameObject.Instantiate(inGameBoard, transform);
-                    // curBoard = board;
-                    // NetworkBoard netBoard = curBoard.GetComponent<NetworkBoard>();
-                    // board.transform.position = new Vector3(0.0f, 20f, 0.0f);
                     mainMenuMusic.Stop();
-                    // netBoard.piecesController.UpdateShownPieces();
                 }
                 if (UITimeDeltas[0] < -0.17)
                 {
-                    // PiecesController.instance.bagPieceResult=Random.Range(0,7);
                     startGame = false;
                     UITimeDeltas[0] = 0d;
-                    // imgbg.SetActive(false);
-                    // imgprjchlg.SetActive(false);
                     NetworkBoard netBoard = curBoard.GetComponent<NetworkBoard>();
                     netBoard.paused = false;
                     executedOnce = false;
-                    // netBoard.piecesController.UpdatePieceBag();
                 }
             }
         }
@@ -556,18 +512,10 @@ public class MenuEngine : MonoBehaviour
         if (starting)
         {
             if (!mainMenuMusic.isPlaying)mainMenuMusic.Play();
-            // if (SceneManager.GetActiveScene().name != "MenuScene")SceneManager.LoadScene("MenuScene");
-            // imgbg.SetActive(true);
-            // imgprjchlg.SetActive(true);
             menuSectors[0].SetActive(true);
            
             //Movement to the right
             if(segments[0].MoveCoupleUIElements(true, 1f, 0.5)) starting = false;
         }
     }
-    // [ServerRpc]
-    // void StartServerUp()
-    // {
-        
-    // }
 }
