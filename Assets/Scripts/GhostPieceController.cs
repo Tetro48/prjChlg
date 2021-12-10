@@ -1,14 +1,12 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using Unity.Mathematics;
-using UnityEngine;
+﻿using UnityEngine;
+using Unity.Entities;
 
 public class GhostPieceController : MonoBehaviour
 {
     public NetworkBoard networkBoard;
-    public GameObject tileset;
-    public GameObject[] tiles;
-    public GameObject[] textureReading;
+    public Entity tileset;
+    public Entity[] tiles;
+    public Entity[] textureReading;
     public bool visibility;
     SpriteRenderer sprRnd;
 
@@ -21,8 +19,8 @@ public class GhostPieceController : MonoBehaviour
             Destroy(gameObject);
             return;
         }
-        tiles = new GameObject[connector.tiles.Length];
-        textureReading = new GameObject[connector.tiles.Length];
+        tiles = new Entity[connector.tiles.Length];
+        textureReading = new Entity[connector.tiles.Length];
         for (int i = 0; i < connector.tiles.Length; i++)
         {
             textureReading[i] = connector.tiles[i];
@@ -66,7 +64,7 @@ public class GhostPieceController : MonoBehaviour
     // }
     // public void MoveGhostPiece(int2 movement)
     // {
-    //     while (CanMoveGhostPiece(movement) && gameObject.activeInHierarchy)
+    //     while (CanMoveGhostPiece(movement) && entity.activeInHierarchy)
     //     {
     //         for (int i = 0; i < tiles.Length; i++)
     //         {
@@ -93,7 +91,7 @@ public class GhostPieceController : MonoBehaviour
     //     if (networkBoard.level >= networkBoard.sectionSize && !networkBoard.TLS) visibility = false;
     //     if (networkBoard.piecesController.piecemovementlocked || !visibility)
     //     {
-    //         Destroy(gameObject);
+    //         Destroy(entity);
     //     }
     //     // this.transform.position = textureReading[0].transform.position;
     // }

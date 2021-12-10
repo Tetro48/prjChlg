@@ -9,6 +9,7 @@ using MLAPI;
 using MLAPI.Messaging;
 using MLAPI.NetworkVariable;
 using TMPro;
+using Unity.Entities;
 
 /*
     Project Challenger, an challenging Tetris game.
@@ -33,6 +34,8 @@ using TMPro;
 /// </summary>
 public class NetworkBoard : NetworkBehaviour
 {
+    EntityManager entityManager;
+    BlobAssetStore blobAssetStore;
     public int lives = 1;
     public static List<NetworkBoard> player = new List<NetworkBoard>();
     public BoardController boardController;
@@ -147,7 +150,7 @@ public class NetworkBoard : NetworkBehaviour
     public int3[] activePiece {get; set;}
     public float2 pivot {get; private set;}
     [SerializeField]
-    GameObject tileRotation;
+    Entity tileRotation;
 
     static Vector2Int int2ToV2Int(int2 integers)
     {return new Vector2Int(integers.x, integers.y);}
@@ -242,7 +245,7 @@ public class NetworkBoard : NetworkBehaviour
     {
         return boardController.IsPosEmpty(endPos) && boardController.IsInBounds(endPos);
     }
-    public static int2 RotateObject(GameObject obj, int2 tilePos, Vector2 pivotPos, bool clockwise, bool UD = false)
+    public static int2 RotateObject(Entity obj, int2 tilePos, Vector2 pivotPos, bool clockwise, bool UD = false)
     {
         // int2 relativePos = V3ToInt2(obj.transform.localPosition) - originPos;
         // int2[] rotMatrix = clockwise ? new int2[2] { new int2(0, -1), new int2(1, 0) }
@@ -422,7 +425,7 @@ public class NetworkBoard : NetworkBehaviour
     public int tileInvisTime = -1;
 
     public float2 movement;
-    [SerializeField] GameObject rolltimeObject;
+    [SerializeField] Entity rolltimeObject;
     
     bool cool, cooldisplayed;
 	private void checkCool() {
@@ -669,6 +672,8 @@ public class NetworkBoard : NetworkBehaviour
     }
     void Awake()
     {
+        entityManager = World.DefaultGameObjectInjectionWorld.EntityManager;
+        blobAssetStore = new BlobAssetStore();
         UnityEngine.Random.InitState(SeedManager.seed);
         if(ReplayRecord.instance.mode != ReplayModeType.read)
         {
@@ -689,6 +694,14 @@ public class NetworkBoard : NetworkBehaviour
             MenuEngine.instance.curBoard = gameObject;
         }
         player.Add(this);
+    }
+    void Destroy(Entity entity)
+    {
+        entityManager.DestroyEntity(entity);
+    }
+    void Instantiate(Entity entity)
+    {
+        entityManager.Instantiate(entity);
     }
 
     [ClientRpc]

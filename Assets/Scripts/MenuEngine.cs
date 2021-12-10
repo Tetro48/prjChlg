@@ -6,6 +6,7 @@ using UnityEngine.InputSystem;
 using UnityEngine.UI;
 using Discord;
 using TMPro;
+using Unity.Entities;
 using MLAPI;
 using MLAPI.Messaging;
 
@@ -37,7 +38,7 @@ public class MenuEngine : MonoBehaviour
 {
     public InputActionAsset modifiableInputAsset;
     public Language language;
-    public static List<GameObject> players;
+    public static List<Entity> players;
     public NetworkBoard yourPlayer;
     public Discord.Discord discord;
     public static MenuEngine instance;
@@ -59,12 +60,12 @@ public class MenuEngine : MonoBehaviour
     [SerializeField] double[] UITimeDeltas;
 
     [SerializeField]
-    GameObject[] menuSectors;
+    Entity[] menuSectors;
     public AudioSource audioSource, audioSource2, mainMenuMusic, audioSourceConfirmation;
     public AudioClip clip, topoutSE;
-    public GameObject inGameBoard, curBoard;
+    public Entity inGameBoard, curBoard;
     public AudioClip ModeOK;
-    public GameObject imgprjchlg, mobileInput;
+    public Entity imgprjchlg, mobileInput;
     public RectTransform[] mainMenuGUIMovement, settingsGUIMovement, settingsGUIPartMovement;
     public MenuSegment[] segments;
 
@@ -124,7 +125,7 @@ public class MenuEngine : MonoBehaviour
     Language previousLang;
     public void InstantiatePlayer(double LockDelay = 50, double ARE = 41.6666666, double AREline = 16.6666666, double lineDelay = 25, float gravity = 3 / 64f, RotationSystems rotationSystem = RotationSystems.SRS, int nextPieces = 7)
     {
-        GameObject newBoard = Instantiate(inGameBoard, transform);
+        Entity newBoard = Instantiate(inGameBoard, transform);
         newBoard.transform.localPosition += new Vector3(25f, 0f, 0f) * (NetworkBoard.player.Count -1);
         NetworkBoard component = newBoard.GetComponent<NetworkBoard>();
         component.LockDelay = LockDelay;
@@ -225,7 +226,7 @@ public class MenuEngine : MonoBehaviour
     public bool alreadystarted;
     void Awake()
     {
-        players = new List<GameObject>();
+        players = new List<Entity>();
         Application.targetFrameRate = Screen.currentResolution.refreshRate * 4;
         alreadystarted = true;
         instance = this;
@@ -243,10 +244,10 @@ public class MenuEngine : MonoBehaviour
     void Start()
     {
         if(!platformCompat()) {reswidth = 1f; menuSectors[1].transform.position += new Vector3(0f,60.00f * (Screen.width / 1920.0f),0f);}
-        GameObject[] objs = GameObject.FindGameObjectsWithTag("menuenginerelated");
-        GameObject[] canvasobjs = GameObject.FindGameObjectsWithTag("Canvas");
-        GameObject[] gameoverseobjs = GameObject.FindGameObjectsWithTag("GameOverSE");
-        GameObject[] buttonseobjs = GameObject.FindGameObjectsWithTag("ButtonSE");
+        Entity[] objs = Entity.FindGameObjectsWithTag("menuenginerelated");
+        Entity[] canvasobjs = Entity.FindGameObjectsWithTag("Canvas");
+        Entity[] gameoverseobjs = Entity.FindGameObjectsWithTag("GameOverSE");
+        Entity[] buttonseobjs = Entity.FindGameObjectsWithTag("ButtonSE");
 
         // if(canvasobjs.Length > 1)
         // {

@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using Unity.Mathematics;
 using System.Linq;
 using UnityEngine;
+using Unity.Entities;
 
 /*
     Project Challenger, an challenging Tetris game.
@@ -30,8 +31,8 @@ public class PiecesController : MonoBehaviour {
 
     public int playerID;
 
-    public GameObject piecePrefab;
-    public GameObject minoBlock;
+    public Entity piecePrefab;
+    public Entity minoBlock;
     public List<int2[]> minoPositions = new List<int2[]>
     {
         new int2[] {int2.zero, new int2(1,0), new int2(1,1), new int2(0,1)}, // O piece
@@ -102,9 +103,9 @@ public class PiecesController : MonoBehaviour {
     public int2[,] JLSTZ_OFFSET_DATA { get; private set; }
     public int2[,] I_OFFSET_DATA { get; private set; }
     public int2[,] O_OFFSET_DATA { get; private set; }
-    public List<GameObject> piecesInGame;
-    public GameObject pieceToDestroy = null;
-    public GameObject sacText, gameOverText;
+    public List<Entity> piecesInGame;
+    public Entity pieceToDestroy = null;
+    public Entity sacText, gameOverText;
     public bool piecemovementlocked = false;
     public List<int> bag;
     public float gravityTiles;
@@ -124,7 +125,7 @@ public class PiecesController : MonoBehaviour {
     public List<int2> relativeNextPieceCoordinates;
 
     [SerializeField] 
-    GameObject nextPieceManagerPrefab;
+    Entity nextPieceManagerPrefab;
     List<NextPieceManager> nextPieceManagers;
     NextPieceManager holdPieceManager;
     //{ Up, CW, CCW, UD, Hold }
@@ -147,9 +148,9 @@ public class PiecesController : MonoBehaviour {
     public double deadzone = 0.5;
     
 
-    GameObject curPiece = null;
+    Entity curPiece = null;
     public PieceController curPieceController = null;
-    List<GameObject> availablePieces;
+    List<Entity> availablePieces;
     [SerializeField]int[] numberToTextureIDs;
 
 
@@ -233,8 +234,8 @@ public class PiecesController : MonoBehaviour {
     /// </summary>
     private void Start()
     {
-        piecesInGame = new List<GameObject>();
-        availablePieces = new List<GameObject>();
+        piecesInGame = new List<Entity>();
+        availablePieces = new List<Entity>();
         if(board.RS == RotationSystems.ARS)
         {
             JLSTZ_OFFSET_DATA = new int2[5, 4];
@@ -305,9 +306,9 @@ public class PiecesController : MonoBehaviour {
         holdPieceManager.transform.localPosition = new Vector2(relativeHoldPieceCoordinate.x, relativeHoldPieceCoordinate.y);
         for (int i = 1; i < relativeNextPieceCoordinates.Count + 1; i++)
         {
-            GameObject gameObject = Instantiate(nextPieceManagerPrefab, transform);
-            nextPieceManagers.Add(gameObject.GetComponent<NextPieceManager>());
-            gameObject.transform.localPosition = new Vector2(relativeNextPieceCoordinates[i-1].x, relativeNextPieceCoordinates[i-1].y);
+            Entity entity = Instantiate(nextPieceManagerPrefab, transform);
+            nextPieceManagers.Add(entity.GetComponent<NextPieceManager>());
+            entity.transform.localPosition = new Vector2(relativeNextPieceCoordinates[i-1].x, relativeNextPieceCoordinates[i-1].y);
         }
         for (int i = 0; i < 16; i++)
         {
@@ -602,7 +603,7 @@ public class PiecesController : MonoBehaviour {
     /// Removes the specified piece from the list of current pieces in the game.
     /// </summary>
     /// <param name="pieceToRem">Game Object of the Tetris piece to be removed.</param>
-    public void RemovePiece(GameObject pieceToRem)
+    public void RemovePiece(Entity pieceToRem)
     {
         piecesInGame.Remove(pieceToRem);
     }

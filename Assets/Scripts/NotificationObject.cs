@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using Unity.Entities;
 
 /*
     Project Challenger, an challenging Tetris game.
@@ -22,5 +23,5 @@ using UnityEngine;
 
 public class NotificationObject : MonoBehaviour
 {
-    public GameObject square, text;
+    public Entity square, text;
 }

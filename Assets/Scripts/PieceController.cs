@@ -5,6 +5,7 @@ using Unity.Mathematics;
 using System.Linq;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using Unity.Entities;
 
 /*
     Project Challenger, an challenging Tetris game.
@@ -44,10 +45,10 @@ public class PieceController : MonoBehaviour {
 
 
     public float2 pivot;
-    public GameObject[] tiles;
+    public Entity[] tiles;
     public TileController[] tileContainers;
     [SerializeField]
-    GameObject tileBlock;
+    Entity tileBlock;
     public Material[] materials;
     [SerializeField]int[] numberToTextureIDs;
     [SerializeField] int2 spawnLocation;
@@ -57,12 +58,12 @@ public class PieceController : MonoBehaviour {
     /// <summary>
     /// Called as soon as the piece is initialized. Initializes some necessary values.
     /// </summary>
-    private void Initiate(int2[] positions, GameObject obj, float2 scaling, int textureSelect, int2 nextPiecePosition)
+    private void Initiate(int2[] positions, Entity obj, float2 scaling, int textureSelect, int2 nextPiecePosition)
     {
         rotationIndex = 0;
         int textureID = numberToTextureIDs[textureSelect];
 
-        tiles = new GameObject[positions.Length];
+        tiles = new Entity[positions.Length];
         tileContainers = new TileController[positions.Length];
         materials = new Material[positions.Length];
         Vector2 offset = new Vector2();
@@ -71,7 +72,7 @@ public class PieceController : MonoBehaviour {
         if(GameEngine.debugMode) Debug.Log(new Vector2((float)(textureID % scaling.x) / scaling.x, (float)Math.Floor((double)textureID/4+1) / scaling.y));
         for (int i = 0; i < positions.Length; i++)
         {
-            GameObject tile = Instantiate(tileBlock, transform);
+            Entity tile = Instantiate(tileBlock, transform);
             tile.transform.localPosition = (Vector2)int2ToV2Int(positions[i] + spawnLocation);
             tile.transform.localRotation = Quaternion.Euler(0,-90,0);
             tiles[i] = tile;
@@ -141,7 +142,7 @@ public class PieceController : MonoBehaviour {
     /// Moves the attached tiles to form the Tetris piece specified. Also sets the correct color of tile sprite.
     /// </summary>
     /// <param name="newType">Type of tetris piece to be spawned.</param>
-    public void SpawnPiece(PieceType newType, int2[] positions, float2 setPivot, GameObject obj, int2 scaling, int textureSelect, int2 nextPos)
+    public void SpawnPiece(PieceType newType, int2[] positions, float2 setPivot, Entity obj, int2 scaling, int textureSelect, int2 nextPos)
     {
         pivot = setPivot + nextPos;
         // int increaseByLevel = board.level >= 600 && board.nextibmblocks == board.nextPieces + 1 ? 14 : 0;
@@ -395,7 +396,7 @@ public class PieceController : MonoBehaviour {
     /// </summary>
     /// <param name="originPos">Coordinates this tile will be rotating about.</param>
     /// <param name="clockwise">True if rotating clockwise. False if rotatitng CCW</param>
-    public static int2 RotateObject(GameObject obj, int2 tilePos, Vector2 pivotPos, bool clockwise, bool UD = false)
+    public static int2 RotateObject(Entity obj, int2 tilePos, Vector2 pivotPos, bool clockwise, bool UD = false)
     {
         // int2 relativePos = V3ToInt2(obj.transform.localPosition) - originPos;
         // int2[] rotMatrix = clockwise ? new int2[2] { new int2(0, -1), new int2(1, 0) }
@@ -439,7 +440,7 @@ public class PieceController : MonoBehaviour {
     {
         return board.boardController.IsPosEmpty(endPos) && board.boardController.IsInBounds(endPos);
     }
-    static Vector3 localObjPos(GameObject obj)
+    static Vector3 localObjPos(Entity obj)
     {
         return obj.transform.localPosition;
     }

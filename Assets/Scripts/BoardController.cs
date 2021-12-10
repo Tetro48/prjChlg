@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using Unity.Mathematics;
 using System.Linq;
 using UnityEngine;
+using Unity.Entities;
 
 /*
     Project Challenger, an challenging Tetris game.
@@ -30,14 +31,14 @@ public class BoardController : MonoBehaviour {
 
     public int playerID;
 
-    public GameObject gridUnitPrefab, tileBlock;
+    public Entity gridUnitPrefab, tileBlock;
     public int gridSizeX, gridSizeY;
     public AudioSource gameAudio;
     public AudioClip[] audioLineClear, audioTSpinClear;
     public AudioClip audioLineFall, audioPieceLock, audioLineClone, warning;
 
-    public GameObject tetrisText;
-    public GameObject tileClone;
+    public Entity tetrisText;
+    public Entity tileClone;
 
     bool linecleared = false;
     bool arereseted = false;
@@ -279,7 +280,7 @@ public class BoardController : MonoBehaviour {
         {
             for (int y = 0; y < gridSizeY; y++)
             {
-                GameObject instantiatedTile = Instantiate(tileBlock, transform);
+                Entity instantiatedTile = Instantiate(tileBlock, transform);
                 instantiatedTile.transform.localPosition = new Vector2(x,y);
                 gridOfMaterials[x,y] = instantiatedTile.GetComponent<MeshRenderer>().material;
                 gridOfMaterials[x, y].color = new Color(1,1,1,0);
@@ -328,7 +329,7 @@ public class BoardController : MonoBehaviour {
     /// Called when a piece is set in place. Sets the grid location to an occupied state.
     /// </summary>
     /// <param name="coords">The x,y coordinates to be occupied.</param>
-    /// <param name="tileGO">GameObject of the specific tile on this grid location.</param>
+    /// <param name="tileGO">Entity of the specific tile on this grid location.</param>
     public void OccupyPos(int3 tile)
     {
         if (!IsInBounds(tile.xy))
@@ -527,24 +528,24 @@ public struct GridData
 
 public class GridUnit
 {
-    public GameObject gameObject { get; private set; }
-    public GameObject tile { get; private set; }
+    public Entity entity { get; private set; }
+    public Entity tile { get; private set; }
     public int textureID;
     public Material material;
     public float transparency; //strange
     public bool isOccupied;
 
-    public GridUnit(GameObject newGameObject, GameObject setTile, Transform boardParent, int x, int y)
+    public GridUnit(Entity newGameObject, Entity setTile, Transform boardParent, int x, int y)
     {
         transparency = 0f;
-        gameObject = GameObject.Instantiate(newGameObject, boardParent);
-        tile = GameObject.Instantiate(setTile, gameObject.transform);
+        entity = Entity.Instantiate(newGameObject, boardParent);
+        tile = Entity.Instantiate(setTile, entity.transform);
         material = tile.GetComponent<MeshRenderer>().material;
         tile.SetActive(false);
-        if(y>19) gameObject.GetComponent<SpriteRenderer>().sprite = null;
+        if(y>19) entity.GetComponent<SpriteRenderer>().sprite = null;
         isOccupied = false;
 
-        gameObject.transform.localPosition = new Vector3(x, y);
+        entity.transform.localPosition = new Vector3(x, y);
     }
     public void CopyFrom(GridUnit grid)
     {

@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using Unity.Entities;
 using TMPro;
 
 /*
@@ -24,12 +25,19 @@ using TMPro;
 public class NotificationEngine : MonoBehaviour
 {
     public static NotificationEngine instance;
-    public GameObject prefab;
+    public Entity prefab;
     public AudioClip notifyAudio;
     public List<TextMeshProUGUI> textNotification;
-    public List<GameObject> notificationInstance;
+    public List<Entity> notificationInstance;
     public List<float> notifAnimFrames;
     
+    EntityManager entityManager;
+    BlobAssetStore blobAssetStore;
+    void Awake()
+    {
+        entityManager = World.DefaultGameObjectInjectionWorld.EntityManager;
+        blobAssetStore = new BlobAssetStore();
+    }
     public static void Notify(string text, Color color = default)
     {
         instance.InstantiateNotification(text, color);
@@ -38,7 +46,7 @@ public class NotificationEngine : MonoBehaviour
     {
         if(GameEngine.debugMode) Debug.Log(text);
         MenuEngine.instance.audioSource.PlayOneShot(notifyAudio);
-        GameObject notifInstantiate = GameObject.Instantiate(prefab, transform);
+        Entity notifInstantiate = Entity.Instantiate(prefab, transform);
         if(notificationInstance.Count > 0) for (int i = 0; i < notificationInstance.Count; i++)
         {
             notificationInstance[i].transform.position += new Vector3(0.0f, 72f*(float)(Screen.height / 1080.0), 0.0f);

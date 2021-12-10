@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using Unity.Mathematics;
+using Unity.Entities;
 
 /*
     Project Challenger, an challenging Tetris game.
@@ -27,9 +28,9 @@ public class BoardParticleSystem : MonoBehaviour
     public ParticleSystem particleEmitters;
     public Color[] tileColors;
     public Color[,] grid;
-    public GameObject fireworkPrefab, tileParticlesPrefab;
+    public Entity fireworkPrefab, tileParticlesPrefab;
     public AudioClip[] fireworkSoundEffects;
-    public List<GameObject> fireworkInstances, tileParticleInstances;
+    public List<Entity> fireworkInstances, tileParticleInstances;
     public List<int> fireworkTime, tileParticleTime;
 
     // Update is called once per frame
@@ -60,7 +61,7 @@ public class BoardParticleSystem : MonoBehaviour
     public void SummonFirework(Vector2 coordinates, Vector2 borderSize)
     {
         MenuEngine.instance.audioSource.PlayOneShot(fireworkSoundEffects[UnityEngine.Random.Range(0, fireworkSoundEffects.Length-1)]);
-        GameObject newFirework = Instantiate(fireworkPrefab, transform);
+        Entity newFirework = Instantiate(fireworkPrefab, transform);
         newFirework.transform.position = new Vector3(UnityEngine.Random.Range(coordinates.x, coordinates.x + borderSize.x), UnityEngine.Random.Range(coordinates.y, coordinates.y + borderSize.y), 0.0f);
         ParticleSystem particlesModify = newFirework.GetComponent<ParticleSystem>();
         particlesModify.startColor = new Color(UnityEngine.Random.Range(0f,1f), UnityEngine.Random.Range(0f,1f), UnityEngine.Random.Range(0f,1f),1f);
@@ -79,7 +80,7 @@ public class BoardParticleSystem : MonoBehaviour
             // emitParams.startColor = tileColors[tileTexture];
             // particleEmitters.Emit(emitParams, 64);
             // particleEmitters.Play(); // Continue normal emissions
-            GameObject newParticle = GameObject.Instantiate(tileParticlesPrefab, transform);
+            Entity newParticle = Entity.Instantiate(tileParticlesPrefab, transform);
             newParticle.transform.position = new Vector3((float)coords.x, (float)coords.y, 0f);
             ParticleSystem particlesModify = newParticle.GetComponent<ParticleSystem>();
             particlesModify.startColor = tileColors[tileTexture];

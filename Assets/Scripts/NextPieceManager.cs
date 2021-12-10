@@ -3,44 +3,46 @@ using System.Collections.Generic;
 using System;
 using Unity.Mathematics;
 using UnityEngine;
-using UnityEngine.Pool;
+using Unity.Entities;
 
 public class NextPieceManager : MonoBehaviour
 {
-    [SerializeField]GameObject prefab;
-    ObjectPool<GameObject> pieceTiles;
-    GameObject[] gameObjectTiles;
-
+    EntityManager entityManager;
+    BlobAssetStore blobAssetStore;
     void Awake()
     {
-        pieceTiles = new ObjectPool<GameObject>(() => {
-            return Instantiate(prefab);
-        }, obj => obj.SetActive(true),
-        obj => obj.SetActive(false), obj => Destroy(obj), true, 16);
+        entityManager = World.DefaultGameObjectInjectionWorld.EntityManager;
+        blobAssetStore = new BlobAssetStore();
     }
-    public void Dispose()
+    [SerializeField]Entity prefab;
+    Entity[] entityTiles;
+    void Destroy(Entity entity)
     {
-        pieceTiles.Dispose();
+        entityManager.DestroyEntity(entity);
+    }
+    Entity Instantiate(Entity entity)
+    {
+        entityManager.Instantiate(entity);
     }
     public void SetNextPiece(int2[] tiles, int textureID = 0, float scale = 1f)
     {
         transform.localScale = new Vector3(scale, scale, scale);
-        if(gameObjectTiles != null)
+        if(entityTiles != null)
         {
-            for (int i = 0; i < gameObjectTiles.Length; i++)
+            for (int i = 0; i < entityTiles.Length; i++)
             {
-                pieceTiles.Release(gameObjectTiles[i]);
+                
             }
         }
         if(tiles == null) return;
-        gameObjectTiles = new GameObject[tiles.Length];
-        for (int i = 0; i < gameObjectTiles.Length; i++)
+        entityTiles = new Entity[tiles.Length];
+        for (int i = 0; i < entityTiles.Length; i++)
         {
-            GameObject tile = Instantiate(prefab, transform);
+            Entity tile = Instantiate(prefab, transform);
             Vector2 offset = new Vector2(-(float)(textureID % 4) / 4, (float)Math.Floor((double)textureID/4+1) / 10);
             tile.GetComponent<MeshRenderer>().material.mainTextureOffset = Vector2.right - offset;
             tile.transform.localPosition = new Vector3(tiles[i].x, tiles[i].y);
-            gameObjectTiles[i] = tile; 
+            entityTiles[i] = tile; 
         }
     }
 }
