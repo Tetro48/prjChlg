@@ -4,10 +4,6 @@ using System.Collections.Generic;
 using Unity.Mathematics;
 using System.Linq;
 using UnityEngine;
-using UnityEngine.Pool;
-using UnityEngine.SceneManagement;
-using UnityEngine.InputSystem;
-using UnityEngine.InputSystem.Utilities;
 
 /*
     Project Challenger, an challenging Tetris game.
@@ -121,6 +117,7 @@ public class PiecesController : MonoBehaviour {
 
     [SerializeField] 
     int3[] holdPieceBuffer;
+    bool isHeld;
     PieceType holdPieceType;
 
     [SerializeField] 
@@ -648,7 +645,7 @@ public class PiecesController : MonoBehaviour {
     /// <summary>
     /// Spawns a new Tetris piece.
     /// </summary>
-    public void SpawnPiece()
+    public void SpawnPiece(bool isHold = false)
     {
         allowHold = true;
         // while (nextPiecesBuffer.Count < relativeNextPieceCoordinates.Count -1)
@@ -661,7 +658,7 @@ public class PiecesController : MonoBehaviour {
         {
             gravityTiles = 22.0f;
         }
-        pieces++;
+        if(!isHold)pieces++;
         if(board.comboKeepCounter > 0)board.comboKeepCounter--;
         IHSexecuted = false;
         int isHoldEmpty = IsHoldEmpty() ? 0 : 1;
@@ -690,15 +687,18 @@ public class PiecesController : MonoBehaviour {
             gravityTiles = 22.0f;
         }
         int3[] localInt3Array = board.activePiece;
-        holdPieceType = board.curType;
-        if (holdPieceBuffer != null && holdPieceBuffer.Length > 0)
+        PieceType storedType = board.curType;
+        if (isHeld)
         {
             board.SwapPiece(holdPieceBuffer, pivotPositions[(int)holdPieceType], holdPieceType);
         }
         else
         {
-            SpawnPiece();
+            pieces++;
+            SpawnPiece(true);
+            isHeld = true;
         }
+        holdPieceType = storedType;
         holdPieceBuffer = localInt3Array;
         int2[] holdPieceRender = new int2[holdPieceBuffer.Length];
         for (int i = 0; i < holdPieceBuffer.Length; i++)
@@ -713,22 +713,6 @@ public class PiecesController : MonoBehaviour {
         else if ((!board.Inputs[2] && !board.Inputs[6]) && (!board.Inputs[1]) && (board.Inputs[3])) {IRSCCW = false; IRSCW = false; IRSUD = true;}
         else {IRSCCW = false; IRSCW = false; IRSUD = false;}
         if (board.RS == RotationSystems.ARS) IARS = true;
-    }
-
-    // public void SpawnDebug(int id)
-    // {
-    //     GameObject localGO = GameObject.Instantiate(piecePrefab, transform);
-    //     curPiece = localGO;
-    //     PieceType randPiece = (PieceType)id;
-    //     curPieceController = curPiece.GetComponent<PieceController>();
-    //     curPieceController.SpawnPiece(randPiece, this);
-
-    //     piecesInGame.Add(localGO);
-    // }
-
-    int2 V3ToV2Int(Vector3 vector3)
-    {
-        return new int2((int)vector3.x, (int)vector3.y);
     }
     /// <summary>
     /// Moves the current piece controlled by the player.
