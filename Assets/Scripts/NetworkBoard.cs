@@ -5,9 +5,7 @@ using Unity.Mathematics;
 using UnityEngine;
 using UnityEngine.Pool;
 using UnityEngine.InputSystem;
-using MLAPI;
-using MLAPI.Messaging;
-using MLAPI.NetworkVariable;
+using Unity.Netcode;
 using TMPro;
 
 /*
@@ -553,7 +551,6 @@ public class NetworkBoard : NetworkBehaviour
             {
                 gravity *= 4;
             }
-            // COOLг‚’еЏ–гЃЈгЃ¦гЃџг‚‰
             previouscool = cool;
 
             cool = false;

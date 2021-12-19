@@ -45,8 +45,8 @@ public class BoardController : MonoBehaviour {
     [SerializeField]Vector2 boneblockw, boneblock;
 
     List<int> allClearFireworkTime = new List<int>();
-
-    GridData[,] fullGrid;
+    int[,] textureIDs;
+    float[,] transparencyGrid;
     int[,] prevTextureIDGrid;
     Material[,] gridOfMaterials;
 
@@ -85,11 +85,13 @@ public class BoardController : MonoBehaviour {
             }
         }
     }
-    public void UpdateActivePiece(int3[] piece, bool isOld = false)
+    public void UpdateActivePiece(int3[] piece, bool transparent = false)
     {
         for (int i = 0; i < piece.Length; i++)
         {
-            UpdateOccupiedPosition(piece[i], !isOld);
+            if (!transparent) UpdateOccupiedPosition(piece[i]);
+            else
+                UpdateOccupiedPosition(new int3(piece[i].xy, -1));
         }
     }
     void UpdateRender()
@@ -98,25 +100,26 @@ public class BoardController : MonoBehaviour {
         {
             for (int y = 0; y < gridSizeY; y++)
             {
-                UpdateOccupiedPosition(new int3(x,y, fullGrid[x,y].textureID), fullGrid[x,y].isOccupied);
+                UpdateOccupiedPosition(new int3(x,y, textureIDs[x,y]));
             }
         }
     }
-    public void UpdateOccupiedPosition(int3 tile, bool isOccupied)
+    public void UpdateOccupiedPosition(int3 tile)
     {
         bool2 comparator = tile.xy < int2.zero | tile.xy >= new int2(gridSizeX, gridSizeY);
         if (comparator.x || comparator.y)
         {
             return;
         }
-        fullGrid[tile.x, tile.y].textureID = tile.z;
-        GridData reference = fullGrid[tile.x, tile.y];
-        if (isOccupied)
+        if (tile.z >= 0)
         {
-            Vector2 offset = new Vector2(-(float)(reference.textureID % 4) / 4, (float)Math.Floor((double)reference.textureID / 4 + 1) / 10);
-            gridOfMaterials[tile.x, tile.y].mainTextureOffset = Vector2.right - offset;
+            if(tile.z >= 0)
+            {
+                Vector2 offset = TextureUVs.UVs[tile.z];
+                gridOfMaterials[tile.x, tile.y].mainTextureOffset = Vector2.right - offset;
+            }
         }
-        gridOfMaterials[tile.x, tile.y].color = new Color(1,1,1, isOccupied ? 1 : 0);
+        gridOfMaterials[tile.x, tile.y].color = new Color(1,1,1, tile.z >= 0 ? 1 - transparencyGrid[tile.x,tile.y] : 0);
     }
 
     public void TopoutWarning()
@@ -126,7 +129,7 @@ public class BoardController : MonoBehaviour {
         {
             for (int x = 0; x < gridSizeX; x++)
             {
-                if (fullGrid[x,y].isOccupied)
+                if (textureIDs[x,y] >= 0)
                 {
                     tilesToWarn += y-14;
                 }
@@ -158,15 +161,17 @@ public class BoardController : MonoBehaviour {
                 {
                     for (int x = 0; x < gridSizeX; x++)
                     {
-                        GridData curGridData = fullGrid[x, lineToDrop];
-                        GridData newGridData = fullGrid[x, lineToDrop - 1];
-                        if (curGridData.isOccupied)
+                        if (textureIDs[x, lineToDrop] >= 0)
                         {
-                            newGridData = curGridData;
+                            textureIDs[x, lineToDrop - 1] = textureIDs[x, lineToDrop];
+                            textureIDs[x, lineToDrop] = -1;
+                            transparencyGrid[x, lineToDrop - 1] = transparencyGrid[x, lineToDrop];
+                            transparencyGrid[x, lineToDrop] = 0f;
                         }
                     }
                 }
-            }    
+            }
+            UpdateRender();
         }
     }
     public int TilesInALine(int line)
@@ -174,7 +179,7 @@ public class BoardController : MonoBehaviour {
         int amount = 0;
         for (int x = 0; x < gridSizeX; x++)
         {
-            if(fullGrid[x, line].isOccupied)amount++;
+            if(textureIDs[x,line] >= 0)amount++;
         }
         return amount;
     }
@@ -182,12 +187,7 @@ public class BoardController : MonoBehaviour {
     {
         for (int x = 0; x < gridSizeX; x++)
         {
-            GridData curGridData = fullGrid[x,line];
-            if (!curGridData.isOccupied)
-            {
-                curGridData.isOccupied = true;
-                curGridData.textureID = 28;
-            }
+            textureIDs[x,line] = 0;
         }
     }
     public void CloneLineToBottom()
@@ -197,23 +197,26 @@ public class BoardController : MonoBehaviour {
         {
             for (int y = gridSizeY - 1; y >= 0 ; y--)
             {
-                GridData curGridData = fullGrid[x,y];
-                GridData newGridUnit;
-                if(y+1 >= gridSizeY) newGridUnit = fullGrid[x,y];
-                else newGridUnit = fullGrid[x,y+1];
-                if (curGridData.isOccupied)
+                int additive;
+                if(y+1 >= gridSizeY) additive = y;
+                else additive = y + 1;
+                if (textureIDs[x, y] >= 0)
                 {
-                    newGridUnit = curGridData;
+                    textureIDs[x, additive] = textureIDs[x, y];
+                    transparencyGrid[x, additive] = transparencyGrid[x, y];
                     if (y == 0)
                     {
-                        curGridData.isOccupied = true;
-                        if(networkBoard.sectAfter20g > 1) curGridData.textureID = 17;
+                        additive = networkBoard.RS == RotationSystems.SRS ? 8 : 0;
+                        if(networkBoard.sectAfter20g > 1) textureIDs[x,y] = 16 + additive;
+                        else textureIDs[x,y] = 0 + additive;
+
                     }
                 }        
             }
         }
         gameAudio.PlayOneShot(audioLineClone);
-        if (networkBoard.LockDelayEnable) networkBoard.piecesController.curPieceController.MovePiece(new int2(0,1), true);
+        UpdateRender();
+        if (networkBoard.LockDelayEnable) networkBoard.MovePiece(new int2(0,1), true);
     }
     /// <summary>
     /// Destroys a line of tiles. Coded to also handle empty grid unit.
@@ -222,16 +225,14 @@ public class BoardController : MonoBehaviour {
     {
         for (int i = 0; i < gridSizeX; i++)
         {
-            if(!fullGrid[i, line].isOccupied) continue;
-            GridData tile = fullGrid[i, line];
+            if(textureIDs[i,line] < 0) continue;
             if(particles)
             {
-                int tileTexture = tile.textureID;
+                int tileTexture = textureIDs[i,line];
                 boardParticles.SummonParticles(new int2(i, line), tileTexture);
             }
-            fullGrid[i,line].textureID = 0;
-            fullGrid[i,line].isOccupied = false;
-            fullGrid[i,line].transparency = 0f;
+            textureIDs[i,line] = -1;
+            transparencyGrid[i,line] = 0f;
         }
     }
     /// <summary>
@@ -253,8 +254,9 @@ public class BoardController : MonoBehaviour {
     /// <param name="percentage">Decrease tile's alpha color by percentage.</param>
     public void DecayTile(int2 coords, float percentage)
     {
-        if(fullGrid[coords.x, coords.y].isOccupied)
-        fullGrid[coords.x, coords.y].transparency += percentage;
+        if (textureIDs[coords.x, coords.y] < 0)
+            return;
+        transparencyGrid[coords.x, coords.y] += percentage;
     }
     /// <summary>
     /// Resets a line of tiles' transparency
@@ -263,7 +265,7 @@ public class BoardController : MonoBehaviour {
     {
         for (int i = 0; i < gridSizeX; i++)
         {
-            fullGrid[i, line].transparency = 0f;
+            transparencyGrid[i, line] = 0f;
         }
     }
 
@@ -272,13 +274,15 @@ public class BoardController : MonoBehaviour {
     /// </summary>
     private void CreateGrid()
     {
-        fullGrid = new GridData[gridSizeX, gridSizeY];
+        textureIDs = new int[gridSizeX, gridSizeY];
+        transparencyGrid = new float[gridSizeX, gridSizeY];
         gridOfMaterials = new Material[gridSizeX, gridSizeY];
         prevTextureIDGrid = new int[gridSizeX, gridSizeY];
         for (int x = 0; x < gridSizeX; x++)
         {
             for (int y = 0; y < gridSizeY; y++)
             {
+                textureIDs[x,y] = -1;
                 GameObject instantiatedTile = Instantiate(tileBlock, transform);
                 instantiatedTile.transform.localPosition = new Vector2(x,y);
                 gridOfMaterials[x,y] = instantiatedTile.GetComponent<MeshRenderer>().material;
@@ -315,13 +319,13 @@ public class BoardController : MonoBehaviour {
         {
             return false;
         }
-        if (coordToTest.x < int2.zero.x || coordToTest.y < int2.zero.y)
+        if (coordToTest.x < 0 || coordToTest.y < 0)
         {
             return false;
         }
 
         else if(coordToTest.x >= gridSizeX) return false;
-        else return !fullGrid[coordToTest.x, coordToTest.y].isOccupied;
+        else return textureIDs[coordToTest.x, coordToTest.y] < 0;
     }
 
     /// <summary>
@@ -335,9 +339,8 @@ public class BoardController : MonoBehaviour {
         {
             return;
         }
-        fullGrid[tile.x, tile.y].isOccupied = true;
-        fullGrid[tile.x, tile.y].textureID = tile.z;
-        UpdateOccupiedPosition(tile, true);
+        textureIDs[tile.x, tile.y] = tile.z;
+        UpdateOccupiedPosition(tile);
     }
     public bool CheckAllClear()
     {
@@ -345,7 +348,7 @@ public class BoardController : MonoBehaviour {
         {
             for (int y = 0; y < gridSizeY; y++)
             {
-                if (fullGrid[x,y].isOccupied) return false;
+                if (textureIDs[x,y] >= 0) return false;
             }
         }
         gameAudio.PlayOneShot(networkBoard.piecesController.levelup);
@@ -372,7 +375,7 @@ public class BoardController : MonoBehaviour {
             bool lineClear = true;
             for(int x = 0; x < gridSizeX; x++)
             {
-                if (!fullGrid[x, y].isOccupied){
+                if (textureIDs[x, y] < 0){
                     lineClear = false;
                     consecutiveLineClears = 0;
                 }
@@ -431,14 +434,12 @@ public class BoardController : MonoBehaviour {
                     {
                         for (int x = 0; x < gridSizeX; x++)
                         {
-                            GridData curGridData = fullGrid[x, lineToDrop];
-                            GridData newGridData = fullGrid[x, lineToDrop - 1];
-                            if (curGridData.isOccupied)
+                            if (textureIDs[x, lineToDrop] >= 0)
                             {
-                                newGridData = curGridData;
-                                curGridData.textureID = 0;
-                                curGridData.isOccupied = false;
-                                curGridData.transparency = 0f;
+                                textureIDs[x, lineToDrop - 1] = textureIDs[x, lineToDrop];
+                                textureIDs[x, lineToDrop] = -1;
+                                transparencyGrid[x, lineToDrop - 1] = transparencyGrid[x, lineToDrop];
+                                transparencyGrid[x, lineToDrop] = 0f;
                             }
                         }
                     }
@@ -446,15 +447,6 @@ public class BoardController : MonoBehaviour {
             }
         }
         UpdateRender();
-    }
-    /// <summary>
-    /// Moves an individual tile up one unit.
-    /// </summary>
-    /// <param name="curGridData">The grid unit that contains the tile to be moved up</param>
-    void MoveTile(GridUnit curGridData, GridUnit newGridUnit)
-    {
-        newGridUnit.CopyFrom(curGridData);
-        curGridData.ClearGridUnit();
     }
 
     /// <summary>
@@ -515,49 +507,5 @@ public class BoardController : MonoBehaviour {
         //     boardParticles.SummonParticles(new int2(x, lineToClear), tileTexture);
         // }
         DestroyLine(lineToClear, true);
-    }
-}
-
-public struct GridData
-{
-    public int textureID;
-    public float transparency;
-    public bool isOccupied;
-}
-
-public class GridUnit
-{
-    public GameObject gameObject { get; private set; }
-    public GameObject tile { get; private set; }
-    public int textureID;
-    public Material material;
-    public float transparency; //strange
-    public bool isOccupied;
-
-    public GridUnit(GameObject newGameObject, GameObject setTile, Transform boardParent, int x, int y)
-    {
-        transparency = 0f;
-        gameObject = GameObject.Instantiate(newGameObject, boardParent);
-        tile = GameObject.Instantiate(setTile, gameObject.transform);
-        material = tile.GetComponent<MeshRenderer>().material;
-        tile.SetActive(false);
-        if(y>19) gameObject.GetComponent<SpriteRenderer>().sprite = null;
-        isOccupied = false;
-
-        gameObject.transform.localPosition = new Vector3(x, y);
-    }
-    public void CopyFrom(GridUnit grid)
-    {
-        textureID = grid.textureID;
-        material.mainTextureOffset = grid.material.mainTextureOffset;
-        isOccupied = grid.isOccupied;
-    }
-    public void ClearGridUnit()
-    {
-        textureID = 0;
-        material.mainTextureOffset = Vector2.zero;
-        tile.SetActive(false);
-        transparency = 0f;
-        isOccupied = false;
     }
 }

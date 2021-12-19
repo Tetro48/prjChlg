@@ -6,8 +6,7 @@ using UnityEngine.InputSystem;
 using UnityEngine.UI;
 using Discord;
 using TMPro;
-using MLAPI;
-using MLAPI.Messaging;
+using Unity.Netcode;
 
 /*
     Project Challenger, an challenging Tetris game.
@@ -30,7 +29,7 @@ using MLAPI.Messaging;
 public enum Language {English, Русский, 日本語};
 
 // Please note: Cosmic rays can affect your computer's bits. If you experience bugs that is NOT caused by a code, it's extremely likely that bit flip IS a cause of it.
-// These bit flips are soft errors, and they're undetectable without Error Correction Code.
+// These bit flips are soft errors, and it's quite hard to notice.
 
 [RequireComponent(typeof(AudioSource))]
 public class MenuEngine : MonoBehaviour
@@ -229,6 +228,7 @@ public class MenuEngine : MonoBehaviour
         Application.targetFrameRate = Screen.currentResolution.refreshRate * 4;
         alreadystarted = true;
         instance = this;
+        TextureUVs.GenerateTextureUVs();
     }
     public bool drpcSwitch;
 
@@ -477,7 +477,7 @@ public class MenuEngine : MonoBehaviour
                 UITimeDeltas[0] -= Time.deltaTime;
                 if (!executedOnce)
                 {
-                    MLAPI.NetworkManager.Singleton.StartHost();
+                    Unity.Netcode.NetworkManager.Singleton.StartHost();
                     UnityEngine.Random.InitState(SeedManager.NewSeed());
                     ReplayRecord.instance.Reset();
                     ReplayRecord.seed = SeedManager.seed;

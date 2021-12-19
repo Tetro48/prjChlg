@@ -121,7 +121,9 @@ public class PiecesController : MonoBehaviour {
     PieceType holdPieceType;
 
     [SerializeField] 
-    public List<int2> relativeNextPieceCoordinates;
+    List<int2> relativeNextPieceCoordinates;
+    [SerializeField]
+    float[] nextPieceManagerSizes;
 
     [SerializeField] 
     GameObject nextPieceManagerPrefab;
@@ -637,7 +639,7 @@ public class PiecesController : MonoBehaviour {
             int textureSel = board.RS == RotationSystems.ARS ? 7 : 0;
             int ibmTextureSel = board.sectAfter20g > 1 ? 14 : 0;
             int combine = textureSel + ibmTextureSel;
-            if(i < board.nextPieces)nextPieceManagers[i].SetNextPiece(minoPositions[bag[pieces+i] + isBigMode], numberToTextureIDs[bag[pieces+i] + combine]);
+            if(i < board.nextPieces)nextPieceManagers[i].SetNextPiece(minoPositions[bag[pieces+i] + isBigMode], numberToTextureIDs[bag[pieces+i] + combine], nextPieceManagerSizes[i] * (board.bigMode ? 0.5f : 1));
             else nextPieceManagers[i].SetNextPiece(null);
         }
     }
@@ -667,7 +669,7 @@ public class PiecesController : MonoBehaviour {
         int isBigMode = board.bigMode ? 7 : 0;
         int combine = textureSel + ibmTextureSel;
         int result = bag[lockedPieces+isHoldEmpty];
-        board.SpawnPiece(numberToTextureIDs[result] + combine, minoPositions[result+isBigMode], pivotPositions[result], (PieceType)result);
+        board.SpawnPiece(numberToTextureIDs[result] + combine, minoPositions[result+isBigMode], pivotPositions[result+isBigMode], (PieceType)result);
         piecemovementlocked = false;
         NextPiece();
     }
