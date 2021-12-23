@@ -381,16 +381,14 @@ public class PiecesController : MonoBehaviour {
     bool IHSexecuted;
     private void NextPiece()
     {
+        RefreshNextPieces();
         if (allowHold == true)
         {
-            RefreshNextPieces();
             if (board.level >= 600 && board.nextibmblocks < board.nextPieces + 1)
             {
                 board.nextibmblocks++;
             }
         }
-        else if(holdPieceBuffer == null) 
-            RefreshNextPieces();
         // UpdateShownPieces();
         int extraPiece = holdPieceBuffer != null ? 2 : 1;
         if (!IHSexecuted)
@@ -649,7 +647,7 @@ public class PiecesController : MonoBehaviour {
     /// </summary>
     public void SpawnPiece(bool isHold = false)
     {
-        allowHold = true;
+        if(!isHold)allowHold = true;
         // while (nextPiecesBuffer.Count < relativeNextPieceCoordinates.Count -1)
         // {
         //     NextPiece();
@@ -660,7 +658,7 @@ public class PiecesController : MonoBehaviour {
         {
             gravityTiles = 22.0f;
         }
-        if(!isHold)pieces++;
+        pieces++;
         if(board.comboKeepCounter > 0)board.comboKeepCounter--;
         IHSexecuted = false;
         int isHoldEmpty = IsHoldEmpty() ? 0 : 1;
