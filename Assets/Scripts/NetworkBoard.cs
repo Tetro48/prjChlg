@@ -140,6 +140,11 @@ public class NetworkBoard : NetworkBehaviour
     public bool paused, FrameStep, framestepped;
 
     public bool[] Inputs;
+    #region Functions
+
+    public bool CanTileMove(int2 endPos) => boardController.IsPosEmpty(endPos) && boardController.IsInBounds(endPos);
+    public static bool float2Compare(float2 lhs, float2 rhs) => lhs.x == rhs.x || lhs.y == rhs.y;
+    #endregion
 
     #region Piece handling
     public int3[] activePiece {get; set;}
@@ -236,32 +241,28 @@ public class NetworkBoard : NetworkBehaviour
         }
         return true;
     }
-    public bool CanTileMove(int2 endPos)
+    public static int2 RotateObject(GameObject obj, int2 tilePos, float2 pivotPos, bool clockwise, bool UD = false)
     {
-        return boardController.IsPosEmpty(endPos) && boardController.IsInBounds(endPos);
-    }
-    public static int2 RotateObject(GameObject obj, int2 tilePos, Vector2 pivotPos, bool clockwise, bool UD = false)
-    {
-        // int2 relativePos = V3ToInt2(obj.transform.localPosition) - originPos;
-        // int2[] rotMatrix = clockwise ? new int2[2] { new int2(0, -1), new int2(1, 0) }
-        //                                    : new int2[2] { new int2(0, 1), new int2(-1, 0) };
-        // int newXPos = (rotMatrix[0].x * relativePos.x) + (rotMatrix[1].x * relativePos.y);
-        // int newYPos = (rotMatrix[0].y * relativePos.x) + (rotMatrix[1].y * relativePos.y);
-        // int2 newPos = new int2(newXPos, newYPos);
-
-        // newPos += originPos;
-        // UpdatePosition(obj, newPos);
         int multi = clockwise ? 1 : -1;
         if(UD) multi *= 2;
+        if(float2Compare(pivotPos, float2.zero))
+        {
+            int2 relativePos = tilePos - (int2)pivotPos;
+            int2[] rotMatrix = clockwise ? new int2[2] { new int2(0, -1), new int2(1, 0) }
+                                            : new int2[2] { new int2(0, 1), new int2(-1, 0) };
+            int newXPos = (rotMatrix[0].x * relativePos.x) + (rotMatrix[1].x * relativePos.y);
+            int newYPos = (rotMatrix[0].y * relativePos.x) + (rotMatrix[1].y * relativePos.y);
+            int2 newPos = new int2(newXPos, newYPos);
+
+            newPos += (int2)pivotPos * (UD ? 2 : 1);
+            return newPos;
+        }
         obj.transform.position = new float3((float2)tilePos, 0f);
-        obj.transform.RotateAround(pivotPos, Vector3.forward, -90 * multi);
+        obj.transform.RotateAround((Vector2)pivotPos, Vector3.forward, -90 * multi);
         obj.transform.Rotate(new Vector3(90f * multi, 0f, 0f), Space.Self);
         return V3ToInt2(obj.transform.position);
     }
-    static int2 V3ToInt2(Vector3 vector3)
-    {
-        return new int2(Mathf.FloorToInt(vector3.x + 0.5f), Mathf.FloorToInt(vector3.y + 0.5f));
-    }
+    static int2 V3ToInt2(Vector3 vector3) => new int2(Mathf.FloorToInt(vector3.x + 0.5f), Mathf.FloorToInt(vector3.y + 0.5f));
     public PieceType curType;
     public int rotationIndex { get; private set; }
     bool fullyLocked, harddrop;
