@@ -348,7 +348,7 @@ public class NetworkBoard : NetworkBehaviour
 
         bool movePossible = false;
 
-        for (int testIndex = 0; testIndex < 5; testIndex++)
+        for (int testIndex = 0; testIndex < curOffsetData.Length; testIndex++)
         {
             offsetVal1 = curOffsetData[testIndex, oldRotIndex];
             offsetVal2 = curOffsetData[testIndex, newRotIndex];
