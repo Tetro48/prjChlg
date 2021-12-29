@@ -350,7 +350,6 @@ public class GameEngine : MonoBehaviour
         // DontDestroyOnLoad(this);
         instance = this;
         audioPath = "file:///" + Application.persistentDataPath + "/BGM/";
-        if(GameEngine.debugMode) Debug.Log(audioPath);
         for (int i = 0; i < 7; i++)
         {
             StartCoroutine(LoadLevelMusic(i));
@@ -363,11 +362,11 @@ public class GameEngine : MonoBehaviour
         WWW request;
         if(lv < 6) request = GetAudioFromFile(audioPath, "lv"+(lv+1)+".wav");
         else request = GetAudioFromFile(audioPath, "ending.wav");
-        if(GameEngine.debugMode) Debug.Log(request);
         yield return request;
-
-        bgm_1p_lv[lv] = request.GetAudioClip();
-        bgm_1p_lv[lv].name = (lv < 6 ? "lv"+(lv+1)+"" : "ending");
+        int lvindex = lv;
+        if(lv == 6) lvindex++;
+        bgm_1p_lv[lvindex] = request.GetAudioClip();
+        bgm_1p_lv[lvindex].name = (lv < 6 ? "lv"+(lv+1)+"" : "ending");
         if (lv == 0) gameMusic.clip = bgm_1p_lv[0];
     }
     AudioClip MMmusic;
@@ -389,8 +388,8 @@ public class GameEngine : MonoBehaviour
         return request;
     }
 
-    int[] tableBGMFadeout = {385,585,680,860,950,-1,-1};
-    int[] tableBGMChange  = {400,600,700,900,1000,2100,-1};
+    int[] tableBGMFadeout = {385,585,680,860,950,1440,-1,-1};
+    int[] tableBGMChange  = {400,600,700,900,1000,1500,2100,-1};
     void FadeoutBGM()
     {
 	    if (tableBGMFadeout[bgmlv-1] != -1 && NetworkBoard.highestLevel >= tableBGMFadeout[bgmlv-1])

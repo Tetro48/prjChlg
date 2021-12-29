@@ -147,7 +147,7 @@ public class NetworkBoard : NetworkBehaviour
     #endregion
 
     #region Piece handling
-    public int3[] activePiece {get; set;}
+    public int3[] activePiece;
     public float2 pivot {get; private set;}
     [SerializeField]
     GameObject tileRotation;
