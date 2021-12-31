@@ -321,44 +321,39 @@ public class PiecesController : MonoBehaviour {
         UpdatePieceBag();
     }
 
-    bool bagPieceRetrieved;
     /// <summary>
     /// Called once game trying to get a tetromino piece.
     /// </summary>
     public void UpdatePieceBag()
     {
-        while (bagPieceRetrieved == false)
+        if(bag[pieces] < 7)
         {
-            if(bag[pieces] < 7)
+            if((board.ARE < 1 && (!board.ending || board.AREf >= 0)) || executedHold == true)
             {
-                if((board.ARE < 1 && (!board.ending || board.AREf >= 0)) || executedHold == true)
+                board.LockDelayf = 0;
+                board.lineClonePiecesLeft--;
+                if (board.lineClonePiecesLeft == 0)
                 {
-                    board.LockDelayf = 0;
-                    board.lineClonePiecesLeft--;
-                    if (board.lineClonePiecesLeft == 0)
-                    {
-                        board.lineClonePiecesLeft = board.lineClonePerPiece[board.curSect];
-                        board.boardController.CloneLineToBottom();
-                    }
-                    else if (board.lineClonePiecesLeft > board.lineClonePerPiece[board.curSect])
-                    {
-                        board.lineClonePiecesLeft = board.lineClonePerPiece[board.curSect];
-                    }
-                    SpawnPiece();
-                    for (int i = 0; i < (int)Math.Floor(gravityTiles); i++)
-                    {
-                        if(!piecemovementlocked)MoveCurPiece(new int2(0,-1));
-                    }
-                    gravityTiles -= (float)Math.Floor(gravityTiles);
+                    board.lineClonePiecesLeft = board.lineClonePerPiece[board.curSect];
+                    board.boardController.CloneLineToBottom();
                 }
-                else
+                else if (board.lineClonePiecesLeft > board.lineClonePerPiece[board.curSect])
                 {
-                    nextpiecequeued = true;
+                    board.lineClonePiecesLeft = board.lineClonePerPiece[board.curSect];
                 }
-                bagPieceRetrieved = true;
-                if(GameEngine.debugMode) Debug.Log("Next random num: " + bag[pieces]);
-                executedHold = false;
+                SpawnPiece();
+                for (int i = 0; i < (int)Math.Floor(gravityTiles); i++)
+                {
+                    if(!piecemovementlocked)MoveCurPiece(new int2(0,-1));
+                }
+                gravityTiles -= (float)Math.Floor(gravityTiles);
             }
+            else
+            {
+                nextpiecequeued = true;
+            }
+            if(GameEngine.debugMode) Debug.Log("Next random num: " + bag[pieces]);
+            executedHold = false;
         }
         if (pieces % 7 == 0)
         {
@@ -370,7 +365,6 @@ public class PiecesController : MonoBehaviour {
                 bag.Add(bagshuff[j]);
             }
         }
-        bagPieceRetrieved = false;
     }
     bool IHSexecuted;
     private void NextPiece()
