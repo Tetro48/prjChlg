@@ -13784,43 +13784,29 @@ MonoBehaviour:
   NetworkConfig:
     ProtocolVersion: 0
     NetworkTransport: {fileID: 1508808738}
-    RegisteredScenes:
-    - MenuScene
-    AllowRuntimeSceneChanges: 0
+    PlayerPrefab: {fileID: 0}
     NetworkPrefabs:
-    - Prefab: {fileID: 3231009631264951806, guid: ae847301251054c46b46dbd44ef27853,
+    - Override: 0
+      Prefab: {fileID: 3231009631264951806, guid: ae847301251054c46b46dbd44ef27853,
         type: 3}
-      PlayerPrefab: 1
-    PlayerPrefabHash:
-      id: 0
-    CreatePlayerPrefab: 0
-    ReceiveTickrate: 100
-    NetworkTickIntervalSec: 0.05
-    MaxReceiveEventsPerTickRate: 500
-    EventTickrate: 100
+      SourcePrefabToOverride: {fileID: 0}
+      SourceHashToOverride: 0
+      OverridingTargetPrefab: {fileID: 0}
+    TickRate: 100
     ClientConnectionBufferTimeout: 30
     ConnectionApproval: 1
     ConnectionData: 
     EnableTimeResync: 1
     TimeResyncInterval: 30
-    EnableNetworkVariable: 1
     EnsureNetworkVariableLengthSafety: 0
     EnableSceneManagement: 1
     ForceSamePrefabs: 1
-    UsePrefabSync: 0
     RecycleNetworkIds: 1
     NetworkIdRecycleDelay: 120
     RpcHashSize: 0
     LoadSceneTimeOut: 120
-    EnableMessageBuffering: 1
     MessageBufferTimeout: 20
     EnableNetworkLogs: 1
-  references:
-    version: 1
-    00000000:
-      type: {class: NullableBoolSerializable, ns: MLAPI.Configuration, asm: Unity.Multiplayer.MLAPI.Runtime}
-      data:
-        Value: 10976051512016791343
 --- !u!4 &1508808737
 Transform:
   m_ObjectHideFlags: 0
@@ -13853,12 +13839,6 @@ MonoBehaviour:
   ConnectAddress: 127.0.0.1
   ConnectPort: 7777
   ServerListenPort: 7777
-  ServerWebsocketListenPort: 8887
-  SupportWebsocket: 0
-  Channels: []
-  UseMLAPIRelay: 1
-  MLAPIRelayAddress: 184.72.104.138
-  MLAPIRelayPort: 8888
   MessageSendMode: 0
 --- !u!1 &1513619935
 GameObject:
@@ -14992,6 +14972,7 @@ MonoBehaviour:
   - {fileID: 0}
   - {fileID: 0}
   - {fileID: 0}
+  - {fileID: 8300000, guid: f0d22329062631c46b97488b0e04793c, type: 3}
   - {fileID: 0}
   audioPath: 
   readySE: {fileID: 8300000, guid: b221b86b0d85da94ebe51585ed8d3430, type: 3}

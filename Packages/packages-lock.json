@@ -91,12 +91,12 @@
       "url": "https://packages.unity.com"
     },
     "com.unity.collections": {
-      "version": "0.15.0-preview.21",
+      "version": "1.0.0-pre.5",
       "depth": 1,
       "source": "registry",
       "dependencies": {
-        "com.unity.test-framework.performance": "2.3.1-preview",
-        "com.unity.burst": "1.4.1"
+        "com.unity.burst": "1.5.4",
+        "com.unity.test-framework": "1.1.22"
       },
       "url": "https://packages.unity.com"
     },
@@ -159,11 +159,11 @@
       "url": "https://packages.unity.com"
     },
     "com.unity.jobs": {
-      "version": "0.8.0-preview.23",
-      "depth": 1,
+      "version": "0.11.0-preview.6",
+      "depth": 0,
       "source": "registry",
       "dependencies": {
-        "com.unity.collections": "0.15.0-preview.21",
+        "com.unity.collections": "1.0.0-pre.5",
         "com.unity.mathematics": "1.2.1"
       },
       "url": "https://packages.unity.com"
@@ -175,18 +175,20 @@
       "dependencies": {},
       "url": "https://packages.unity.com"
     },
-    "com.unity.multiplayer.mlapi": {
-      "version": "file:C:/Users/Данилов Аймир/Downloads/com.unity.multiplayer.mlapi-0.1.0.tgz",
+    "com.unity.netcode.gameobjects": {
+      "version": "1.0.0-pre.3",
       "depth": 0,
-      "source": "local-tarball",
+      "source": "registry",
       "dependencies": {
         "com.unity.modules.ai": "1.0.0",
         "com.unity.modules.animation": "1.0.0",
-        "com.unity.nuget.mono-cecil": "1.10.1-preview.1"
-      }
+        "com.unity.nuget.mono-cecil": "1.10.1",
+        "com.unity.collections": "1.0.0-pre.5"
+      },
+      "url": "https://packages.unity.com"
     },
     "com.unity.nuget.mono-cecil": {
-      "version": "1.10.1-preview.1",
+      "version": "1.10.1",
       "depth": 1,
       "source": "registry",
       "dependencies": {},

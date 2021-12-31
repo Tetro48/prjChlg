@@ -5592,45 +5592,142 @@ MonoBehaviour:
   - x: 14
     y: 10
   - x: 14
-    y: 7
+    y: 8
+  - x: 14
+    y: 6
   - x: 14
     y: 4
   - x: 14
-    y: 1
+    y: 2
+  - x: 14
+    y: 0
   - x: 14
     y: -2
-  - x: 9
+  - x: 11
     y: -2
-  - x: 4
+  - x: 8
+    y: -2
+  - x: 5
+    y: -2
+  - x: 2
     y: -2
   - x: -1
     y: -2
-  - x: -6
+  - x: -4
     y: -2
-  - x: -6
-    y: 1
-  - x: -6
+  - x: -4
+    y: 0
+  - x: -4
+    y: 2
+  - x: -4
     y: 4
-  - x: -6
-    y: 7
-  - x: -6
+  - x: -4
+    y: 6
+  - x: -4
+    y: 8
+  - x: -4
     y: 10
-  - x: -6
-    y: 13
-  - x: -6
+  - x: -4
+    y: 12
+  - x: -4
+    y: 14
+  - x: -4
     y: 16
-  - x: -6
-    y: 19
-  - x: -6
+  - x: -4
+    y: 18
+  - x: -4
+    y: 20
+  - x: -4
     y: 22
-  - x: -11
+  - x: -7
     y: 22
-  - x: -11
-    y: 19
-  - x: -11
+  - x: -7
+    y: 20
+  - x: -7
+    y: 18
+  - x: -7
     y: 16
-  - x: -11
-    y: 13
+  - x: -7
+    y: 14
+  - x: -7
+    y: 12
+  - x: -7
+    y: 10
+  - x: -7
+    y: 8
+  - x: -7
+    y: 6
+  - x: -7
+    y: 4
+  - x: -7
+    y: 2
+  - x: -7
+    y: 0
+  - x: -7
+    y: -2
+  - x: -7
+    y: -4
+  - x: -4
+    y: -4
+  - x: -1
+    y: -4
+  - x: 2
+    y: -4
+  - x: 5
+    y: -4
+  - x: 8
+    y: -4
+  nextPieceManagerSizes:
+  - 1
+  - 1
+  - 1
+  - 1
+  - 1
+  - 1
+  - 1
+  - 0.8
+  - 0.5
+  - 0.5
+  - 0.5
+  - 0.5
+  - 0.5
+  - 0.5
+  - 0.5
+  - 0.5
+  - 0.5
+  - 0.5
+  - 0.5
+  - 0.5
+  - 0.5
+  - 0.5
+  - 0.5
+  - 0.5
+  - 0.5
+  - 0.5
+  - 0.5
+  - 0.5
+  - 0.5
+  - 0.5
+  - 0.5
+  - 0.5
+  - 0.5
+  - 0.5
+  - 0.5
+  - 0.5
+  - 0.5
+  - 0.5
+  - 0.5
+  - 0.5
+  - 0.5
+  - 0.5
+  - 0.5
+  - 0.5
+  - 0.5
+  - 0.5
+  - 0.5
+  - 0.5
+  - 0.5
+  - 0.5
   nextPieceManagerPrefab: {fileID: 2226977780930885380, guid: af2c5f4b9c2c7e948a4c1ee0aa323334,
     type: 3}
   PrevInputs: 00000000000000
@@ -6141,11 +6238,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  NetworkInstanceId: 0
-  PrefabHash: 10976051512016791343
-  PrefabHashGenerator: Board
+  GlobalObjectIdHash: 951099334
   AlwaysReplicateAsRoot: 0
   DontDestroyWithOwner: 0
+  AutoObjectParentSync: 1
 --- !u!114 &-1545146102209895259
 MonoBehaviour:
   m_ObjectHideFlags: 0

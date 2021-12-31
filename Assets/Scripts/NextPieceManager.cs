@@ -22,7 +22,7 @@ public class NextPieceManager : MonoBehaviour
     }
     Entity Instantiate(Entity entity)
     {
-        entityManager.Instantiate(entity);
+        return entityManager.Instantiate(entity);
     }
     public void SetNextPiece(int2[] tiles, int textureID = 0, float scale = 1f)
     {
@@ -39,10 +39,29 @@ public class NextPieceManager : MonoBehaviour
         for (int i = 0; i < entityTiles.Length; i++)
         {
             Entity tile = Instantiate(prefab, transform);
-            Vector2 offset = new Vector2(-(float)(textureID % 4) / 4, (float)Math.Floor((double)textureID/4+1) / 10);
-            tile.GetComponent<MeshRenderer>().material.mainTextureOffset = Vector2.right - offset;
+            tile.GetComponent<MeshRenderer>().material.mainTextureOffset = Vector2.right - (Vector2)TextureUVs.UVs[textureID];
             tile.transform.localPosition = new Vector3(tiles[i].x, tiles[i].y);
             entityTiles[i] = tile; 
+        }
+    }
+    public void SetNextPiece(int3[] tiles, float scale = 1f)
+    {
+        transform.localScale = new Vector3(scale, scale, scale);
+        if(gameObjectTiles != null)
+        {
+            for (int i = 0; i < gameObjectTiles.Length; i++)
+            {
+                pieceTiles.Release(gameObjectTiles[i]);
+            }
+        }
+        if(tiles == null) return;
+        gameObjectTiles = new GameObject[tiles.Length];
+        for (int i = 0; i < gameObjectTiles.Length; i++)
+        {
+            GameObject tile = Instantiate(prefab, transform);
+            tile.GetComponent<MeshRenderer>().material.mainTextureOffset = Vector2.right - (Vector2)TextureUVs.UVs[tiles[i].z];
+            tile.transform.localPosition = new float3(tiles[i].xy, 0f);
+            gameObjectTiles[i] = tile; 
         }
     }
 }
