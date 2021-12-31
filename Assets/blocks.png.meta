@@ -36,6 +36,7 @@ TextureImporter:
   streamingMipmaps: 0
   streamingMipmapsPriority: 0
   vTOnly: 0
+  ignoreMasterTextureLimit: 0
   grayScaleToAlpha: 0
   generateCubemap: 6
   cubemapConvolution: 0
@@ -1000,6 +1001,47 @@ TextureImporter:
     edges: []
     weights: []
     secondaryTextures: []
+    nameFileIdTable:
+      sakurablock_purple: -6993646484593962024
+      blockw_green: -1216455336881196467
+      blockw_red: 3931977970752108024
+      blockw_orange: -4524017988662937840
+      ibmblock_1: -1090014516531431234
+      block_cyan: 4256288277297392353
+      ibmblock_2: -4172891971193494056
+      ibmblock_4: 300666114172867650
+      sakurablock_yellow: 8100819010637999834
+      ibmblockw_1: -2456843305575056116
+      ibmblockw_5: -2078535033211160682
+      blockw_purple: -4891411468588167778
+      block_yellow: -7109281448097604524
+      block_purple: -2880035774045676689
+      ibmblockw_3: 4080991743000691546
+      blockw_gray: 2587766382346407471
+      ibmblock_6: -7361935669122291364
+      sakurablock_cyan: -5373436759223018657
+      ibmblockw_2: -8807470564923635314
+      ibmblock_3: 5754416226095949464
+      block_red: -731162151908756296
+      block_blue: -7855626261214365963
+      ibmblockw_8: 1181173260568724218
+      ibmblockw_6: -7054349218698941110
+      ibmblock_7: -2723984124850611009
+      block_gray: -2217638906192892890
+      ibmblock_8: 4019856827377357256
+      sakurablock_orange: 43179715064498284
+      ibmblockw_7: 8492854832930844213
+      blockw_yellow: -75911164829219746
+      sakurablock_gray: -8919192654900811792
+      block_green: 7451409459291756537
+      sakurablock_green: 5405220603546172223
+      blockw_cyan: -7944306057156956249
+      ibmblockw_4: -7517845432512654029
+      block_orange: 5113495189850202467
+      ibmblock_5: -7961285409242522895
+      sakurablock_blue: -2350562075753223941
+      blockw_blue: -2121092470347180042
+      sakurablock_red: -1308057985715669058
   spritePackingTag: 
   pSDRemoveMatte: 0
   pSDShowRemoveMatteOption: 0
