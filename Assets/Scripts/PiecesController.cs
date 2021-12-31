@@ -62,22 +62,22 @@ public class PiecesController : MonoBehaviour {
         // new int2[] {int2.zero},
         // new int2[] {int2.zero},
     };
-    public List<Vector2> pivotPositions = new List<Vector2>
+    public List<float2> pivotPositions = new List<float2>
     {
-        new Vector2(0.5f, 0.5f),
-        new Vector2(0.5f, -0.5f),
-        new Vector2(0f, 0f),
-        new Vector2(0f, 0f),
-        new Vector2(0f, 0f),
-        new Vector2(0f, 0f),
-        new Vector2(0f, 0f),
-        new Vector2(1.5f, 1.5f),
-        new Vector2(1.5f, -0.5f),
-        new Vector2(0.5f, 0.5f),
-        new Vector2(0.5f, 0.5f),
-        new Vector2(0.5f, 0.5f),
-        new Vector2(0.5f, 0.5f),
-        new Vector2(0.5f, 0.5f),
+        new float2(0.5f, 0.5f),
+        new float2(0.5f, -0.5f),
+        new float2(0f, 0f),
+        new float2(0f, 0f),
+        new float2(0f, 0f),
+        new float2(0f, 0f),
+        new float2(0f, 0f),
+        new float2(1.5f, 1.5f),
+        new float2(1.5f, -0.5f),
+        new float2(0.5f, 0.5f),
+        new float2(0.5f, 0.5f),
+        new float2(0.5f, 0.5f),
+        new float2(0.5f, 0.5f),
+        new float2(0.5f, 0.5f),
 
     };
     private static int2[] bigMino(int posX, int posY)
@@ -299,12 +299,12 @@ public class PiecesController : MonoBehaviour {
     {
         bag = new List<int>();
         holdPieceManager = Instantiate(nextPieceManagerPrefab, transform).GetComponent<NextPieceManager>();
-        holdPieceManager.transform.localPosition = new Vector2(relativeHoldPieceCoordinate.x, relativeHoldPieceCoordinate.y);
+        holdPieceManager.transform.localPosition = new float3(relativeHoldPieceCoordinate.x, relativeHoldPieceCoordinate.y, 0f);
         for (int i = 1; i < relativeNextPieceCoordinates.Count + 1; i++)
         {
             Entity entity = Instantiate(nextPieceManagerPrefab, transform);
             nextPieceManagers.Add(entity.GetComponent<NextPieceManager>());
-            entity.transform.localPosition = new Vector2(relativeNextPieceCoordinates[i-1].x, relativeNextPieceCoordinates[i-1].y);
+            entity.transform.localPosition = new float3(relativeNextPieceCoordinates[i-1].x, relativeNextPieceCoordinates[i-1].y, 0f);
         }
         for (int i = 0; i < 16; i++)
         {

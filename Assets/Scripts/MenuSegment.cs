@@ -94,7 +94,7 @@ public class MenuSegment : MonoBehaviour
             if(UITimeDelta < 0) 
             {
                 UITimeDelta = 0;
-                entity.SetActive(false);
+                gameObject.SetActive(false);
                 return true;
             }
         }
