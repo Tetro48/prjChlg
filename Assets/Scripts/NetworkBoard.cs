@@ -143,7 +143,8 @@ public class NetworkBoard : NetworkBehaviour
     #region Functions
 
     public bool CanTileMove(int2 endPos) => boardController.IsPosEmpty(endPos) && boardController.IsInBounds(endPos);
-    public static bool float2Compare(float2 lhs, float2 rhs) => lhs.x == rhs.x || lhs.y == rhs.y;
+    static int2 V3ToInt2(Vector3 vector3) => new int2(Mathf.FloorToInt(vector3.x + 0.5f), Mathf.FloorToInt(vector3.y + 0.5f));
+    static Vector2Int int2ToV2Int(int2 integers) => new Vector2Int(integers.x, integers.y);
     #endregion
 
     #region Piece handling
@@ -152,8 +153,6 @@ public class NetworkBoard : NetworkBehaviour
     [SerializeField]
     GameObject tileRotation;
 
-    static Vector2Int int2ToV2Int(int2 integers)
-    {return new Vector2Int(integers.x, integers.y);}
     public void SpawnPiece(int textureID, int2[] tiles, float2 setPivot, PieceType type)
     {
         rotationIndex = 0;
@@ -243,9 +242,7 @@ public class NetworkBoard : NetworkBehaviour
     }
     public static int2 RotateObject(GameObject obj, int2 tilePos, float2 pivotPos, bool clockwise, bool UD = false)
     {
-        int multi = clockwise ? 1 : -1;
-        if(UD) multi *= 2;
-        if(float2Compare(pivotPos, float2.zero))
+        if(math.any(pivotPos == float2.zero))
         {
             int2 relativePos = tilePos - (int2)pivotPos;
             int2[] rotMatrix = clockwise ? new int2[2] { new int2(0, -1), new int2(1, 0) }
@@ -257,12 +254,13 @@ public class NetworkBoard : NetworkBehaviour
             newPos += (int2)pivotPos * (UD ? 2 : 1);
             return newPos;
         }
+        int multi = clockwise ? 1 : -1;
+        if(UD) multi *= 2;
         obj.transform.position = new float3((float2)tilePos, 0f);
         obj.transform.RotateAround((Vector2)pivotPos, Vector3.forward, -90 * multi);
         obj.transform.Rotate(new Vector3(90f * multi, 0f, 0f), Space.Self);
         return V3ToInt2(obj.transform.position);
     }
-    static int2 V3ToInt2(Vector3 vector3) => new int2(Mathf.FloorToInt(vector3.x + 0.5f), Mathf.FloorToInt(vector3.y + 0.5f));
     public PieceType curType;
     public int rotationIndex { get; private set; }
     bool fullyLocked, harddrop;
