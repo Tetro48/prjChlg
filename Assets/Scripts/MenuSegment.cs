@@ -1,12 +1,14 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.EventSystems;
 
 public class MenuSegment : MonoBehaviour
 {
     double UITimeDelta, buttonMovementInSeconds;
     float reswidth;
     [SerializeField] RectTransform[] UIElements, UIPartElements;
+    [SerializeField] EventSystem control;
     // Start is called before the first frame update
     void Start()
     {
@@ -75,6 +77,7 @@ public class MenuSegment : MonoBehaviour
             if(UITimeDelta > UIElements.Length * buttonMovementInSeconds)
             {
                 UITimeDelta = UIElements.Length * buttonMovementInSeconds;
+                control.SetSelectedGameObject(UIElements[0].gameObject);
                 return true;
             }
         }
