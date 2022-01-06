@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using Unity.Mathematics;
 using UnityEngine;
+using UnityEngine.UI;
 using UnityEngine.Pool;
 using UnityEngine.InputSystem;
 using Unity.Netcode;
@@ -79,6 +80,7 @@ public class NetworkBoard : NetworkBehaviour
     private int virtualBasePoint;
 
     public TextMeshPro levelTextRender, nextSecLv, timeCounter, rollTimeCounter, ppsCounter;
+    public Slider gradePointSlider;
 
     public SpriteRenderer readyGoIndicator, gradeIndicator;
 
@@ -192,6 +194,7 @@ public class NetworkBoard : NetworkBehaviour
             }
         }
 
+        boardController.UpdateActivePiece(activePiece, true);
         UnisonPieceMove(movement);
         LockDelayf = 0;
         if(movement.y >= 0) if(!offset) if(LockDelay > 5 || gravity < 19) AudioManager.PlayClip(moveSE);
@@ -212,7 +215,6 @@ public class NetworkBoard : NetworkBehaviour
     }
     public void UnisonPieceMove(int2 movement)
     {
-        boardController.UpdateActivePiece(activePiece, true);
         for (int i = 0; i < activePiece.Length; i++)
         {
             activePiece[i].xy += movement;
@@ -589,7 +591,9 @@ public class NetworkBoard : NetworkBehaviour
             gradeIndicator.sprite = gradeSprites[grade];
             AudioManager.PlayClip(gradeUp);
             gradePointRequirement *= Math.Abs(1 + (Math.Abs(Math.Floor((double)level / sectionSize) + 1) / 4));
+            gradePointSlider.maxValue = (float)gradePointRequirement;
         }
+        gradePointSlider.value = (float)gradePoints;
         totalLines += lines;
         if (lines == 1) singles++;
         if (lines == 2) doubles++;
