@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using Unity.Mathematics;
+using Unity.Collections.LowLevel.Unsafe;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.Pool;
@@ -141,7 +142,7 @@ public class NetworkBoard : NetworkBehaviour
 
     public bool paused, FrameStep, framestepped;
 
-    public bool[] Inputs;
+    public bool4x2 Inputs;
     #region Functions
 
     public bool CanTileMove(int2 endPos) => boardController.IsPosEmpty(endPos) && boardController.IsInBounds(endPos);
@@ -412,7 +413,7 @@ public class NetworkBoard : NetworkBehaviour
     public void SendPieceToFloor()
     {
         harddrop = true;
-        piecesController.PrevInputs[0] = true;
+        piecesController.PrevInputs.c0.x = true;
         AudioManager.PlayClip(hardDropSE);
         while (MovePiece(new int2(0,-1), true)) {}
     }
@@ -609,8 +610,8 @@ public class NetworkBoard : NetworkBehaviour
         if (ReplayRecord.instance.mode != ReplayModeType.read)
         {
             movement = value.ReadValue<Vector2>();
-            if (movement.y > 0.5) {Inputs[0] = true;}
-            else {Inputs[0] = false;}
+            if (movement.y > 0.5) {Inputs.c0.x = true;}
+            else {Inputs.c0.x = false;}
         }
         else if (value.performed)
         {
@@ -624,32 +625,32 @@ public class NetworkBoard : NetworkBehaviour
     public void OnCounterclockwise(InputAction.CallbackContext value)
     {
         if (ReplayRecord.instance.mode != ReplayModeType.read){
-        if (value.performed) Inputs[1] = true;
-        else Inputs[1] = false;}
+        if (value.performed) Inputs.c0.y = true;
+        else Inputs.c0.y = false;}
     }
     public void OnClockwise(InputAction.CallbackContext value)
     {
         if (ReplayRecord.instance.mode != ReplayModeType.read){
-        if (value.performed) Inputs[2] = true;
-        else Inputs[2] = false;}
+        if (value.performed) Inputs.c0.z = true;
+        else Inputs.c0.z = false;}
     }
     public void OnClockwise2(InputAction.CallbackContext value)
     {
         if (ReplayRecord.instance.mode != ReplayModeType.read){
-        if (value.performed) Inputs[6] = true;
-        else Inputs[6] = false;}
+        if (value.performed) Inputs.c1.z = true;
+        else Inputs.c1.z = false;}
     }
     public void OnUpsideDown(InputAction.CallbackContext value)
     {
         if (ReplayRecord.instance.mode != ReplayModeType.read){
-        if (value.performed) Inputs[3] = true;
-        else Inputs[3] = false;}
+        if (value.performed) Inputs.c0.w = true;
+        else Inputs.c0.w = false;}
     }
     public void OnHold(InputAction.CallbackContext value)
     {
         if (ReplayRecord.instance.mode != ReplayModeType.read){
-        if (value.performed) Inputs[4] = true;
-        else Inputs[4] = false;}
+        if (value.performed) Inputs.c1.x = true;
+        else Inputs.c1.x = false;}
     }
     public void OnPause(InputAction.CallbackContext value)
     {
@@ -662,10 +663,10 @@ public class NetworkBoard : NetworkBehaviour
     {
         if (value.started && player.Count <= 1)
         {
-            Inputs[7] = true;
+            Inputs.c1.w = true;
         }
-        // if (value.performed) HoldInputs[7] = true;
-        // else HoldInputs[7] = false;
+        // if (value.performed) HoldInputs.c1.w = true;
+        // else HoldInputs.c1.w = false;
     }
     void Awake()
     {
@@ -673,8 +674,8 @@ public class NetworkBoard : NetworkBehaviour
         if(ReplayRecord.instance.mode != ReplayModeType.read)
         {
             ReplayRecord.instance.boards++;
-            ReplayRecord.instance.movementVector.Add(new List<float2>());
-            ReplayRecord.instance.inputs.Add(new List<bool[]>());
+            ReplayRecord.instance.movementVector.Add(new UnsafeList<float2>());
+            ReplayRecord.instance.inputs.Add(new UnsafeList<bool4x2>());
             bool[] tempSwitches = {false, false};
             ReplayRecord.instance.switches.Add(tempSwitches);
         }
@@ -767,13 +768,13 @@ public class NetworkBoard : NetworkBehaviour
             {
                 if(time > 0)
                 ppsCounter.text = String.Format("{0} pieces/second\nLock: {1} / {2}\nResets: {3} / {4}",
-                    Math.Floor(((double) piecesController.lockedPieces / time)* 100) / 100, Math.Floor((LockDelay - LockDelayf) * 1000) / 100 + "ms", Math.Floor(LockDelay * 1000) / 100 + "ms", maxLockResets - countLockResets, maxLockResets);
+                    Math.Floor(((double) piecesController.lockedPieces / time)* 100) / 100, SIUnitsConversion.doubleToSITime((LockDelay-LockDelayf)/1000), SIUnitsConversion.doubleToSITime(LockDelay/1000), maxLockResets - countLockResets, maxLockResets);
             }
-            // if (Input.GetKey(KeyCode.X) || Input.GetKey(KeyCode.Space)) Inputs[2] = true;
-            // if (Input.GetKey(KeyCode.A)) Inputs[3] = true;
-            // if (Input.GetKey(KeyCode.C)) Inputs[4] = true;
+            // if (Input.GetKey(KeyCode.X) || Input.GetKey(KeyCode.Space)) Inputs.c0.z = true;
+            // if (Input.GetKey(KeyCode.A)) Inputs.c0.w = true;
+            // if (Input.GetKey(KeyCode.C)) Inputs.c1.x = true;
             // if (Input.GetKeyDown(KeyCode.P) && MenuEngine.instance.curBoard != null) paused = !paused;
-            if((paused == false || (FrameStep == true && Inputs[7])) && GameOver == false)
+            if((paused == false || (FrameStep == true && Inputs.c1.w)) && GameOver == false)
             {
                 if (ReplayRecord.instance.mode == ReplayModeType.read && AREf > (int)ARE - 401)
                 {
@@ -781,21 +782,13 @@ public class NetworkBoard : NetworkBehaviour
                     tempmov = ReplayRecord.instance.movementVector[playerID][ReplayRecord.instance.frames[playerID]];
                     movement = new Vector2(tempmov[0], tempmov[1]);
                     // Inputs = ReplayRecord.instance.inputs[playerID][ReplayRecord.instance.frames[playerID]];
-                    for (int i = 0; i < 7; i++)
-                    {
-                        Inputs[i] = ReplayRecord.instance.inputs[playerID][ReplayRecord.instance.frames[playerID]][i];
-                    }
+                    Inputs = ReplayRecord.instance.inputs[playerID][ReplayRecord.instance.frames[playerID]];
                     lineFreezingMechanic = ReplayRecord.instance.switches[playerID][0];
                 }
                 else if(AREf > (int)ARE - 401)
                 {
-                    bool[] modInputs = new bool[8];
-                    for (int i = 0; i < 8; i++)
-                    {
-                        modInputs[i] = Inputs[i];
-                    }
-                    modInputs[7] = false;
-                    ReplayRecord.instance.inputs[playerID].Add(modInputs);
+
+                    ReplayRecord.instance.inputs[playerID].Add(Inputs);
                     float2 modMovement = new float2(movement.x, movement.y);
                     ReplayRecord.instance.movementVector[playerID].Add(modMovement);
                 }
@@ -861,7 +854,7 @@ public class NetworkBoard : NetworkBehaviour
             {
                 framestepped = false;
             }
-            Inputs[7] = false;
+            Inputs.c1.w = false;
             if(AREf == (int)ARE - 200) {AudioManager.PlayClip(readySE); readyGoIndicator.sprite = readySprite;}
             if(AREf == (int)ARE - 100) {AudioManager.PlayClip(goSE); readyGoIndicator.sprite = goSprite;}
             if(AREf == (int)ARE - 1) 
@@ -947,7 +940,7 @@ public class NetworkBoard : NetworkBehaviour
         }
         else if(paused && !framestepped)
         {
-            framestepped = Inputs[7];
+            framestepped = Inputs.c1.w;
         }
         //If you have more than 1 life
         else
@@ -977,7 +970,7 @@ public class NetworkBoard : NetworkBehaviour
                 IntentionalGameOver = false;
             }
             framestepped = false;
-            Inputs[7] = false;
+            Inputs.c1.w = false;
         }
     }
     public void SpawnFireworks()

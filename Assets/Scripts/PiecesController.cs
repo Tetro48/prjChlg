@@ -130,7 +130,7 @@ public class PiecesController : MonoBehaviour {
     List<NextPieceManager> nextPieceManagers;
     NextPieceManager holdPieceManager;
     //{ Up, CW, CCW, UD, Hold }
-    public bool[] PrevInputs;
+    public bool4x2 PrevInputs;
     
 
     private bool executedHold = false;
@@ -441,11 +441,11 @@ public class PiecesController : MonoBehaviour {
                     board.AREf = 0;
                     board.LockDelayf = 0;
                 }
-                if ((board.Inputs[2] || board.Inputs[6]) && (!board.Inputs[1]) && (!board.Inputs[3])) {IRSCW = true; IRSCCW = false; IRSUD = false;}
-                else if ((!board.Inputs[2] && !board.Inputs[6]) && (board.Inputs[1]) && !(board.Inputs[3])) {IRSCCW = true; IRSCW = false; IRSUD = false;}
-                else if ((!board.Inputs[2] && !board.Inputs[6]) && (!board.Inputs[1]) && (board.Inputs[3])) {IRSCCW = false; IRSCW = false; IRSUD = true;}
+                if ((board.Inputs.c0.z || board.Inputs.c1.z) && (!board.Inputs.c0.y) && (!board.Inputs.c0.w)) {IRSCW = true; IRSCCW = false; IRSUD = false;}
+                else if ((!board.Inputs.c0.z && !board.Inputs.c1.z) && (board.Inputs.c0.y) && !(board.Inputs.c0.w)) {IRSCCW = true; IRSCW = false; IRSUD = false;}
+                else if ((!board.Inputs.c0.z && !board.Inputs.c1.z) && (!board.Inputs.c0.y) && (board.Inputs.c0.w)) {IRSCCW = false; IRSCW = false; IRSUD = true;}
                 else {IRSCCW = false; IRSCW = false; IRSUD = false;}
-                if (board.Inputs[4]) IHS = true;
+                if (board.Inputs.c1.x) IHS = true;
                 else IHS = false;
                 if (board.RS == RotationSystems.ARS) IARS = true;
             }
@@ -509,7 +509,7 @@ public class PiecesController : MonoBehaviour {
                 else curPieceController.SetPiece();
             }
 
-            if (((board.Inputs[4] && !PrevInputs[4]) || IHS) && !piecemovementlocked && allowHold)
+            if (((board.Inputs.c1.x && !PrevInputs.c1.x) || IHS) && !piecemovementlocked && allowHold)
             {
                 if (IHS)
                 {
@@ -518,7 +518,7 @@ public class PiecesController : MonoBehaviour {
                 }
                 ExecuteHold();
             }
-            if (((board.Inputs[2] && !PrevInputs[2]) || (board.Inputs[6] && !PrevInputs[6]) || IRSCW) && !piecemovementlocked)
+            if (((board.Inputs.c0.z && !PrevInputs.c0.z) || (board.Inputs.c1.z && !PrevInputs.c1.z) || IRSCW) && !piecemovementlocked)
             {
                 board.RotatePiece(true, true, false);
                 if (IRSCW)
@@ -526,7 +526,7 @@ public class PiecesController : MonoBehaviour {
                     gameAudio.PlayOneShot(audioIRS);
                 }
             }
-            if (((board.Inputs[1] && !PrevInputs[1]) || IRSCCW) && !piecemovementlocked)
+            if (((board.Inputs.c0.y && !PrevInputs.c0.y) || IRSCCW) && !piecemovementlocked)
             {
                 board.RotatePiece(false, true, false);
                 if (IRSCCW)
@@ -534,7 +534,7 @@ public class PiecesController : MonoBehaviour {
                     gameAudio.PlayOneShot(audioIRS);
                 }
             }
-            if (((board.Inputs[3] && !PrevInputs[3]) || IRSUD) && !piecemovementlocked)
+            if (((board.Inputs.c0.w && !PrevInputs.c0.w) || IRSUD) && !piecemovementlocked)
             {
                 board.RotatePiece(true, true, true);
                 if (IRSUD)
@@ -565,15 +565,12 @@ public class PiecesController : MonoBehaviour {
                     }
                 }
             }
-            if (board.Inputs[0] && !PrevInputs[0] && !piecemovementlocked)
+            if (board.Inputs.c0.x && !PrevInputs.c0.x && !piecemovementlocked)
             {
                 board.SendPieceToFloor();
             }
-            for (int i = 1; i < 7; i++)
-            {
-                PrevInputs[i] = board.Inputs[i];
-            }
-            if (!piecemovementlocked || PrevInputs[0]) PrevInputs[0] = board.Inputs[0];
+            PrevInputs = board.Inputs;
+            if (!piecemovementlocked || PrevInputs.c0.x) PrevInputs.c0.x = board.Inputs.c0.x;
         }
     }
 
@@ -690,9 +687,9 @@ public class PiecesController : MonoBehaviour {
         holdPieceManager.SetNextPiece(minoPositions[holdPieceID], holdPieceTextureID);
         // curPieceController.SpawnPiece(randPiece, this);
         piecemovementlocked = false;
-        if ((board.Inputs[2] || board.Inputs[6]) && (!board.Inputs[1]) && (!board.Inputs[3])) {IRSCW = true; IRSCCW = false; IRSUD = false;}
-        else if ((!board.Inputs[2] && !board.Inputs[6]) && (board.Inputs[1]) && !(board.Inputs[3])) {IRSCCW = true; IRSCW = false; IRSUD = false;}
-        else if ((!board.Inputs[2] && !board.Inputs[6]) && (!board.Inputs[1]) && (board.Inputs[3])) {IRSCCW = false; IRSCW = false; IRSUD = true;}
+        if ((board.Inputs.c0.z || board.Inputs.c1.z) && (!board.Inputs.c0.y) && (!board.Inputs.c0.w)) {IRSCW = true; IRSCCW = false; IRSUD = false;}
+        else if ((!board.Inputs.c0.z && !board.Inputs.c1.z) && (board.Inputs.c0.y) && !(board.Inputs.c0.w)) {IRSCCW = true; IRSCW = false; IRSUD = false;}
+        else if ((!board.Inputs.c0.z && !board.Inputs.c1.z) && (!board.Inputs.c0.y) && (board.Inputs.c0.w)) {IRSCCW = false; IRSCW = false; IRSUD = true;}
         else {IRSCCW = false; IRSCW = false; IRSUD = false;}
         if (board.RS == RotationSystems.ARS) IARS = true;
     }

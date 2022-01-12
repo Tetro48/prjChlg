@@ -1,6 +1,8 @@
 using System.Collections;
 using System.Collections.Generic;
 using Unity.Mathematics;
+using Unity.Collections;
+using Unity.Collections.LowLevel.Unsafe;
 using UnityEngine;
 using TMPro;
 
@@ -29,8 +31,8 @@ public class ReplayRecord : MonoBehaviour
     public ReplayModeType mode;
     public List<int> frames;
     public int boards;
-    public List<List<float2>> movementVector;
-    public List<List<bool[]>> inputs;
+    public NativeList<UnsafeList<float2>> movementVector;
+    public NativeList<UnsafeList<bool4x2>> inputs;
     public List<bool[]> switches;
     public static int seed;
     [SerializeField] TextMeshProUGUI textMode;
@@ -65,17 +67,19 @@ public class ReplayRecord : MonoBehaviour
         {
             for (int i = 0; i < boards; i++)
             {
-                inputs[i].RemoveRange(frames[i],inputs[i].Count-frames[i]);
-                movementVector[i].RemoveRange(frames[i],movementVector[i].Count-frames[i]);
+                inputs[i].RemoveRange(frames[i],inputs[i].Length-frames[i]);
+                movementVector[i].RemoveRange(frames[i],movementVector[i].Length-frames[i]);
             }
             Time.timeScale = 1.0f;
         }
     }
     public void Reset()
     {
+        movementVector.Dispose();
+        inputs.Dispose();
         boards = new int();
-        movementVector = new List<List<float2>>();
-        inputs = new List<List<bool[]>>();
+        movementVector = new NativeList<UnsafeList<float2>>();
+        inputs = new NativeList<UnsafeList<bool4x2>>();
         switches = new List<bool[]>();
         seed = new int();
         

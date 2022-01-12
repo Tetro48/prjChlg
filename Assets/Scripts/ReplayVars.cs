@@ -1,5 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
+using Unity.Collections;
+using Unity.Collections.LowLevel.Unsafe;
 using Unity.Mathematics;
 
 /*
@@ -26,8 +28,8 @@ public class ReplayVars
     public int boards;
     public int seed;
     public List<double[]> timings;
-    public List<List<float2>> movementVector;
-    public List<List<bool[]>> inputs;
+    public NativeList<UnsafeList<float2>> movementVector;
+    public NativeList<UnsafeList<bool4x2>> inputs;
     public List<bool[]> switches;
     
     public ReplayVars (ReplayRecord replay)
