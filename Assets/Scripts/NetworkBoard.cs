@@ -675,8 +675,8 @@ public class NetworkBoard : NetworkBehaviour
         if(ReplayRecord.instance.mode != ReplayModeType.read)
         {
             ReplayRecord.instance.boards++;
-            ReplayRecord.instance.movementVector.Add(new NativeList<float2>());
-            ReplayRecord.instance.inputs.Add(new NativeList<bool4x2>());
+            ReplayRecord.instance.movementVector.Add(new List<float2>());
+            ReplayRecord.instance.inputs.Add(new List<bool4x2>());
             bool[] tempSwitches = {false, false};
             ReplayRecord.instance.switches.Add(tempSwitches);
         }
@@ -788,9 +788,9 @@ public class NetworkBoard : NetworkBehaviour
                 }
                 else if(AREf > (int)ARE - 401)
                 {
-                    if(ReplayRecord.instance.inputs[playerID].IsCreated)ReplayRecord.instance.inputs[playerID].Add(Inputs);
+                    ReplayRecord.instance.inputs[playerID].Add(Inputs);
                     float2 modMovement = new float2(movement.x, movement.y);
-                    if(ReplayRecord.instance.movementVector[playerID].IsCreated)ReplayRecord.instance.movementVector[playerID].Add(modMovement);
+                    ReplayRecord.instance.movementVector[playerID].Add(modMovement);
                 }
                 if (level >= endingLevel && AREf < (int)ARE && AREf > (int)ARE - 400)
                 {
