@@ -31,8 +31,8 @@ public class ReplayRecord : MonoBehaviour
     public ReplayModeType mode;
     public List<int> frames;
     public int boards;
-    public NativeList<UnsafeList<float2>> movementVector;
-    public NativeList<UnsafeList<bool4x2>> inputs;
+    public List<NativeList<float2>> movementVector;
+    public List<NativeList<bool4x2>> inputs;
     public List<bool[]> switches;
     public static int seed;
     [SerializeField] TextMeshProUGUI textMode;
@@ -73,13 +73,11 @@ public class ReplayRecord : MonoBehaviour
             Time.timeScale = 1.0f;
         }
     }
-    public void Reset()
+    public void Reset(int players = 1)
     {
-        movementVector.Dispose();
-        inputs.Dispose();
-        boards = new int();
-        movementVector = new NativeList<UnsafeList<float2>>();
-        inputs = new NativeList<UnsafeList<bool4x2>>();
+        boards = players;
+        movementVector = new List<NativeList<float2>>();
+        inputs = new List<NativeList<bool4x2>>();
         switches = new List<bool[]>();
         seed = new int();
         

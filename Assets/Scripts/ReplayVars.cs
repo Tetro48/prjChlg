@@ -28,8 +28,8 @@ public class ReplayVars
     public int boards;
     public int seed;
     public List<double[]> timings;
-    public NativeList<UnsafeList<float2>> movementVector;
-    public NativeList<UnsafeList<bool4x2>> inputs;
+    public List<NativeList<float2>> movementVector;
+    public List<NativeList<bool4x2>> inputs;
     public List<bool[]> switches;
     
     public ReplayVars (ReplayRecord replay)

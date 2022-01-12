@@ -2,7 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using Unity.Mathematics;
-using Unity.Collections.LowLevel.Unsafe;
+using Unity.Collections;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.Pool;
@@ -670,12 +670,13 @@ public class NetworkBoard : NetworkBehaviour
     }
     void Awake()
     {
+        Inputs = new bool4x2(false);
         UnityEngine.Random.InitState(SeedManager.seed);
         if(ReplayRecord.instance.mode != ReplayModeType.read)
         {
             ReplayRecord.instance.boards++;
-            ReplayRecord.instance.movementVector.Add(new UnsafeList<float2>());
-            ReplayRecord.instance.inputs.Add(new UnsafeList<bool4x2>());
+            ReplayRecord.instance.movementVector.Add(new NativeList<float2>());
+            ReplayRecord.instance.inputs.Add(new NativeList<bool4x2>());
             bool[] tempSwitches = {false, false};
             ReplayRecord.instance.switches.Add(tempSwitches);
         }
@@ -787,7 +788,6 @@ public class NetworkBoard : NetworkBehaviour
                 }
                 else if(AREf > (int)ARE - 401)
                 {
-
                     ReplayRecord.instance.inputs[playerID].Add(Inputs);
                     float2 modMovement = new float2(movement.x, movement.y);
                     ReplayRecord.instance.movementVector[playerID].Add(modMovement);
