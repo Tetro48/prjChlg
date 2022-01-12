@@ -9,7 +9,7 @@ public static class SIUnitsConversion
     }
     static double valueScale(double input, double scale)
     {
-        return Math.Floor(input*100)/(100*scale);
+        return Math.Floor((input/scale)*100)/100;
     }
     static double[] scales = new double[] {3600, 60, 1, 0.001, 0.000001, 0.000000001};
     static string[] indicators = new string[] {"h", "m", "s", "ms", "μs", "ns"};
@@ -24,6 +24,6 @@ public static class SIUnitsConversion
                 return value + (showSymbol ? indicators[i] : string.Empty);
             }
         }
-        return "out-of-bounds!";
+        return "0";
     }
 }

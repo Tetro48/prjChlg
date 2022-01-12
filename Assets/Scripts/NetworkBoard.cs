@@ -769,7 +769,7 @@ public class NetworkBoard : NetworkBehaviour
             {
                 if(time > 0)
                 ppsCounter.text = String.Format("{0} pieces/second\nLock: {1} / {2}\nResets: {3} / {4}",
-                    Math.Floor(((double) piecesController.lockedPieces / time)* 100) / 100, SIUnitsConversion.doubleToSITime((LockDelay-LockDelayf)/1000), SIUnitsConversion.doubleToSITime(LockDelay/1000), maxLockResets - countLockResets, maxLockResets);
+                    Math.Floor(((double) piecesController.lockedPieces / time)* 100) / 100, SIUnitsConversion.doubleToSITime((LockDelay-LockDelayf)/100), SIUnitsConversion.doubleToSITime(LockDelay/100), maxLockResets - countLockResets, maxLockResets);
             }
             // if (Input.GetKey(KeyCode.X) || Input.GetKey(KeyCode.Space)) Inputs.c0.z = true;
             // if (Input.GetKey(KeyCode.A)) Inputs.c0.w = true;
@@ -788,9 +788,9 @@ public class NetworkBoard : NetworkBehaviour
                 }
                 else if(AREf > (int)ARE - 401)
                 {
-                    ReplayRecord.instance.inputs[playerID].Add(Inputs);
+                    if(ReplayRecord.instance.inputs[playerID].IsCreated)ReplayRecord.instance.inputs[playerID].Add(Inputs);
                     float2 modMovement = new float2(movement.x, movement.y);
-                    ReplayRecord.instance.movementVector[playerID].Add(modMovement);
+                    if(ReplayRecord.instance.movementVector[playerID].IsCreated)ReplayRecord.instance.movementVector[playerID].Add(modMovement);
                 }
                 if (level >= endingLevel && AREf < (int)ARE && AREf > (int)ARE - 400)
                 {
