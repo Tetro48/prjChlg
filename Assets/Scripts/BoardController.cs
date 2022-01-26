@@ -106,18 +106,14 @@ public class BoardController : MonoBehaviour {
     }
     public void UpdateOccupiedPosition(int3 tile)
     {
-        bool2 comparator = tile.xy < int2.zero | tile.xy >= new int2(gridSizeX, gridSizeY);
-        if (comparator.x || comparator.y)
+        if (math.any(tile.xy < int2.zero | tile.xy >= new int2(gridSizeX, gridSizeY)))
         {
             return;
         }
         if (tile.z >= 0)
         {
-            if(tile.z >= 0)
-            {
-                Vector2 offset = TextureUVs.UVs[tile.z];
-                gridOfMaterials[tile.x, tile.y].mainTextureOffset = Vector2.right - offset;
-            }
+            Vector2 offset = TextureUVs.UVs[tile.z];
+            gridOfMaterials[tile.x, tile.y].mainTextureOffset = Vector2.right - offset;
         }
         gridOfMaterials[tile.x, tile.y].color = new Color(1,1,1, tile.z >= 0 ? 1 - transparencyGrid[tile.x,tile.y] : 0);
     }
@@ -200,7 +196,7 @@ public class BoardController : MonoBehaviour {
                 int additive;
                 if(y+1 >= gridSizeY) additive = y;
                 else additive = y + 1;
-                if (textureIDs[x, y] >= 0)
+                if (textureIDs[x, y] >= 0 || textureIDs[x, additive] >= 0)
                 {
                     textureIDs[x, additive] = textureIDs[x, y];
                     transparencyGrid[x, additive] = transparencyGrid[x, y];

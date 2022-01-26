@@ -29,6 +29,7 @@ public class NotificationEngine : MonoBehaviour
     public List<TextMeshProUGUI> textNotification;
     public List<GameObject> notificationInstance;
     public List<float> notifAnimFrames;
+    public List<bool> isOverboard;
     
     public static void Notify(string text, Color color = default)
     {
@@ -49,6 +50,7 @@ public class NotificationEngine : MonoBehaviour
         textNotification.Add(textNotif);
         textNotif.text = text;
         notifAnimFrames.Add(0);
+        isOverboard.Add(true);
     }
     // Start is called before the first frame update
     void Start()
@@ -62,9 +64,17 @@ public class NotificationEngine : MonoBehaviour
         if(notificationInstance.Count > 0) for (int i = 0; i < notificationInstance.Count; i++)
         {
             notifAnimFrames[i] += Time.deltaTime / Time.fixedDeltaTime;
+                Debug.Log(notificationInstance[i].transform.localPosition.x);
             if (notifAnimFrames[i] < 50)
             {
                 notificationInstance[i].transform.position -= new Vector3((384/25)*MenuEngine.instance.reswidth * (Time.deltaTime / Time.fixedDeltaTime), 0, 0);
+            }
+            else if (isOverboard[i])
+            {
+                Vector3 getPos = notificationInstance[i].transform.localPosition;
+                getPos.x = 320f;
+                notificationInstance[i].transform.localPosition = getPos;
+                isOverboard[i] = false;
             }
             if (notifAnimFrames[i] > 449)
             {
@@ -76,6 +86,7 @@ public class NotificationEngine : MonoBehaviour
                 notificationInstance.RemoveAt(i);
                 textNotification.RemoveAt(i);
                 notifAnimFrames.RemoveAt(i);
+                isOverboard.RemoveAt(i);
             }
         }
     }

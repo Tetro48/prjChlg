@@ -31,9 +31,11 @@ public class ReplayRecord : MonoBehaviour
     public ReplayModeType mode;
     public List<int> frames;
     public int boards;
-    public List<List<float2>> movementVector;
-    public List<List<bool4x2>> inputs;
-    public List<bool[]> switches;
+    public List<float2>[] movementVector;
+    public List<bool4x2>[] inputs;
+    public float2[][] replayMovementVector;
+    public bool4x2[][] replayInputs;
+    public bool[][] switches;
     public static int seed;
     [SerializeField] TextMeshProUGUI textMode;
 
@@ -48,8 +50,8 @@ public class ReplayRecord : MonoBehaviour
         boards = data.boards;
         frames = new List<int>();
         for (int i = 0; i < boards; i++) frames.Add(0);
-        movementVector = data.movementVector;
-        inputs = data.inputs;
+        replayMovementVector = data.movementVector;
+        replayInputs = data.inputs;
         switches = data.switches;
         UnityEngine.Random.InitState(data.seed);
         for (int i = 0; i < NetworkBoard.player.Count; i++)
@@ -76,9 +78,9 @@ public class ReplayRecord : MonoBehaviour
     public void Reset(int players = 1)
     {
         boards = players;
-        movementVector = new List<List<float2>>();
-        inputs = new List<List<bool4x2>>();
-        switches = new List<bool[]>();
+        movementVector = new List<float2>[players];
+        inputs = new List<bool4x2>[players];
+        switches = new bool[players][];
         seed = new int();
         
     }

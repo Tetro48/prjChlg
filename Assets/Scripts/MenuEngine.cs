@@ -1,6 +1,9 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using Unity.Mathematics;
+using Unity.Collections;
+using Unity.Jobs;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.UI;
@@ -81,6 +84,33 @@ public class MenuEngine : MonoBehaviour
     public int nextPieces = 7;
     public bool[] switches;
 
+    public struct int3Array : IJobParallelFor
+    {
+        public NativeArray<int3> array;
+        public int3 setTo;
+        public void Execute(int i)
+        {
+            array[i] = setTo;
+        }
+    }
+
+    public void TestAmountOfInt3s(int size)
+    {
+        float time = Time.realtimeSinceStartup;
+        NativeArray<int3> int3s = new NativeArray<int3>(size, Allocator.TempJob);
+        int3 setTo = new int3(1023,255,511);
+        var job = new int3Array()
+        {
+            array = int3s,
+            setTo = setTo
+        };
+        JobHandle jobHandle = job.Schedule(int3s.Length, 1);
+        jobHandle.Complete();
+        float afterTime = Time.realtimeSinceStartup;
+        Debug.Log(afterTime - time);
+        Notify("Time: " + (afterTime - time) + ". Jobified Ints: " + size * 3);
+        int3s.Dispose();
+    }
 
     public void ChangeTiming(int index, double timing)
     {
@@ -114,8 +144,8 @@ public class MenuEngine : MonoBehaviour
         .OnMatchWaitForAnother(1f)
         .OnComplete(callback => {
             Notify("Rebound! Currently it'll reset when the game is closed.", Color.green);
-            callback.Dispose();
-            modifiableInputAsset.Enable();})
+            modifiableInputAsset.Enable();
+            callback.Dispose();})
         .Start();
     }
     #endregion
@@ -136,6 +166,7 @@ public class MenuEngine : MonoBehaviour
         component.RS = rotationSystem;
         component.lineFreezingMechanic = switches[0];
         component.bigMode = switches[1];
+        component.oneshot = switches[2];
         component.piecesController.InitiatePieces();
     }
     public void QuitGame()
@@ -392,23 +423,19 @@ public class MenuEngine : MonoBehaviour
         if (platformCompat() && drpcSwitch)discord.Dispose();
     }
     double framerate;
-    [SerializeField] List<double> frameratebuffer;
+    [SerializeField] double[] frameratebuffer = new double[10];
     bool executedOnce = false;
     // Updates once every frame.
     void Update()
     {
         double rawframetime = Time.unscaledDeltaTime;
-        frameratebuffer.Add(rawframetime);
-        if (frameratebuffer.Count > 10)
-        {
-            frameratebuffer.RemoveAt(0);
-        }
+        frameratebuffer[Time.frameCount%10] = rawframetime;
         double result = 0;
-        for (int fr = 0; fr < frameratebuffer.Count; fr++)
+        for (int fr = 0; fr < 10; fr++)
         {
             result += frameratebuffer[fr];
         }
-        framerate = 1.0 / (result/frameratebuffer.Count);
+        framerate = 1.0 / (result/10);
         if (previousLang != language)
         {
             previousLang = language;
@@ -472,6 +499,11 @@ public class MenuEngine : MonoBehaviour
                 Application.Quit();
             }
             else if(!segments[0].MoveCoupleUIElements(false)) return;
+            else if(PlayerPrefs.GetInt("Oneshot", 0) == 3 && switches[2])
+            {
+                startGame = false;
+                starting = true;
+            }
             else if (startGame && UITimeDeltas[0] <= 0)
             {
                 UITimeDeltas[0] -= Time.deltaTime;

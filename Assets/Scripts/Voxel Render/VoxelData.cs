@@ -2,6 +2,7 @@ using Unity.Mathematics;
 
 public static class VoxelData
 {
+    public static readonly int2 textureAtlasSize = new int2(4,10);
     public static readonly float3[] voxelVerts = new float3[8] {
         new float3(0f, 0f, 0f),
         new float3(1f, 0f, 0f),

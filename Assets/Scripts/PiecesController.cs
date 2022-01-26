@@ -502,12 +502,13 @@ public class PiecesController : MonoBehaviour {
             //     }
             //     UpdatePieceBag();
             // }
-            if (Input.GetKeyDown(KeyCode.Escape)){
+            if (Input.GetKeyDown(KeyCode.Escape) && !board.oneshot){
                 MenuEngine.instance.yourPlayer.GameOver = true;
                 MenuEngine.instance.yourPlayer.IntentionalGameOver = true;
                 if(MenuEngine.instance.yourPlayer.lives == 1)MenuEngine.instance.yourPlayer.frames = 300;
                 else curPieceController.SetPiece();
             }
+            else if(Input.GetKeyDown(KeyCode.Escape)) NotificationEngine.Notify("Oneshot switch is on.");
 
             if (((board.Inputs.c1.x && !PrevInputs.c1.x) || IHS) && !piecemovementlocked && allowHold)
             {
@@ -617,11 +618,12 @@ public class PiecesController : MonoBehaviour {
     {
         for (int i = 0; i < nextPieceManagers.Count; i++)
         {
+            int isHoldEmpty = isHeld ? 1 : 0;
             int isBigMode = board.bigMode ? 7 : 0;
             int textureSel = board.RS == RotationSystems.ARS ? 7 : 0;
             int ibmTextureSel = board.sectAfter20g > 1 ? 14 : 0;
             int combine = textureSel + ibmTextureSel;
-            if(i < board.nextPieces)nextPieceManagers[i].SetNextPiece(minoPositions[bag[pieces+i] + isBigMode], numberToTextureIDs[bag[pieces+i] + combine], nextPieceManagerSizes[i] * (board.bigMode ? 0.5f : 1));
+            if(i < board.nextPieces)nextPieceManagers[i].SetNextPiece(minoPositions[bag[pieces+i+isHoldEmpty] + isBigMode], numberToTextureIDs[bag[pieces+i+isHoldEmpty] + combine], nextPieceManagerSizes[i] * (board.bigMode ? 0.5f : 1));
             else nextPieceManagers[i].SetNextPiece(null, 1f);
         }
     }
@@ -648,7 +650,7 @@ public class PiecesController : MonoBehaviour {
         }
         if(board.comboKeepCounter > 0)board.comboKeepCounter--;
         IHSexecuted = false;
-        int isHoldEmpty = !isHold ? 0 : 1;
+        int isHoldEmpty = !isHeld ? 0 : 1;
         int textureSel = board.RS == RotationSystems.ARS ? 7 : 0;
         int ibmTextureSel = board.sectAfter20g > 1 ? 14 : 0;
         int isBigMode = board.bigMode ? 7 : 0;

@@ -97,7 +97,7 @@ public class NetworkBoard : NetworkBehaviour
 
     public bool TLS, tSpin, ending, coolchecked, previouscool;
 
-    public bool lineFreezingMechanic, bigMode;
+    public bool lineFreezingMechanic, bigMode, oneshot;
     public bool LockDelayEnable;
     [Range(0,25)]
     public int countLockResets, maxLockResets = 20;
@@ -143,6 +143,9 @@ public class NetworkBoard : NetworkBehaviour
     public bool paused, FrameStep, framestepped;
 
     public bool4x2 Inputs;
+    static int[] lvlLineIncrement = {1, 3, 6, 10, 15, 21, 28, 36, 48, 70, 88, 90, 90, 90, 90, 90, 90, 90, 90, 90, 90, 90, 90};
+
+    public int[] linesFrozen = {0, 0, 0, 6, 4, 0, 0, 0, 8, 0, 0, 12, 16, 0, 0, 0, 19, 0, 0, 0, 10, 14};
     #region Functions
 
     public bool CanTileMove(int2 endPos) => boardController.IsPosEmpty(endPos) && boardController.IsInBounds(endPos);
@@ -151,10 +154,17 @@ public class NetworkBoard : NetworkBehaviour
     #endregion
 
     #region Piece handling
+    [Header("Piece")]
     public int3[] activePiece;
     public float2 pivot {get; private set;}
     [SerializeField]
     GameObject tileRotation;
+    public PieceType curType;
+    public int rotationIndex { get; private set; }
+    bool fullyLocked, harddrop;
+    public int tileInvisTime = -1;
+
+    public float2 movement;
 
     public void SpawnPiece(int textureID, int2[] tiles, float2 setPivot, PieceType type)
     {
@@ -264,9 +274,6 @@ public class NetworkBoard : NetworkBehaviour
         obj.transform.Rotate(new Vector3(90f * multi, 0f, 0f), Space.Self);
         return V3ToInt2(obj.transform.position);
     }
-    public PieceType curType;
-    public int rotationIndex { get; private set; }
-    bool fullyLocked, harddrop;
     /// <summary>
     /// Rotates the piece by 90 degrees in specified direction. Offest operations should almost always be attempted,
     /// unless you are rotating the piece back to its original position.
@@ -419,9 +426,7 @@ public class NetworkBoard : NetworkBehaviour
     }
     #endregion
 
-    public int tileInvisTime = -1;
-
-    public float2 movement;
+    [Header("UI?")]
     [SerializeField] GameObject rolltimeObject;
     
     bool cool, cooldisplayed;
@@ -497,9 +502,6 @@ public class NetworkBoard : NetworkBehaviour
 		{1.0f,1.5f,1.8f,2.0f,2.2f,2.3f,2.4f,2.5f,2.6f,3.0f},
 		{1.0f,1.5f,1.8f,2.0f,2.2f,2.3f,2.4f,2.5f,2.6f,3.0f},
 	};
-    static int[] lvlLineIncrement = {1, 3, 6, 10, 15, 21, 28, 36, 48, 70, 88, 90, 90, 90, 90, 90, 90, 90, 90, 90, 90, 90, 90};
-
-    public int[] linesFrozen = {0, 0, 0, 6, 4, 0, 0, 0, 8, 0, 0, 12, 16, 0, 0, 0, 19, 0, 0, 0, 10, 14};
     public void LineClears(int lines, bool spin)
     {
         if (lines > 0)
@@ -675,10 +677,8 @@ public class NetworkBoard : NetworkBehaviour
         if(ReplayRecord.instance.mode != ReplayModeType.read)
         {
             ReplayRecord.instance.boards++;
-            ReplayRecord.instance.movementVector.Add(new List<float2>());
-            ReplayRecord.instance.inputs.Add(new List<bool4x2>());
-            bool[] tempSwitches = {false, false};
-            ReplayRecord.instance.switches.Add(tempSwitches);
+            bool[] tempSwitches = {false, false, false};
+            ReplayRecord.instance.switches[ReplayRecord.instance.boards] = tempSwitches;
         }
 
         if(player.Count > 0) playerID = player.Count;
@@ -927,6 +927,11 @@ public class NetworkBoard : NetworkBehaviour
                             ReplayRecord.instance.SaveReplay(DateTime.Now.ToString("MM-dd-yyyy-HH-mm-ss"));
                         }
                         player = new List<NetworkBoard>();
+                        if(oneshot && curSect > 2)
+                        {
+                            PlayerPrefs.SetInt("Oneshot", 3);
+                            PlayerPrefs.Save();
+                        }
                         MenuEngine.instance.starting = true;
                     }
                     else

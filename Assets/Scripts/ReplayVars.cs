@@ -27,17 +27,26 @@ public class ReplayVars
 {
     public int boards;
     public int seed;
-    public List<double[]> timings;
-    public List<List<float2>> movementVector;
-    public List<List<bool4x2>> inputs;
-    public List<bool[]> switches;
+    public double[][] timings;
+    public float2[][] movementVector;
+    public bool4x2[][] inputs;
+    public bool[][] switches;
     
     public ReplayVars (ReplayRecord replay)
     {
         boards = replay.boards;
-        movementVector = replay.movementVector;
-        inputs = replay.inputs;
+        inputs = arrayOfListsToArrayOfArrays(replay.inputs);
+        movementVector = arrayOfListsToArrayOfArrays(replay.movementVector);
         switches = replay.switches;
         seed = ReplayRecord.seed;
+    }
+    public T[][] arrayOfListsToArrayOfArrays<T>(List<T>[] list)
+    {
+        T[][] array = new T[list.Length][];
+        for (int i = 0; i < list.Length; i++)
+        {
+            array[i] = list[i].ToArray();
+        }
+        return array;
     }
 }

@@ -11,17 +11,33 @@ public static class SIUnitsConversion
     {
         return Math.Floor((input/scale)*100)/100;
     }
-    static double[] scales = new double[] {3600, 60, 1, 0.001, 0.000001, 0.000000001};
-    static string[] indicators = new string[] {"h", "m", "s", "ms", "μs", "ns"};
+    static double[] timeScales = new double[] {3600, 60, 1, 0.001, 0.000001, 0.000000001};
+    static string[] timeIndicators = new string[] {"h", "m", "s", "ms", "μs", "ns"};
+    static double[] sizeScales = new double[] {1000000, 1000, 1, 0.001, 0.000001, 0.000000001};
+    static string[] sizeIndicators = new string[] {"mgm", "km", "m", "mm", "μm", "nm"};
+
+    public static string doubleToSize(double time, bool showSymbol = true)
+    {
+        double value;
+        for (int i = 0; i < sizeScales.Length; i++)
+        {
+            if (DSC(time, sizeScales[i])) 
+            {
+                value = valueScale(time, sizeScales[i]);
+                return value + (showSymbol ? sizeIndicators[i] : string.Empty);
+            }
+        }
+        return "0";
+    }
     public static string doubleToSITime(double time, bool showSymbol = true)
     {
         double value;
-        for (int i = 0; i < scales.Length; i++)
+        for (int i = 0; i < timeScales.Length; i++)
         {
-            if (DSC(time, scales[i])) 
+            if (DSC(time, timeScales[i])) 
             {
-                value = valueScale(time, scales[i]);
-                return value + (showSymbol ? indicators[i] : string.Empty);
+                value = valueScale(time, timeScales[i]);
+                return value + (showSymbol ? timeIndicators[i] : string.Empty);
             }
         }
         return "0";
