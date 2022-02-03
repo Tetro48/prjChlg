@@ -428,14 +428,7 @@ public class MenuEngine : MonoBehaviour
     // Updates once every frame.
     void Update()
     {
-        double rawframetime = Time.unscaledDeltaTime;
-        frameratebuffer[Time.frameCount%10] = rawframetime;
-        double result = 0;
-        for (int fr = 0; fr < 10; fr++)
-        {
-            result += frameratebuffer[fr];
-        }
-        framerate = 1.0 / (result/10);
+        framerate = 1 / Time.smoothDeltaTime;
         if (previousLang != language)
         {
             previousLang = language;
@@ -501,6 +494,7 @@ public class MenuEngine : MonoBehaviour
             else if(!segments[0].MoveCoupleUIElements(false)) return;
             else if(PlayerPrefs.GetInt("Oneshot", 0) == 3 && switches[2])
             {
+                MessageBoxHandler.MessageBox(new IntPtr(0), "You've used your only shot.", "Project Challenger", 0);
                 startGame = false;
                 starting = true;
             }

@@ -33,7 +33,7 @@ using TMPro;
 /// </summary>
 public class NetworkBoard : NetworkBehaviour
 {
-    public int lives = 1;
+    public byte lives = 1;
     public static List<NetworkBoard> player = new List<NetworkBoard>();
     public BoardController boardController;
     public BoardParticleSystem boardParticles;
@@ -99,36 +99,18 @@ public class NetworkBoard : NetworkBehaviour
 
     public bool lineFreezingMechanic, bigMode, oneshot;
     public bool LockDelayEnable;
-    [Range(0,25)]
     public int countLockResets, maxLockResets = 20;
-
-    [Range(0, 1000)]
     public double LockDelay = 50, LockDelayf = 0;
-
-    [Range(0, 1000)]
     public double DAS = 15;
-
-    [Range(0, 1000)]
     public double SDF = 6;
-
-    [Range(0, 1000)]
     public double ARE = 41.66666666666666;
-
-    [Range(-1005, 1000)]
     public double AREf = 42 - 300;
+    public double AREline = 16.66666666666666666;
+    public int lineDelayf = 0;
+    public double lineDelay = 25;
+    public float gravity = 3/64f;
 
     public int frames;
-
-    [Range(0, 1000)]
-    public double AREline = 16.66666666666666666;
-
-    public int lineDelayf = 0;
-
-    [Range(0, 1000)]
-    public double lineDelay = 25;
-
-    [Range(0, 60)]
-    public float gravity = 3/64f;
 
     public int singles, doubles, triples, tetrises, pentrises, sixtrises, septrises, octrises, allClears;
 
@@ -148,6 +130,18 @@ public class NetworkBoard : NetworkBehaviour
     public int[] linesFrozen = {0, 0, 0, 6, 4, 0, 0, 0, 8, 0, 0, 12, 16, 0, 0, 0, 19, 0, 0, 0, 10, 14};
     #region Functions
 
+    /*Note: This piece of function code is done in an expression body.
+
+    public var function() => var
+
+    is effectively the same as
+
+    public var function()
+    {
+        return var
+    }
+
+    */
     public bool CanTileMove(int2 endPos) => boardController.IsPosEmpty(endPos) && boardController.IsInBounds(endPos);
     static int2 V3ToInt2(Vector3 vector3) => new int2(Mathf.FloorToInt(vector3.x + 0.5f), Mathf.FloorToInt(vector3.y + 0.5f));
     static Vector2Int int2ToV2Int(int2 integers) => new Vector2Int(integers.x, integers.y);
@@ -677,8 +671,7 @@ public class NetworkBoard : NetworkBehaviour
         if(ReplayRecord.instance.mode != ReplayModeType.read)
         {
             ReplayRecord.instance.boards++;
-            bool[] tempSwitches = {false, false, false};
-            ReplayRecord.instance.switches[ReplayRecord.instance.boards] = tempSwitches;
+            ReplayRecord.instance.switches[ReplayRecord.instance.boards] = new bool[3] {lineFreezingMechanic, bigMode, oneshot};
         }
 
         if(player.Count > 0) playerID = player.Count;
@@ -868,7 +861,7 @@ public class NetworkBoard : NetworkBehaviour
             else if (sectAfter20g < 13) DAS = 3;
             else DAS = 1;
         }
-        else if (lives <= 1)
+        else if (lives < 2)
         {
             readyGoIndicator.sprite = null;
             if(frames%10==9 && frames<400)boardController.DestroyLine(frames/10);

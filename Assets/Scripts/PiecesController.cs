@@ -553,18 +553,20 @@ public class PiecesController : MonoBehaviour {
             if(board.activePiece != null) 
             {
                 if (!board.CanMovePiece(int2.zero) && !piecemovementlocked) board.SendPieceToFloor();
+                int tilesCounted = 0;
                 if(piecemovementlocked == false) while (gravityTiles >= 1)
                 {
-                    if (!board.CanMovePiece(new int2(0,-1)))
+                    if (!board.CanMovePiece(new int2(0,-1 -tilesCounted)))
                     {
                         gravityTiles = 0;
                     }
                     else
                     {
-                        board.MovePiece(new int2(0,-1), true);
+                        tilesCounted++;
                         gravityTiles--;
                     }
                 }
+                board.MovePiece(new int2(0,-tilesCounted), true);
             }
             if (board.Inputs.c0.x && !PrevInputs.c0.x && !piecemovementlocked)
             {

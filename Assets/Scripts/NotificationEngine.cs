@@ -64,7 +64,6 @@ public class NotificationEngine : MonoBehaviour
         if(notificationInstance.Count > 0) for (int i = 0; i < notificationInstance.Count; i++)
         {
             notifAnimFrames[i] += Time.deltaTime / Time.fixedDeltaTime;
-                Debug.Log(notificationInstance[i].transform.localPosition.x);
             if (notifAnimFrames[i] < 50)
             {
                 notificationInstance[i].transform.position -= new Vector3((384/25)*MenuEngine.instance.reswidth * (Time.deltaTime / Time.fixedDeltaTime), 0, 0);

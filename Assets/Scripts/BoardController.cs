@@ -49,12 +49,10 @@ public class BoardController : MonoBehaviour {
     float[,] transparencyGrid;
     int[,] prevTextureIDGrid;
     Material[,] gridOfMaterials;
-
     private void Start()
     {
         CreateGrid();
     }
-
     private void FixedUpdate()
     {
         TopoutWarning();

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Unity.Collections;
 using Unity.Collections.LowLevel.Unsafe;
 using Unity.Mathematics;
+using System;
 
 /*
     Project Challenger, an challenging Tetris game.
@@ -23,7 +24,7 @@ using Unity.Mathematics;
 */
 
 [System.Serializable]
-public class ReplayVars
+public class ReplayVars : IDisposable
 {
     public int boards;
     public int seed;
@@ -32,6 +33,10 @@ public class ReplayVars
     public bool4x2[][] inputs;
     public bool[][] switches;
     
+    public void Dispose()
+    {
+        UnityEngine.Debug.Log("Disposed of ReplayVars");
+    }
     public ReplayVars (ReplayRecord replay)
     {
         boards = replay.boards;

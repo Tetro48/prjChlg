@@ -41,7 +41,9 @@ public class ReplayRecord : MonoBehaviour
 
     public void SaveReplay(string name)
     {
-        ReplayScript.SaveReplay(this, name);
+        ReplayVars vars = new ReplayVars(this);
+        ReplayScript.SaveData(vars, name);
+        vars.Dispose();
     }
     public void LoadReplay(string name)
     {

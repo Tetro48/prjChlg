@@ -22,6 +22,35 @@ using System.Runtime.Serialization.Formatters.Binary;
 
 public static class ReplayScript
 {
+    public static void SaveData<T>(T data, in string save_name)
+    {
+        BinaryFormatter formatter = new BinaryFormatter();
+        string path = Path.Combine(Application.persistentDataPath, save_name.ToString());
+        FileStream stream = new FileStream(path, FileMode.Create);
+
+        formatter.Serialize(stream, data);
+        stream.Close();
+    }
+
+    /// <summary>
+    ///Note: You have to manually manage this through code.
+    /// </summary>
+    public static FileStream LoadData(string saveName)
+    {
+        string path = Path.Combine(Application.persistentDataPath, saveName.ToString());
+        if (File.Exists(path))
+        {
+            BinaryFormatter formatter = new BinaryFormatter();
+            FileStream stream = new FileStream(path, FileMode.Open);
+
+            return stream;
+        }
+        else
+        {
+            Debug.LogError("A file is not there! Path: " + path);
+            return default;
+        }
+    }
     public static void SaveReplay(ReplayRecord replayRecord, string saveName)
     {
         BinaryFormatter formatter = new BinaryFormatter();
