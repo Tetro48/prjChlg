@@ -6,14 +6,14 @@ public static class AudioManager
 {
     public static Dictionary<string,AudioClip> audioDictionary;
 
-    /// <param name="clip">An audio to play upon</param>
-    public static void PlayClip(AudioClip clip)
+    /// <param name="clip">An audio clip to play upon</param>
+    public static void PlayClip(AudioClip clip, float volume = 1f)
     {
-        GameEngine.instance.gameAudio.PlayOneShot(clip);
+        GameEngine.instance.gameAudio.PlayOneShot(clip, volume);
     }
     /// <param name="clipName">An audio to play upon</param>
-    public static void PlayClip(string clipName)
+    public static void PlayClip(string clipName, float volume = 1f)
     {
-        GameEngine.instance.gameAudio.PlayOneShot(audioDictionary[clipName]);
+        GameEngine.instance.gameAudio.PlayOneShot(audioDictionary[clipName], volume);
     }
 }
