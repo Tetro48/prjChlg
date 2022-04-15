@@ -65,7 +65,7 @@ public class MenuEngine : MonoBehaviour
     public AudioSource audioSource, audioSource2, mainMenuMusic, audioSourceConfirmation;
     public AudioClip clip, topoutSE;
     public GameObject inGameBoard, curBoard;
-    public AudioClip ModeOK;
+    public AudioClip ModeOK, messageboxPopup;
     public GameObject imgprjchlg, mobileInput;
     public RectTransform[] mainMenuGUIMovement, settingsGUIMovement, settingsGUIPartMovement;
     public MenuSegment[] segments;
@@ -81,9 +81,10 @@ public class MenuEngine : MonoBehaviour
     #region Player Configuration
     public double[] timings = {50, 41.6666666, 16.6666666, 25, 3/64};
     public RotationSystems rotationSystems;
-    public int nextPieces = 7;
+    public int nextPieces = 7, endingLevel = 2100;
     public bool[] switches;
 
+    [BurstCompatible]
     public struct int3Array : IJobParallelFor
     {
         public NativeArray<int3> array;
@@ -151,10 +152,11 @@ public class MenuEngine : MonoBehaviour
     #endregion
 
     Language previousLang;
-    public void InstantiatePlayer(double LockDelay = 50, double ARE = 41.6666666, double AREline = 16.6666666, double lineDelay = 25, float gravity = 3 / 64f, RotationSystems rotationSystem = RotationSystems.SRS, int nextPieces = 7)
+    public GameObject InstantiatePlayer(double LockDelay = 50, double ARE = 41.6666666, double AREline = 16.6666666, double lineDelay = 25, float gravity = 3 / 64f, RotationSystems rotationSystem = RotationSystems.SRS, int nextPieces = 7, int endingLevel = 2100)
     {
         GameObject newBoard = Instantiate(inGameBoard, transform);
         newBoard.transform.localPosition += new Vector3(25f, 0f, 0f) * (NetworkBoard.player.Count -1);
+        // newBoard.GetComponent<NetworkObject>().Spawn();
         NetworkBoard component = newBoard.GetComponent<NetworkBoard>();
         component.LockDelay = LockDelay;
         component.ARE = ARE;
@@ -168,6 +170,8 @@ public class MenuEngine : MonoBehaviour
         component.bigMode = switches[1];
         component.oneshot = switches[2];
         component.piecesController.InitiatePieces();
+        component.endingLevel = endingLevel;
+        return newBoard;
     }
     public void QuitGame()
     {
@@ -184,7 +188,27 @@ public class MenuEngine : MonoBehaviour
     }
     public void PlayGame()
     {
-        if(!starting && !startGame) {startGame = true;  Notify(LanguageList.LangString[(int)LangArray.notifications][(int)language, 15], Color.white);}
+        if (switches[2] && PlayerPrefs.GetInt("oneshot", 0) != 3)
+        {
+            if (PlayerPrefs.GetInt("oneshot", 0) != 3) 
+            {
+                audioSource.PlayOneShot(messageboxPopup);
+                mainMenuMusic.Pause();
+                MessageBoxHandler.MessageBox(new IntPtr(0), "You've used your only shot.", "Project Challenger", 0x00000010u);
+                mainMenuMusic.UnPause();
+                return;
+            }
+            mainMenuMusic.Pause();
+            int messageboxOutput = MessageBoxHandler.MessageBox(default, "You'll have only one shot, but, you can beat it.", "Project Challenger", 0x00000024);
+            mainMenuMusic.UnPause();
+            if (messageboxOutput == 7)
+            {
+                return;
+            }
+            switches[2] = true;
+            endingLevel = 1000;
+        }
+        if(!starting && !startGame) { startGame = true; if (PlayerPrefs.GetInt("Oneshot", 0) != 3 || !switches[2]) Notify(LanguageList.LangString[(int)LangArray.notifications][(int)language, 15], Color.white); }
     }
     public void SubMenu(int subMenuContext)
     {
@@ -253,12 +277,19 @@ public class MenuEngine : MonoBehaviour
         return false;
     }
     public bool alreadystarted;
+    public AudioClip[] audioClips;
     void Awake()
     {
         players = new List<GameObject>();
         Application.targetFrameRate = Screen.currentResolution.refreshRate * 4;
         alreadystarted = true;
         instance = this;
+        AudioManager.audioDictionary = new Dictionary<string, AudioClip>();
+        for (int i = 0; i < audioClips.Length; i++)
+        {
+            Debug.Log("clipname: " + audioClips[i].name);
+            AudioManager.audioDictionary.Add(audioClips[i].name, audioClips[i]);
+        }
         TextureUVs.GenerateTextureUVs();
     }
     public bool drpcSwitch;
@@ -425,9 +456,15 @@ public class MenuEngine : MonoBehaviour
     double framerate;
     [SerializeField] double[] frameratebuffer = new double[10];
     bool executedOnce = false;
+    bool isMessageBoxActive = false;
     // Updates once every frame.
     void Update()
     {
+        if (isMessageBoxActive)
+        {
+            isMessageBoxActive = !isMessageBoxActive;
+            return;
+        }
         framerate = 1 / Time.smoothDeltaTime;
         if (previousLang != language)
         {
@@ -494,7 +531,11 @@ public class MenuEngine : MonoBehaviour
             else if(!segments[0].MoveCoupleUIElements(false)) return;
             else if(PlayerPrefs.GetInt("Oneshot", 0) == 3 && switches[2])
             {
-                MessageBoxHandler.MessageBox(new IntPtr(0), "You've used your only shot.", "Project Challenger", 0);
+                // audioSource.PlayOneShot(messageboxPopup);
+                mainMenuMusic.Pause();
+                MessageBoxHandler.MessageBox(new IntPtr(0), "You've used your only shot.", "Project Challenger", 0x00000010u);
+                mainMenuMusic.UnPause();
+                isMessageBoxActive = true;
                 startGame = false;
                 starting = true;
             }
@@ -516,7 +557,7 @@ public class MenuEngine : MonoBehaviour
                     menuSectors[0].SetActive(false);
                     executedOnce = true;
 
-                    InstantiatePlayer(timings[0], timings[1], timings[2], timings[3], (float)timings[4], rotationSystems, nextPieces);
+                    curBoard = InstantiatePlayer(timings[0], timings[1], timings[2], timings[3], (float)timings[4], rotationSystems, nextPieces, endingLevel);
                     mainMenuMusic.Stop();
                 }
                 if (UITimeDeltas[0] < -0.17)

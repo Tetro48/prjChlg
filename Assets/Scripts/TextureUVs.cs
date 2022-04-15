@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using Unity.Mathematics;
+using UnityEngine;
 
 public static class TextureUVs
 {
@@ -13,5 +14,6 @@ public static class TextureUVs
         {
             UVs[i] = new float2(-(float)(i % size.x) / size.x, (float)Math.Floor((double)i / size.x + 1) / size.y);
         }
+        // UnityEngine.Debug.Log(UVs);
     }
 }

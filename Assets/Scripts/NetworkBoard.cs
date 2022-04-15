@@ -31,7 +31,7 @@ using TMPro;
 /// <summary>
 /// This handles almost everything GameEngine.cs handled before multiplayer update and a bit more.
 /// </summary>
-public class NetworkBoard : NetworkBehaviour
+public class NetworkBoard : MonoBehaviour
 {
     public byte lives = 1;
     public static List<NetworkBoard> player = new List<NetworkBoard>();
@@ -112,7 +112,8 @@ public class NetworkBoard : NetworkBehaviour
 
     public int frames;
 
-    public int singles, doubles, triples, tetrises, pentrises, sixtrises, septrises, octrises, allClears;
+    public int singles, doubles, triples, tetrises, pentrises, sixtrises, septrises, octrises;
+    public int allClears;
 
     public int totalLines;
 
@@ -151,6 +152,7 @@ public class NetworkBoard : NetworkBehaviour
     [Header("Piece")]
     public int3[] activePiece;
     public float2 pivot {get; private set;}
+    public Chunk chunk;
     [SerializeField]
     GameObject tileRotation;
     public PieceType curType;
@@ -199,10 +201,10 @@ public class NetworkBoard : NetworkBehaviour
             }
         }
 
-        boardController.UpdateActivePiece(activePiece, true);
+        // boardController.UpdateActivePiece(activePiece, true);
         UnisonPieceMove(movement);
         LockDelayf = 0;
-        if(movement.y >= 0) if(!offset) if(LockDelay > 5 || gravity < 19) AudioManager.PlayClip(moveSE);
+        if(movement.y >= 0) if(!offset) if(LockDelay > 5 || gravity < 19) AudioManager.PlayClip("move");
         if(!CanMovePiece(new int2(0,-1)))countLockResets++;
         if(countLockResets >= maxLockResets)
         {
@@ -225,11 +227,9 @@ public class NetworkBoard : NetworkBehaviour
             activePiece[i].xy += movement;
         }
         pivot += movement;
-        boardController.UpdateActivePiece(activePiece);
     }
     public bool RotateInUnison(bool clockwise, bool UD = false)
     {
-        boardController.UpdateActivePiece(activePiece, true);
         for (int i = 0; i < activePiece.Length; i++)
         {
             activePiece[i].xy = RotateObject(tileRotation, activePiece[i].xy, pivot, clockwise, UD);
@@ -670,15 +670,14 @@ public class NetworkBoard : NetworkBehaviour
         UnityEngine.Random.InitState(SeedManager.seed);
         if(ReplayRecord.instance.mode != ReplayModeType.read)
         {
-            ReplayRecord.instance.boards++;
-            ReplayRecord.instance.switches[ReplayRecord.instance.boards] = new bool[3] {lineFreezingMechanic, bigMode, oneshot};
+            ReplayRecord.instance.switches[player.Count] = new bool[3] {lineFreezingMechanic, bigMode, oneshot};
         }
 
         if(player.Count > 0) playerID = player.Count;
         else playerID = 0;
         boardController.playerID = playerID;
         piecesController.playerID = playerID;
-        if(IsOwner)
+        // if(IsOwner)
         {
             MenuEngine.instance.yourPlayer = this;
             MenuEngine.instance.curBoard = gameObject;
@@ -700,8 +699,9 @@ public class NetworkBoard : NetworkBehaviour
     
     void FixedUpdate()
     {
+        // if(!NetworkObject.IsSpawned) NetworkObject.Spawn();
         if(level > highestLevel && !GameOver) highestLevel = level;
-        if (IsOwner)
+        // if (IsOwner)
         {
             NetworkUpdate();
         }
@@ -709,23 +709,7 @@ public class NetworkBoard : NetworkBehaviour
     // Update is called once per frame
     void NetworkUpdate()
     {
-        
-        if (AREf == (-400 + ARE)+1)  transform.position = new Vector3(0.0f, 18f, 0.0f);
-        if (AREf == (-400 + ARE)+2)  transform.position = new Vector3(0.0f, 16f, 0.0f);
-        if (AREf == (-400 + ARE)+3)  transform.position = new Vector3(0.0f, 14f, 0.0f);
-        if (AREf == (-400 + ARE)+4)  transform.position = new Vector3(0.0f, 12f, 0.0f);
-        if (AREf == (-400 + ARE)+5)  transform.position = new Vector3(0.0f, 10f, 0.0f);
-        if (AREf == (-400 + ARE)+6)  transform.position = new Vector3(0.0f, 8f, 0.0f);
-        if (AREf == (-400 + ARE)+7)  transform.position = new Vector3(0.0f, 6f, 0.0f);
-        if (AREf == (-400 + ARE)+8)  transform.position = new Vector3(0.0f, 4f, 0.0f);
-        if (AREf == (-400 + ARE)+9)  transform.position = new Vector3(0.0f, 2f, 0.0f);
-        if (AREf == (-400 + ARE)+10)  transform.position = new Vector3(0.0f, 0f, 0.0f);
-        if (AREf == (-400 + ARE)+11)  transform.position = new Vector3(0.0f, -0.8f, 0.0f);
-        if (AREf == (-400 + ARE)+12)  transform.position = new Vector3(0.0f, -1.4f, 0.0f);
-        if (AREf == (-400 + ARE)+13)  transform.position = new Vector3(0.0f, -2f, 0.0f);
-        if (AREf == (-400 + ARE)+14)  transform.position = new Vector3(0.0f, -1.3f, 0.0f);
-        if (AREf == (-400 + ARE)+15)  transform.position = new Vector3(0.0f, -0.7f, 0.0f);
-        if (AREf == (-400 + ARE)+16)  transform.position = new Vector3(0.0f, 0f, 0.0f);
+        // chunk.UpdateChunk(new int2(10,40), activePiece, new float[10,40]);
         if(!GameOver)
         {
             if(framestepped && activePiece != null)

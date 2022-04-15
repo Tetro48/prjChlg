@@ -84,6 +84,11 @@ public class ReplayRecord : MonoBehaviour
         inputs = new List<bool4x2>[players];
         switches = new bool[players][];
         seed = new int();
+        for (int i = 0; i < players; i++)
+        {
+            movementVector[i] = new List<float2>();
+            inputs[i] = new List<bool4x2>();
+        }
         
     }
     void Awake()

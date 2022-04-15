@@ -34,7 +34,7 @@ public class MenuSegment : MonoBehaviour
         {
             uitimedelta += Time.unscaledDeltaTime * speed;
             buttonTime *= System.Math.Ceiling(UITimeDelta / buttonTime);
-            if(uitimedelta >= (double)count) output = false;
+            if(uitimedelta >= (double)count * buttonMovementInSeconds) output = false;
             else output = uitimedelta > buttonTime;
         }
         else

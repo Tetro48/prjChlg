@@ -667,7 +667,7 @@ public class PiecesController : MonoBehaviour {
     /// </summary>
     public void SpawnHoldPiece()
     {
-        if(!IHSexecuted) AudioManager.PlayClip(holdSE);
+        if(!IHSexecuted) AudioManager.PlayClip("hold");
         piecemovementlocked = true;
         gravityTiles = 1.0f;
         if (board.gravity >= 19.99999)

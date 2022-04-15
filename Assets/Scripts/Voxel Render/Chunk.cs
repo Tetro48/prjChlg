@@ -1,7 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
 using Unity.Mathematics;
-using Unity.Collections;
 using UnityEngine;
 
 public class Chunk : MonoBehaviour
@@ -12,13 +11,18 @@ public class Chunk : MonoBehaviour
     int2 chunkSize = new int2(10, 40);
     int[,] textureIDs;
     float[,] transparencyGrid;
-    NativeList<Vector3> verts = new NativeList<Vector3>();
-    NativeList<int> tris = new NativeList<int>();
-    NativeList<Vector2> UVs = new NativeList<Vector2>();
+    List<Vector3> verts = new List<Vector3>();
+    List<int> tris = new List<int>();
+    List<Vector2> UVs = new List<Vector2>();
     
 
     public void UpdateChunk(in int2 size, in int[,] textures, in float[,] transparencies)
     {
+        if(textureIDs != null && transparencyGrid != null)if(textureIDs.Equals(textures) && transparencyGrid.Equals(transparencies)) return;
+        vertexIndex = 0;
+        verts.Clear();
+        tris.Clear();
+        UVs.Clear();
         chunkSize = size;
         textureIDs = textures;
         transparencyGrid = transparencies;
@@ -29,25 +33,50 @@ public class Chunk : MonoBehaviour
     {
         chunkSize = size;
         textureIDs = new int[chunkSize.x,chunkSize.y];
+        Debug.Log(textureIDs.GetLength(1));
+        for (int i = 0; i < chunkSize.y; i++)
+        {
+            for (int x = 0; x < chunkSize.x; x++)
+            {
+                textureIDs[x,i] = -1;
+            }
+        }
         for (int i = 0; i < textures.Length; i++)
         {
             textureIDs[textures[i].x, textures[i].y] = textures[i].z;
+        }
+        for (int i = 0; i < 40; i++)
+        {
+            Debug.Log(textureIDs[0,i]);
+            Debug.Log(textureIDs[1,i]);
+            Debug.Log(textureIDs[2,i]);
+            Debug.Log(textureIDs[3,i]);
+            Debug.Log(textureIDs[4,i]);
+            Debug.Log(textureIDs[5,i]);
+            Debug.Log(textureIDs[6,i]);
+            Debug.Log(textureIDs[7,i]);
+            Debug.Log(textureIDs[8,i]);
+            Debug.Log(textureIDs[9,i]);
         }
         transparencyGrid = transparencies;
         CreateMeshData();
         CreateMesh();
     }
-    bool CheckVoxel(in int3 tile)
+    bool CheckVoxel(in int3 tile, in bool isFull = true)
     {
-        return (math.all(tile.xy >= int2.zero) && math.all(tile.xy < chunkSize) && tile.z >= 0) || transparencyGrid[tile.x, tile.y] < 1;
+        // Debug.Log(tile.xy);
+        if (tile.z != 0) return false;
+        if ((math.any(tile.xy < int2.zero) || math.any(tile.xy >= chunkSize -1))) return false;
+        return transparencyGrid[tile.x, tile.y] < 0.5 && isFull;
     }
 
     void AddVoxelDataToChunk(int3 tile)
     {
         for (int p = 0; p < 6; p++)
         {
-            if(!CheckVoxel(tile + VoxelData.faceChecks[p]))
+            if(!CheckVoxel(new int3(tile.xy, 0) + VoxelData.faceChecks[p], tile.z >= 0))
             {
+                // Debug.Log("Empty voxel at " + (new int3(tile.xy, 0) + VoxelData.faceChecks[p]));
                 verts.Add((float3)tile + VoxelData.voxelVerts [VoxelData.voxelTris[p, 0]]);
                 verts.Add((float3)tile + VoxelData.voxelVerts [VoxelData.voxelTris[p, 1]]);
                 verts.Add((float3)tile + VoxelData.voxelVerts [VoxelData.voxelTris[p, 2]]);
@@ -70,28 +99,32 @@ public class Chunk : MonoBehaviour
         {
             for (int y = 0; y < chunkSize.y; y++)
             {
-                AddVoxelDataToChunk(new int3(x, y, textureIDs[x,y]));
+                if(transparencyGrid[x,y] < 0.5) AddVoxelDataToChunk(new int3(x, y, textureIDs[x,y]));
             }
         }
     }
 
     void CreateMesh() {
-        
-        Mesh mesh = new Mesh();
-        mesh.vertices = verts.ToArray();
-        mesh.triangles = tris.ToArray();
-        mesh.uv = UVs.ToArray();
 
-        mesh.RecalculateNormals();
+        // Mesh mesh = meshFilter.mesh;
+        meshFilter.mesh.Clear();
+        // Debug.Log(ReferenceEquals(meshFilter.mesh, mesh));
+        meshFilter.mesh.vertices = verts.ToArray();
+        meshFilter.mesh.triangles = tris.ToArray();
+        meshFilter.mesh.uv = UVs.ToArray();
 
-        meshFilter.mesh = mesh;
+        meshFilter.mesh.RecalculateNormals();
+        meshFilter.mesh.MarkDynamic();
+
+        // meshFilter.mesh = mesh;
     }
     void AddTexture(int textureID) {
-        float2 xy = TextureUVs.UVs[textureID];
+        // if(textureID < 0) return;
+        float2 xy = textureID < 0 ? float2.zero : TextureUVs.UVs[textureID];
 
         UVs.Add(new Vector2(xy.x, xy.y));
-        UVs.Add(new Vector2(xy.x, xy.y + 0.25f));
+        UVs.Add(new Vector2(xy.x, xy.y + 0.1f));
         UVs.Add(new Vector2(xy.x + 0.25f, xy.y));
-        UVs.Add(new Vector2(xy.x + 0.25f, xy.y + 0.25f));
+        UVs.Add(new Vector2(xy.x + 0.25f, xy.y + 0.1f));
     }
 }

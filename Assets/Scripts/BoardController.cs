@@ -1,9 +1,12 @@
-﻿using System;
+﻿
+// global using static AudioManager;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using Unity.Mathematics;
 using System.Linq;
 using UnityEngine;
+using static AudioManager;
 
 /*
     Project Challenger, an challenging Tetris game.
@@ -36,9 +39,6 @@ public class BoardController : MonoBehaviour {
     public AudioClip[] audioLineClear, audioTSpinClear;
     public AudioClip audioLineFall, audioPieceLock, audioLineClone, warning;
 
-    public GameObject tetrisText;
-    public GameObject tileClone;
-
     bool linecleared = false;
     bool arereseted = false;
     List<int> ldldy = new List<int>();
@@ -47,8 +47,8 @@ public class BoardController : MonoBehaviour {
     List<int> allClearFireworkTime = new List<int>();
     int[,] textureIDs;
     float[,] transparencyGrid;
-    int[,] prevTextureIDGrid;
-    Material[,] gridOfMaterials;
+    [SerializeField]
+    Chunk chunk;
     private void Start()
     {
         CreateGrid();
@@ -85,15 +85,19 @@ public class BoardController : MonoBehaviour {
     }
     public void UpdateActivePiece(int3[] piece, bool transparent = false)
     {
-        for (int i = 0; i < piece.Length; i++)
-        {
-            if (!transparent) UpdateOccupiedPosition(piece[i]);
-            else
-                UpdateOccupiedPosition(new int3(piece[i].xy, -1));
-        }
+        // for (int i = 0; i < piece.Length; i++)
+        // {
+        //     if (!transparent) UpdateOccupiedPosition(piece[i]);
+        //     else
+        //         UpdateOccupiedPosition(new int3(piece[i].xy, -1));
+        // }
     }
+    public int GetMino(int x, int y) => textureIDs[x, y];
     void UpdateRender()
     {
+        // //turns out my implementation of chunks literally wastes triangles
+        // chunk.UpdateChunk(new int2(gridSizeX, gridSizeY), textureIDs, transparencyGrid);
+        // much more flexible.
         for (int x = 0; x < gridSizeX; x++)
         {
             for (int y = 0; y < gridSizeY; y++)
@@ -104,6 +108,8 @@ public class BoardController : MonoBehaviour {
     }
     public void UpdateOccupiedPosition(int3 tile)
     {
+        // throw new NotImplementedException("No use of it in chunk state.");
+        
         if (math.any(tile.xy < int2.zero | tile.xy >= new int2(gridSizeX, gridSizeY)))
         {
             return;
@@ -111,9 +117,9 @@ public class BoardController : MonoBehaviour {
         if (tile.z >= 0)
         {
             Vector2 offset = TextureUVs.UVs[tile.z];
-            gridOfMaterials[tile.x, tile.y].mainTextureOffset = Vector2.right - offset;
+            // gridOfMaterials[tile.x, tile.y].mainTextureOffset = Vector2.right - offset;
         }
-        gridOfMaterials[tile.x, tile.y].color = new Color(1,1,1, tile.z >= 0 ? 1 - transparencyGrid[tile.x,tile.y] : 0);
+        // gridOfMaterials[tile.x, tile.y].color = new Color(1,1,1, tile.z >= 0 ? 1 - transparencyGrid[tile.x,tile.y] : 0);
     }
 
     public void TopoutWarning()
@@ -208,7 +214,7 @@ public class BoardController : MonoBehaviour {
                 }        
             }
         }
-        gameAudio.PlayOneShot(audioLineClone);
+        PlayClip(audioLineClone);
         UpdateRender();
         if (networkBoard.LockDelayEnable) networkBoard.MovePiece(new int2(0,1), true);
     }
@@ -270,17 +276,16 @@ public class BoardController : MonoBehaviour {
     {
         textureIDs = new int[gridSizeX, gridSizeY];
         transparencyGrid = new float[gridSizeX, gridSizeY];
-        gridOfMaterials = new Material[gridSizeX, gridSizeY];
-        prevTextureIDGrid = new int[gridSizeX, gridSizeY];
+        // gridOfMaterials = new Material[gridSizeX, gridSizeY];
         for (int x = 0; x < gridSizeX; x++)
         {
             for (int y = 0; y < gridSizeY; y++)
             {
                 textureIDs[x,y] = -1;
-                GameObject instantiatedTile = Instantiate(tileBlock, transform);
-                instantiatedTile.transform.localPosition = new Vector2(x,y);
-                gridOfMaterials[x,y] = instantiatedTile.GetComponent<MeshRenderer>().material;
-                gridOfMaterials[x, y].color = new Color(1,1,1,0);
+                // GameObject instantiatedTile = Instantiate(tileBlock, transform);
+                // instantiatedTile.transform.localPosition = new Vector2(x,y);
+                // gridOfMaterials[x,y] = instantiatedTile.GetComponent<MeshRenderer>().material;
+                // gridOfMaterials[x, y].color = new Color(1,1,1,0);
             }
         }
     }
@@ -334,7 +339,7 @@ public class BoardController : MonoBehaviour {
             return;
         }
         textureIDs[tile.x, tile.y] = tile.z;
-        UpdateOccupiedPosition(tile);
+        // UpdateOccupiedPosition(tile);
     }
     public bool CheckAllClear()
     {
@@ -450,12 +455,11 @@ public class BoardController : MonoBehaviour {
     public bool SetTile(int3 tile)
     {
 
-        if (tile.y >= 24 || !IsPosEmpty(tile.xy) || tile.x >= 10) 
+        if (!IsPosEmpty(tile.xy) || tile.x >= 10) 
         {
-            OccupyPos(tile);
+            // OccupyPos(tile);
             return false;
         }
-
         OccupyPos(tile);
         return true; // when if statement up here is false, that line of code is ignored.                     ⬆ is a reason why return true; will not execute when if statement is false.
     }
