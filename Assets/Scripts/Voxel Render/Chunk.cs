@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Unity.Mathematics;
 using UnityEngine;
 
+//didn't find a way to fix this triangle mess.
 public class Chunk : MonoBehaviour
 {
     public MeshRenderer meshRenderer;
