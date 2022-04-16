@@ -48,11 +48,11 @@ public class DefaultMode : IMode
     public double LockDelay = 50;
     public double DAS = 15;
     public double SDF = 6;
-    public double ARE = 41.66666666666666;
-    public double AREf = 42 - 300;
-    public double AREline = 16.66666666666666666;
-    public int lineDelayf = 0;
-    public double lineDelay = 25;
+    public double spawnDelay = 41.66666666666666;
+    public double spawnTicks = 42 - 300;
+    public double lineSpawnDelay = 16.66666666666666666;
+    public int lineDropTicks = 0;
+    public double lineDropDelay = 25;
     public float gravity = 3/64f;
 
     public int frames;
@@ -168,7 +168,7 @@ public class DefaultMode : IMode
     }
     public double GetSpawnDelay()
     {
-        return ARE;
+        return spawnDelay;
     }
 
     public double GetLockDelay()
@@ -178,12 +178,12 @@ public class DefaultMode : IMode
 
     public double GetLineDropDelay()
     {
-        return lineDelay;
+        return lineDropDelay;
     }
 
     public double GetLineSpawnDelay()
     {
-        return AREline;
+        return lineSpawnDelay;
     }
     public double GetDAS()
     {
@@ -203,37 +203,37 @@ public class DefaultMode : IMode
     public void OnUpdate(float deltaTime, NetworkBoard board)
     {
         // a ref???
-        ref double LockDelayf = ref board.LockDelayf;
+        ref double LockTicks = ref board.LockTicks;
     
         checkCool();
         if(level > endingLevel) level = endingLevel;
         rolltimeObject.SetActive(ending);
         if(notifDelay > 0)notifDelay--;
         
-        if(ending && AREf >= 0)board.tileInvisTime = 20 - ((int)rollTime / (400/6*10));
+        if(ending && spawnTicks >= 0)board.tileInvisTime = 20 - ((int)rollTime / (400/6*10));
         else board.tileInvisTime = -1;
-        if (AREf == (int)ARE - 399) AudioManager.PlayClip("excellent");
-        if(AREf >= 0)
+        if (spawnTicks == (int)spawnDelay - 399) AudioManager.PlayClip("excellent");
+        if(spawnTicks >= 0)
         time += deltaTime;
-        if(AREf >= 0 && ending && rollTime < rollTimeLimit)
+        if(spawnTicks >= 0 && ending && rollTime < rollTimeLimit)
         {
             rollTime += deltaTime;
             if(rollTime >= rollTimeLimit)
             {
                 rollTime = rollTimeLimit;
-                AREf = (int)ARE - 1000;
+                spawnTicks = (int)spawnDelay - 1000;
             }
         }
-        if (AREf == (int)ARE - 401)
+        if (spawnTicks == (int)spawnDelay - 401)
         {
             board.lives = 1;
             //This will stop the further execution of everything else.
             board.GameOver = true;
         }
-        if(AREf < (int)ARE - 401)
+        if(spawnTicks < (int)spawnDelay - 401)
         {
-            if(AREf % 10 == 0) board.SpawnFireworks();
-            if(AREf % 50 == 0 && grade < gradeSprites.Length - 1)
+            if(spawnTicks % 10 == 0) board.SpawnFireworks();
+            if(spawnTicks % 50 == 0 && grade < gradeSprites.Length - 1)
             {
                 grade++;
                 gradeIndicator.sprite = gradeSprites[grade];
@@ -253,7 +253,7 @@ public class DefaultMode : IMode
         if(!ending)
         {
             timeCounter.text = TimeConversion.doubleFloatTimeCount(time);
-            if(AREf >= 0 && rollTime < rollTimeLimit)sectionTime[curSect] += deltaTime;
+            if(spawnTicks >= 0 && rollTime < rollTimeLimit)sectionTime[curSect] += deltaTime;
         }
         rollTimeCounter.text = TimeConversion.doubleFloatTimeCount(rollTimeLimit - rollTime);
         if (comboKeepCounter == 0)
@@ -299,7 +299,7 @@ public class DefaultMode : IMode
             curSect++;
             if (curSect > (endingLevel/sectionSize) - 1)
             {
-                AREf = ARE - 400;
+                spawnTicks = spawnDelay - 400;
                 ending = true;
             }
             AudioManager.PlayClip("levelup");
@@ -310,9 +310,9 @@ public class DefaultMode : IMode
             if(curSect % 5 == 0) NotificationEngine.Notify(LanguageList.Extract(LangArray.notifications, MenuEngine.instance.language, 12),Color.white);
             if (gravity >= 10)
             {
-                ARE *= percentage;
-                AREline *= percentage;
-                lineDelay *= percentage;
+                spawnDelay *= percentage;
+                lineSpawnDelay *= percentage;
+                lineDropDelay *= percentage;
                 LockDelay *= percentage;
                 sectAfter20g++;
                 if(LockDelay < 1)

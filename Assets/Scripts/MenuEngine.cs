@@ -152,17 +152,17 @@ public class MenuEngine : MonoBehaviour
     #endregion
 
     Language previousLang;
-    public GameObject InstantiatePlayer(double LockDelay = 50, double ARE = 41.6666666, double AREline = 16.6666666, double lineDelay = 25, float gravity = 3 / 64f, RotationSystems rotationSystem = RotationSystems.SRS, int nextPieces = 7, int endingLevel = 2100)
+    public GameObject InstantiatePlayer(double LockDelay = 50, double spawnDelay = 41.6666666, double lineSpawnDelay = 16.6666666, double lineDropDelay = 25, float gravity = 3 / 64f, RotationSystems rotationSystem = RotationSystems.SRS, int nextPieces = 7, int endingLevel = 2100)
     {
         GameObject newBoard = Instantiate(inGameBoard, transform);
         newBoard.transform.localPosition += new Vector3(25f, 0f, 0f) * (NetworkBoard.player.Count -1);
         // newBoard.GetComponent<NetworkObject>().Spawn();
         NetworkBoard component = newBoard.GetComponent<NetworkBoard>();
         component.LockDelay = LockDelay;
-        component.ARE = ARE;
-        component.AREf = (int)ARE - 300;
-        component.AREline = AREline;
-        component.lineDelay = lineDelay;
+        component.spawnDelay = spawnDelay;
+        component.spawnTicks = (int)spawnDelay - 300;
+        component.lineSpawnDelay = lineSpawnDelay;
+        component.lineDropDelay = lineDropDelay;
         component.gravity = gravity;
         component.nextPieces = nextPieces;
         component.RS = rotationSystem;

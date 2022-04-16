@@ -328,9 +328,9 @@ public class PiecesController : MonoBehaviour {
     {
         if(bag[pieces] < 7)
         {
-            if((board.ARE < 1 && (!board.ending || board.AREf >= 0)) || executedHold == true)
+            if((board.spawnDelay < 1 && (!board.ending || board.spawnTicks >= 0)) || executedHold == true)
             {
-                board.LockDelayf = 0;
+                board.LockTicks = 0;
                 board.lineClonePiecesLeft--;
                 if (board.lineClonePiecesLeft == 0)
                 {
@@ -399,7 +399,7 @@ public class PiecesController : MonoBehaviour {
     // void Update()
     // {
     //     if(board.framestepped && !board.GameOver && nextpiecequeued)
-    //     board.AREf += Time.deltaTime * 100;
+    //     board.spawnTicks += Time.deltaTime * 100;
     // }
     /// <summary>
     /// Called once every frame. Checks for player input.
@@ -423,8 +423,8 @@ public class PiecesController : MonoBehaviour {
             if(!piecemovementlocked)gravityTiles += board.gravity;
             if (nextpiecequeued == true)
             {
-                board.AREf++;
-                if (board.AREf >= (int)Math.Floor(board.ARE))
+                board.spawnTicks++;
+                if (board.spawnTicks >= (int)Math.Floor(board.spawnDelay))
                 {
                     nextpiecequeued = false;
                     board.lineClonePiecesLeft--;
@@ -438,8 +438,8 @@ public class PiecesController : MonoBehaviour {
                         board.lineClonePiecesLeft = board.lineClonePerPiece[board.curSect];
                     }
                     SpawnPiece();
-                    board.AREf = 0;
-                    board.LockDelayf = 0;
+                    board.spawnTicks = 0;
+                    board.LockTicks = 0;
                 }
                 if ((board.Inputs.c0.z || board.Inputs.c1.z) && (!board.Inputs.c0.y) && (!board.Inputs.c0.w)) {IRSCW = true; IRSCCW = false; IRSUD = false;}
                 else if ((!board.Inputs.c0.z && !board.Inputs.c1.z) && (board.Inputs.c0.y) && !(board.Inputs.c0.w)) {IRSCCW = true; IRSCW = false; IRSUD = false;}

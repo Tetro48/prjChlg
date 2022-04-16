@@ -38,7 +38,7 @@ public class PieceController : MonoBehaviour {
     public GhostPieceController ghostContr;
     public bool harddrop;
     public bool zombieContr;
-    public int LockDelayf;
+    public int LockTicks;
     public bool isPieceIsInNextQueue;
     public int hideTilesPerUpdates;
 
@@ -111,19 +111,19 @@ public class PieceController : MonoBehaviour {
         //         {
         //             if(!CanMovePiece(new int2(0,-1)) && !fullyLocked)  
         //             {
-        //                 board.LockDelayf = 0;  board.LockDelayEnable = true;
+        //                 board.LockTicks = 0;  board.LockDelayEnable = true;
         //             }
         //             else board.LockDelayEnable = false;
         //         }
             
         //         if(board.LockDelayEnable && !harddrop && !fullyLocked)
         //         {
-        //             if(board.LockDelayf == 0 && board.LockDelay > 4)
+        //             if(board.LockTicks == 0 && board.LockDelay > 4)
         //             {
         //                 AudioManager.PlayClip(board.audioPieceStep);
         //             }
-        //             board.LockDelayf += Time.deltaTime / Time.fixedDeltaTime;
-        //             if (board.LockDelayf >= board.LockDelay)
+        //             board.LockTicks += Time.deltaTime / Time.fixedDeltaTime;
+        //             if (board.LockTicks >= board.LockDelay)
         //             {
         //                 board.LockDelayEnable = false;
         //                 SetPiece();
@@ -134,7 +134,7 @@ public class PieceController : MonoBehaviour {
     }
     // private void InitiateLockDelay()
     // {
-    //     if(LockDelayEnable == false && board.piecesController.piecemovementlocked == false)  {LockDelayf = 0;  LockDelayEnable = true;}
+    //     if(LockDelayEnable == false && board.piecesController.piecemovementlocked == false)  {LockTicks = 0;  LockDelayEnable = true;}
     // }
 
     /// <summary>
@@ -179,7 +179,7 @@ public class PieceController : MonoBehaviour {
     public void ForcefullyMovePiece(int2 movement)
     {
         UnisonPieceMove(movement);
-        board.LockDelayf = 0;
+        board.LockTicks = 0;
     }
     /// <summary>
     /// Moves the piece by the specified amount.
@@ -202,18 +202,18 @@ public class PieceController : MonoBehaviour {
         }
 
         UnisonPieceMove(movement);
-        board.LockDelayf = 0;
+        board.LockTicks = 0;
         if(movement.y >= 0) if(!offset) if(board.LockDelay > 5 || board.gravity < 19) AudioManager.PlayClip(board.moveSE);
         if(!CanMovePiece(new int2(0,-1)))board.countLockResets++;
         if(board.countLockResets >= board.maxLockResets)
         {
-            board.LockDelayf = board.LockDelay;
+            board.LockTicks = board.LockDelay;
         }
         if (!CanMovePiece(new int2(0,-1)) && fullyLocked == false)  
         {
             if(board.LockDelayEnable == false && board.piecesController.piecemovementlocked == false)  
             {
-                board.LockDelayf = 0;  board.LockDelayEnable = true;
+                board.LockTicks = 0;  board.LockDelayEnable = true;
             }
         }
         else board.LockDelayEnable = false;

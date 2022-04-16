@@ -79,8 +79,8 @@ public class BoardController : MonoBehaviour {
             else if(ldldy.Count > 0 && arereseted == false)
             {
                 arereseted = true;
-                networkBoard.lineDelayf = 0;
-                if(networkBoard.level < networkBoard.endingLevel - 1)networkBoard.AREf = (int)Math.Floor(networkBoard.ARE - networkBoard.AREline);
+                networkBoard.lineDropTicks = 0;
+                if(networkBoard.level < networkBoard.endingLevel - 1)networkBoard.spawnTicks = (int)Math.Floor(networkBoard.spawnDelay - networkBoard.lineSpawnDelay);
             }
         }
     }
@@ -147,8 +147,8 @@ public class BoardController : MonoBehaviour {
     }
     private void LineClear(List<int> linesToClear)
     {
-        networkBoard.lineDelayf++;
-        if(networkBoard.lineDelayf >= (int)Math.Floor(networkBoard.lineDelay) && networkBoard.lineDelay >= 1)
+        networkBoard.lineDropTicks++;
+        if(networkBoard.lineDropTicks >= (int)Math.Floor(networkBoard.lineDropDelay) && networkBoard.lineDropDelay >= 1)
         {
             gameAudio.PlayOneShot(audioLineFall);
             linecleared = false;
@@ -419,8 +419,8 @@ public class BoardController : MonoBehaviour {
             
             CheckAllClear();
 
-            // networkBoard.piecesController.lineDelayf++;
-            if(networkBoard.lineDelay < 1)
+            // networkBoard.piecesController.lineDropTicks++;
+            if(networkBoard.lineDropDelay < 1)
             {
                 gameAudio.PlayOneShot(audioLineFall);
                 linecleared = false;

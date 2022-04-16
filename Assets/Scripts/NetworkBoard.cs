@@ -101,14 +101,14 @@ public class NetworkBoard : MonoBehaviour
     public bool lineFreezingMechanic, bigMode, oneshot;
     public bool LockDelayEnable;
     public int countLockResets, maxLockResets = 20;
-    public double LockDelay = 50, LockDelayf = 0;
+    public double LockDelay = 50, LockTicks = 0;
     public double DAS = 15;
     public double SDF = 6;
-    public double ARE = 41.66666666666666;
-    public double AREf = 42 - 300;
-    public double AREline = 16.66666666666666666;
-    public int lineDelayf = 0;
-    public double lineDelay = 25;
+    public double spawnDelay = 41.66666666666666;
+    public double spawnTicks = 42 - 300;
+    public double lineSpawnDelay = 16.66666666666666666;
+    public int lineDropTicks = 0;
+    public double lineDropDelay = 25;
     public float gravity = 3/64f;
 
     public int frames;
@@ -204,18 +204,18 @@ public class NetworkBoard : MonoBehaviour
 
         // boardController.UpdateActivePiece(activePiece, true);
         UnisonPieceMove(movement);
-        LockDelayf = 0;
+        LockTicks = 0;
         if(movement.y >= 0) if(!offset) if(LockDelay > 5 || gravity < 19) AudioManager.PlayClip("move");
         if(!CanMovePiece(new int2(0,-1)))countLockResets++;
         if(countLockResets >= maxLockResets)
         {
-            LockDelayf = LockDelay;
+            LockTicks = LockDelay;
         }
         if (!CanMovePiece(new int2(0,-1)) && fullyLocked == false)  
         {
             if(LockDelayEnable == false && piecesController.piecemovementlocked == false)  
             {
-                LockDelayf = 0;  LockDelayEnable = true;
+                LockTicks = 0;  LockDelayEnable = true;
             }
         }
         else LockDelayEnable = false;
@@ -538,12 +538,12 @@ public class NetworkBoard : MonoBehaviour
             {
                 if(LockDelayEnable && !harddrop && !fullyLocked)
                 {
-                    if(LockDelayf == 0 && LockDelay > 4)
+                    if(LockTicks == 0 && LockDelay > 4)
                     {
                         AudioManager.PlayClip("step");
                     }
-                    LockDelayf += deltaTime / Time.fixedDeltaTime;
-                    if (LockDelayf >= LockDelay)
+                    LockTicks += deltaTime / Time.fixedDeltaTime;
+                    if (LockTicks >= LockDelay)
                     {
                         LockDelayEnable = false;
                         SetPiece();
@@ -553,19 +553,19 @@ public class NetworkBoard : MonoBehaviour
                 mode.OnUpdate(deltaTime, this);
                 if (LockDelayEnable)
                 {
-                    LockDelayf += deltaTime;
+                    LockTicks += deltaTime;
                 }
                 if (!LockDelayEnable && !piecesController.piecemovementlocked)  
                 {
                     if(!CanMovePiece(new int2(0,-1)) && !fullyLocked)  
                     {
-                        LockDelayf = 0;  LockDelayEnable = true;
+                        LockTicks = 0;  LockDelayEnable = true;
                     }
                     else LockDelayEnable = false;
                 }
                 if(time > 0)
                 ppsCounter.text = String.Format("{0} pieces/second\nLock: {1} / {2}\nResets: {3} / {4}",
-                    Math.Floor(((double) piecesController.lockedPieces / time)* 100) / 100, SIUnitsConversion.doubleToSITime((LockDelay-LockDelayf)/100), SIUnitsConversion.doubleToSITime(LockDelay/100), maxLockResets - countLockResets, maxLockResets);
+                    Math.Floor(((double) piecesController.lockedPieces / time)* 100) / 100, SIUnitsConversion.doubleToSITime((LockDelay-LockTicks)/100), SIUnitsConversion.doubleToSITime(LockDelay/100), maxLockResets - countLockResets, maxLockResets);
             
                 framestepped = true;
             }
@@ -574,9 +574,9 @@ public class NetworkBoard : MonoBehaviour
                 framestepped = false;
             }
             Inputs.c1.w = false;
-            if(AREf == (int)ARE - 200) {AudioManager.PlayClip(readySE); readyGoIndicator.sprite = readySprite;}
-            if(AREf == (int)ARE - 100) {AudioManager.PlayClip(goSE); readyGoIndicator.sprite = goSprite;}
-            if(AREf == (int)ARE - 1) 
+            if(spawnTicks == (int)spawnDelay - 200) {AudioManager.PlayClip(readySE); readyGoIndicator.sprite = readySprite;}
+            if(spawnTicks == (int)spawnDelay - 100) {AudioManager.PlayClip(goSE); readyGoIndicator.sprite = goSprite;}
+            if(spawnTicks == (int)spawnDelay - 1) 
             {
                 if(!GameEngine.instance.gameMusic.isPlaying) GameEngine.instance.gameMusic.Play();
                 readyGoIndicator.sprite = null;
@@ -667,7 +667,7 @@ public class NetworkBoard : MonoBehaviour
             frames++;
             if(frames == 1)
             {
-                AREf = (int)ARE - 250;
+                spawnTicks = (int)spawnDelay - 250;
                 if(IntentionalGameOver)Destroy(piecesController.curPieceController.gameObject);
                 MenuEngine.instance.audioSource2.PlayOneShot(MenuEngine.instance.topoutSE);
             }

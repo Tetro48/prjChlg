@@ -115,17 +115,17 @@ public class GameEngine : MonoBehaviour
     public double SDF = 6;
 
     [Range(0, 1000)]
-    public double ARE = 41.66666666666666;
+    public double spawnDelay = 41.66666666666666;
 
-    public int AREf = 42 - 300;
-
-    [Range(0, 1000)]
-    public double AREline = 16.66666666666666666;
-
-    public int lineDelayf = 0;
+    public int spawnTicks = 42 - 300;
 
     [Range(0, 1000)]
-    public double lineDelay = 25;
+    public double lineSpawnDelay = 16.66666666666666666;
+
+    public int lineDropTicks = 0;
+
+    [Range(0, 1000)]
+    public double lineDropDelay = 25;
 
     [Range(0, 60)]
     public float gravity = 3/64f;
@@ -258,7 +258,7 @@ public class GameEngine : MonoBehaviour
     //         curSect++;
     //         if (curSect > (endingLevel/100) - 1)
     //         {
-    //             AREf = (int)ARE - 400;
+    //             spawnTicks = (int)spawnDelay - 400;
     //             ending = true;
     //         }
     //         PiecesController.instance.gameAudio.PlayOneShot(PiecesController.instance.levelup);
@@ -269,9 +269,9 @@ public class GameEngine : MonoBehaviour
     //         if(curSect % 5 == 0) NotificationEngine.instance.InstantiateNotification(MenuEngine.instance.notifLangString[(int)MenuEngine.instance.language, 12],Color.white);
     //         if (gravity >= 12.5)
     //         {
-    //             ARE *= percentage;
-    //             AREline *= percentage;
-    //             lineDelay *= percentage;
+    //             spawnDelay *= percentage;
+    //             lineSpawnDelay *= percentage;
+    //             lineDropDelay *= percentage;
     //             LockDelay *= percentage;
     //             sectAfter20g++;
     //             if(LockDelay < 1)
@@ -483,7 +483,7 @@ public class GameEngine : MonoBehaviour
     {
         checkCool();
         if(level > endingLevel) level = endingLevel;
-        if(time == 1 || (AREf == -1 && ending)) gameMusic.Play();
+        if(time == 1 || (spawnTicks == -1 && ending)) gameMusic.Play();
         // // musicTime += Time.deltaTime;
         // if(notifDelay > 0)notifDelay--;
         // if(MenuEngine.instance.curBoard != null){int pieceCountHoldRed = PiecesController.instance.pieceHold == 28 ? -1 : -2;
@@ -500,7 +500,7 @@ public class GameEngine : MonoBehaviour
         // {
             FadeoutBGM();
             ChangeBGM();
-        //     if (replay.mode == ReplayModeType.read && AREf > (int)ARE - 401)
+        //     if (replay.mode == ReplayModeType.read && spawnTicks > (int)spawnDelay - 401)
         //     {
         //         // Vector2 tempmov;
         //         // tempmov.x = replay.movementVector[replay.frames][0];
@@ -516,36 +516,36 @@ public class GameEngine : MonoBehaviour
         //         // Inputs[6] = replay.inputs[replay.frames][6];
         //         // lineFreezingMechanic = replay.switches[0];
         //     }
-        //     if (level >= endingLevel && AREf < (int)ARE && AREf > (int)ARE - 400)
+        //     if (level >= endingLevel && spawnTicks < (int)spawnDelay && spawnTicks > (int)spawnDelay - 400)
         //     {
-        //         int whichline = ((AREf - (int)ARE)+400)/10;
+        //         int whichline = ((spawnTicks - (int)spawnDelay)+400)/10;
         //         if(GameEngine.debugMode) Debug.Log(whichline);
         //         BoardController.instance.DestroyLine(whichline);
         //     }
             
         //     if(ending && !showinvis)tileInvisTime = 20 - (rollTime / (400/6*10));
         //     else tileInvisTime = -1;
-        //     if (AREf == (int)ARE - 399) gameAudio.PlayOneShot(excellent);
-        //     if(AREf >= 0 && readyGoIndicator.sprite == null && rollTime < rollTimeLimit)time++;
-        //     if(AREf >= 0 && readyGoIndicator.sprite == null && ending && rollTime < rollTimeLimit)
+        //     if (spawnTicks == (int)spawnDelay - 399) gameAudio.PlayOneShot(excellent);
+        //     if(spawnTicks >= 0 && readyGoIndicator.sprite == null && rollTime < rollTimeLimit)time++;
+        //     if(spawnTicks >= 0 && readyGoIndicator.sprite == null && ending && rollTime < rollTimeLimit)
         //     {
         //         rollTime++;
         //         if(rollTime >= rollTimeLimit)
         //         {
-        //             AREf = (int)ARE - 1000;
+        //             spawnTicks = (int)spawnDelay - 1000;
         //             Destroy(PiecesController.instance.piecesInGame[PiecesController.instance.piecesInGame.Count-1]);
         //             PiecesController.instance.UpdatePieceBag();
         //         }
         //     }
-        //     if (AREf == (int)ARE - 401)
+        //     if (spawnTicks == (int)spawnDelay - 401)
         //     {
 
         //         MenuEngine.instance.GameOver = true;
         //     }
-        //     if(AREf < (int)ARE - 401)
+        //     if(spawnTicks < (int)spawnDelay - 401)
         //     {
-        //         if(AREf % 10 == 0) SpawnFireworks();
-        //         if(AREf % 50 == 0 && grade < 18)
+        //         if(spawnTicks % 10 == 0) SpawnFireworks();
+        //         if(spawnTicks % 50 == 0 && grade < 18)
         //         {
         //             grade++;
         //             gradeIndicator.sprite = gradeSprites[grade];
@@ -558,7 +558,7 @@ public class GameEngine : MonoBehaviour
         //     if(!ending)
         //     {
         //         timeCounter.text = timeCount(time);
-        //         if(AREf >= 0 && readyGoIndicator.sprite == null && rollTime < rollTimeLimit)sectionTime[curSect]++;
+        //         if(spawnTicks >= 0 && readyGoIndicator.sprite == null && rollTime < rollTimeLimit)sectionTime[curSect]++;
         //     }
         //     rollTimeCounter.text = timeCount(rollTimeLimit - rollTime);
         //     framestepped = true;
@@ -578,9 +578,9 @@ public class GameEngine : MonoBehaviour
         //     framestepped = false;
         // }
         // Inputs[7] = false;
-        // if(AREf == (int)ARE - 200 && level < 100) {gameAudio.PlayOneShot(readySE); readyGoIndicator.sprite = readySprite;}
-        // if(AREf == (int)ARE - 100 && level < 100) {gameAudio.PlayOneShot(goSE); readyGoIndicator.sprite = goSprite;}
-        // if(AREf == (int)ARE - 1 && level < 100) readyGoIndicator.sprite = null;
+        // if(spawnTicks == (int)spawnDelay - 200 && level < 100) {gameAudio.PlayOneShot(readySE); readyGoIndicator.sprite = readySprite;}
+        // if(spawnTicks == (int)spawnDelay - 100 && level < 100) {gameAudio.PlayOneShot(goSE); readyGoIndicator.sprite = goSprite;}
+        // if(spawnTicks == (int)spawnDelay - 1 && level < 100) readyGoIndicator.sprite = null;
         // if (sectAfter20g < 1) DAS = 25;
         // else if (sectAfter20g < 5) DAS = 15;
         // else if (sectAfter20g < 9) DAS = 10;

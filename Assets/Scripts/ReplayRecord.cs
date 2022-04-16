@@ -100,7 +100,7 @@ public class ReplayRecord : MonoBehaviour
     {
         if (MenuEngine.instance.mainPlayer != null)
         {
-            if (mode == ReplayModeType.write && MenuEngine.instance.mainPlayer.AREf > (int)MenuEngine.instance.mainPlayer.ARE -401)
+            if (mode == ReplayModeType.write && MenuEngine.instance.mainPlayer.spawnTicks > (int)MenuEngine.instance.mainPlayer.spawnDelay -401)
             {
                 for (int i = 0; i < NetworkBoard.player.Count; i++)
                 {
