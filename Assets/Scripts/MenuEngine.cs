@@ -158,6 +158,9 @@ public class MenuEngine : MonoBehaviour
         newBoard.transform.localPosition += new Vector3(25f, 0f, 0f) * (NetworkBoard.player.Count -1);
         // newBoard.GetComponent<NetworkObject>().Spawn();
         NetworkBoard component = newBoard.GetComponent<NetworkBoard>();
+        component.mode = new DefaultMode();
+        component.mode.OnObjectSpawn(newBoard.transform);
+        component.ruleset = new DefaultSRS();
         component.LockDelay = LockDelay;
         component.spawnDelay = spawnDelay;
         component.spawnTicks = (int)spawnDelay - 300;
