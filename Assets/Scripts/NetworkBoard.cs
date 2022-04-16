@@ -158,7 +158,7 @@ public class NetworkBoard : MonoBehaviour
     GameObject tileRotation;
     public PieceType curType;
     public int rotationIndex { get; private set; }
-    bool fullyLocked, harddrop;
+    public bool fullyLocked, harddrop;
     public int tileInvisTime = -1;
 
     public float2 movement;
@@ -250,7 +250,7 @@ public class NetworkBoard : MonoBehaviour
     }
     public static int2 RotateObject(GameObject obj, int2 tilePos, float2 pivotPos, bool clockwise, bool UD = false)
     {
-        if(math.any(pivotPos == float2.zero))
+        if(math.any(pivotPos == math.floor(pivotPos)))
         {
             int2 relativePos = tilePos - (int2)pivotPos;
             int2[] rotMatrix = clockwise ? new int2[2] { new int2(0, -1), new int2(1, 0) }
@@ -421,8 +421,6 @@ public class NetworkBoard : MonoBehaviour
     }
     #endregion
 
-    [Header("UI?")]
-    [SerializeField] GameObject rolltimeObject;
     
     bool cool, cooldisplayed;
 
@@ -509,22 +507,15 @@ public class NetworkBoard : MonoBehaviour
         piecesController.playerID = playerID;
         // if(IsOwner)
         {
-            MenuEngine.instance.yourPlayer = this;
+            MenuEngine.instance.mainPlayer = this;
             MenuEngine.instance.curBoard = gameObject;
         }
         player.Add(this);
     }
 
-    [ClientRpc]
-    void ReceiveInputsClientRpc(ClientRpcParams rpcParams = default)
+    void Start()
     {
-
-    }
-
-    [ServerRpc]
-    void SendInputsServerRpc(ServerRpcParams rpcParams = default)
-    {
-
+        
     }
     
     void FixedUpdate()
@@ -539,12 +530,43 @@ public class NetworkBoard : MonoBehaviour
     // Update is called once per frame
     void NetworkUpdate()
     {
+        float deltaTime = Time.deltaTime;
         // chunk.UpdateChunk(new int2(10,40), activePiece, new float[10,40]);
         if(!GameOver)
         {
             if((paused == false || (FrameStep == true && Inputs.c1.w)) && GameOver == false)
             {
-                mode.OnUpdate(Time.deltaTime);
+                if(LockDelayEnable && !harddrop && !fullyLocked)
+                {
+                    if(LockDelayf == 0 && LockDelay > 4)
+                    {
+                        AudioManager.PlayClip("step");
+                    }
+                    LockDelayf += deltaTime / Time.fixedDeltaTime;
+                    if (LockDelayf >= LockDelay)
+                    {
+                        LockDelayEnable = false;
+                        SetPiece();
+                    }
+                }
+                //Notice: Trying to use framestepped bool value as a TAS checker could fail if not properly implemented because built-in pausing exists!
+                mode.OnUpdate(deltaTime, this);
+                if (LockDelayEnable)
+                {
+                    LockDelayf += deltaTime;
+                }
+                if (!LockDelayEnable && !piecesController.piecemovementlocked)  
+                {
+                    if(!CanMovePiece(new int2(0,-1)) && !fullyLocked)  
+                    {
+                        LockDelayf = 0;  LockDelayEnable = true;
+                    }
+                    else LockDelayEnable = false;
+                }
+                if(time > 0)
+                ppsCounter.text = String.Format("{0} pieces/second\nLock: {1} / {2}\nResets: {3} / {4}",
+                    Math.Floor(((double) piecesController.lockedPieces / time)* 100) / 100, SIUnitsConversion.doubleToSITime((LockDelay-LockDelayf)/100), SIUnitsConversion.doubleToSITime(LockDelay/100), maxLockResets - countLockResets, maxLockResets);
+            
                 framestepped = true;
             }
             else if (paused == true)

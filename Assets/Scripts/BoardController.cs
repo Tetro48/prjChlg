@@ -45,6 +45,7 @@ public class BoardController : MonoBehaviour {
     [SerializeField]Vector2 boneblockw, boneblock;
 
     List<int> allClearFireworkTime = new List<int>();
+    int[] flatTextureIDs;
     int[,] textureIDs;
     float[,] transparencyGrid;
     [SerializeField]

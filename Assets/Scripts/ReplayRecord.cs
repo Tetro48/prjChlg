@@ -98,9 +98,9 @@ public class ReplayRecord : MonoBehaviour
     }
     void FixedUpdate()
     {
-        if (MenuEngine.instance.yourPlayer != null)
+        if (MenuEngine.instance.mainPlayer != null)
         {
-            if (mode == ReplayModeType.write && MenuEngine.instance.yourPlayer.AREf > (int)MenuEngine.instance.yourPlayer.ARE -401)
+            if (mode == ReplayModeType.write && MenuEngine.instance.mainPlayer.AREf > (int)MenuEngine.instance.mainPlayer.ARE -401)
             {
                 for (int i = 0; i < NetworkBoard.player.Count; i++)
                 {

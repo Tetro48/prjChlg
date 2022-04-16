@@ -8,5 +8,5 @@ public static class MessageBoxHandler
     /// Read Microsoft's documentation on this first before using it.
     /// </summary>
     [DllImport("user32.dll")]
-    public static extern int MessageBox(IntPtr hWnd, string text, string caption, uint type);
+    public static extern int MessageBox(nint hWnd, string text, string title, uint type);
 }

@@ -16,6 +16,9 @@ public static class SIUnitsConversion
     static double[] sizeScales = new double[] {1000000, 1000, 1, 0.001, 0.000001, 0.000000001};
     static string[] sizeIndicators = new string[] {"mgm", "km", "m", "mm", "μm", "nm"};
 
+    ///<summary>
+    /// This function assumes one unit is one meter in its configuration.
+    ///</summary>
     public static string doubleToSize(double time, bool showSymbol = true)
     {
         double value;
@@ -29,6 +32,9 @@ public static class SIUnitsConversion
         }
         return "0";
     }
+    ///<summary>
+    /// This function assumes one unit is one second in its configuration.
+    ///</summary>
     public static string doubleToSITime(double time, bool showSymbol = true)
     {
         double value;

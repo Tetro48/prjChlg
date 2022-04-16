@@ -13,8 +13,7 @@ public interface IRuleset
     public Span<int2> GetPiece();
 
     /// <summary>
-    /// Please do not overuse this function.
-    /// This should only be called once a piece spawns.
+    /// This is called once a piece spawns.
     /// </summary>
     public void OnPieceSpawn();
     public void OnPieceMove();

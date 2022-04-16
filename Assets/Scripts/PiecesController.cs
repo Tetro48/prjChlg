@@ -503,9 +503,9 @@ public class PiecesController : MonoBehaviour {
             //     UpdatePieceBag();
             // }
             if (Input.GetKeyDown(KeyCode.Escape) && !board.oneshot){
-                MenuEngine.instance.yourPlayer.GameOver = true;
-                MenuEngine.instance.yourPlayer.IntentionalGameOver = true;
-                if(MenuEngine.instance.yourPlayer.lives == 1)MenuEngine.instance.yourPlayer.frames = 300;
+                MenuEngine.instance.mainPlayer.GameOver = true;
+                MenuEngine.instance.mainPlayer.IntentionalGameOver = true;
+                if(MenuEngine.instance.mainPlayer.lives == 1)MenuEngine.instance.mainPlayer.frames = 300;
                 else curPieceController.SetPiece();
             }
             else if(Input.GetKeyDown(KeyCode.Escape)) NotificationEngine.Notify("Oneshot switch is on.");

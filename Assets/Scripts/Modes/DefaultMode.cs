@@ -2,16 +2,19 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using Unity.Mathematics;
 using Unity.Collections;
 using UnityEngine.UI;
 using TMPro;
+using Discord;
 
+//This is a gigantic mess that Tetro48 doesn't really want to mess with much.
 public class DefaultMode : IMode
 {
     public double time, rollTime, rollTimeLimit = 11000, notifDelay, sectionlasttime, coolprevtime;
     public GameObject gameObject;
     // this is odd
-    public NativeArray<int> clearedLines;
+    public NativeArray<int> clearedLines = new NativeArray<int>(40, Allocator.Persistent);
     public int level, sectionSize = 100;
     public int endingLevel = 2100;
 
@@ -25,7 +28,7 @@ public class DefaultMode : IMode
     public TextMeshPro levelTextRender, nextSecLv, timeCounter, rollTimeCounter, ppsCounter;
     public Slider gradePointSlider;
 
-    public SpriteRenderer readyGoIndicator, gradeIndicator;
+    public SpriteRenderer gradeIndicator;
 
     public Sprite[] gradeSprites;
 
@@ -42,7 +45,7 @@ public class DefaultMode : IMode
     public bool lineFreezingMechanic, bigMode, oneshot;
     public bool LockDelayEnable;
     public int countLockResets, maxLockResets = 20;
-    public double LockDelay = 50, LockDelayf = 0;
+    public double LockDelay = 50;
     public double DAS = 15;
     public double SDF = 6;
     public double ARE = 41.66666666666666;
@@ -83,15 +86,16 @@ public class DefaultMode : IMode
     public int lineClonePiecesLeft = 20;
 
     public double percentage = 0.8f;
-    static int[] lvlLineIncrement = {1, 3, 6, 10, 15, 21, 28, 36, 48, 70, 88, 90, 90, 90, 90, 90, 90, 90, 90, 90, 90, 90, 90};
+    private static readonly int[] lvlLineIncrement = {1, 3, 6, 10, 15, 21, 28, 36, 48, 70, 88, 90, 90, 90, 90, 90, 90, 90, 90, 90, 90, 90, 90};
 
     public int[] linesFrozen = {0, 0, 0, 6, 4, 0, 0, 0, 8, 0, 0, 12, 16, 0, 0, 0, 19, 0, 0, 0, 10, 14};
     bool cool, cooldisplayed;
 	/** Line clear時に入る段位 point */
 	static int[] tableGradePoint = {10, 30, 60, 120, 180, 240, 300, 400, 520, 640, 780, 920, 1060, 1200, 1500, 1800, 2100, 2400, 3000, 4000, 5500, 7500, 10000};
+    [SerializeField] GameObject rolltimeObject;
 
 	/** 段位 pointのCombo bonus */
-	private static float[,] tableGradeComboBonus =
+	private static readonly float[,] tableGradeComboBonus =
 	{
 		{1.0f,1.0f,1.0f,1.0f,1.0f,1.0f,1.0f,1.0f,1.0f,1.0f},
 		{1.0f,1.2f,1.2f,1.4f,1.4f,1.4f,1.4f,1.5f,1.5f,2.0f},
@@ -158,13 +162,13 @@ public class DefaultMode : IMode
 			cools[section] = SectionState.regret;
 		}
 	}
-    public void OnObjectSpawn()
+    public void OnObjectSpawn(Transform transformRef)
     {
         throw new System.NotImplementedException();
     }
     public double GetSpawnDelay()
     {
-        throw new System.NotImplementedException();
+        return ARE;
     }
 
     public double GetLockDelay()
@@ -174,12 +178,12 @@ public class DefaultMode : IMode
 
     public double GetLineDropDelay()
     {
-        throw new System.NotImplementedException();
+        return lineDelay;
     }
 
     public double GetLineSpawnDelay()
     {
-        throw new System.NotImplementedException();
+        return AREline;
     }
     public double GetDAS()
     {
@@ -191,100 +195,65 @@ public class DefaultMode : IMode
         else DAS = 1;
         return DAS;
     }
-    public void OnUpdate(float deltaTime)
+    //why is this necessary???
+    public Activity GetDiscordActivity()
     {
-        if (!LockDelayEnable && !piecesController.piecemovementlocked)  
-        {
-            if(!CanMovePiece(new int2(0,-1)) && !fullyLocked)  
-            {
-                LockDelayf = 0;  LockDelayEnable = true;
-            }
-            else LockDelayEnable = false;
-        }
+        throw new NotImplementedException();
+    }
+    public void OnUpdate(float deltaTime, NetworkBoard board)
+    {
+        // a ref???
+        ref double LockDelayf = ref board.LockDelayf;
     
-        if(LockDelayEnable && !harddrop && !fullyLocked)
-        {
-            if(LockDelayf == 0 && LockDelay > 4)
-            {
-                AudioManager.PlayClip("step");
-            }
-            LockDelayf += Time.deltaTime / Time.fixedDeltaTime;
-            if (LockDelayf >= LockDelay)
-            {
-                LockDelayEnable = false;
-                SetPiece();
-            }
-        }
         checkCool();
         if(level > endingLevel) level = endingLevel;
         rolltimeObject.SetActive(ending);
-        // musicTime += Time.deltaTime;
         if(notifDelay > 0)notifDelay--;
-        if(MenuEngine.instance.curBoard != null)
-        {
-            if(time > 0)
-            ppsCounter.text = String.Format("{0} pieces/second\nLock: {1} / {2}\nResets: {3} / {4}",
-                Math.Floor(((double) piecesController.lockedPieces / time)* 100) / 100, SIUnitsConversion.doubleToSITime((LockDelay-LockDelayf)/100), SIUnitsConversion.doubleToSITime(LockDelay/100), maxLockResets - countLockResets, maxLockResets);
-        }
-        if (ReplayRecord.instance.mode == ReplayModeType.read && AREf > (int)ARE - 401)
-        {
-            float2 tempmov;
-            tempmov = ReplayRecord.instance.movementVector[playerID][ReplayRecord.instance.frames[playerID]];
-            movement = new Vector2(tempmov[0], tempmov[1]);
-            // Inputs = ReplayRecord.instance.inputs[playerID][ReplayRecord.instance.frames[playerID]];
-            Inputs = ReplayRecord.instance.inputs[playerID][ReplayRecord.instance.frames[playerID]];
-            lineFreezingMechanic = ReplayRecord.instance.switches[playerID][0];
-        }
-        else if(AREf > (int)ARE - 401)
-        {
-            ReplayRecord.instance.inputs[playerID].Add(Inputs);
-            float2 modMovement = new float2(movement.x, movement.y);
-            ReplayRecord.instance.movementVector[playerID].Add(modMovement);
-        }
-        if (level >= endingLevel && AREf < (int)ARE && AREf > (int)ARE - 400)
-        {
-            double whichline = ((AREf - ARE)+400)/10;
-            if(GameEngine.debugMode) Debug.Log(whichline);
-            boardController.DestroyLine((int)whichline);
-        }
         
-        if(ending && AREf >= 0)tileInvisTime = 20 - ((int)rollTime / (400/6*10));
-        else tileInvisTime = -1;
-        if (AREf == (int)ARE - 399) AudioManager.PlayClip(excellent);
-        if(AREf >= 0 && readyGoIndicator.sprite == null && rollTime < rollTimeLimit)time += Time.deltaTime;
-        if(AREf >= 0 && readyGoIndicator.sprite == null && ending && rollTime < rollTimeLimit)
+        if(ending && AREf >= 0)board.tileInvisTime = 20 - ((int)rollTime / (400/6*10));
+        else board.tileInvisTime = -1;
+        if (AREf == (int)ARE - 399) AudioManager.PlayClip("excellent");
+        if(AREf >= 0)
+        time += deltaTime;
+        if(AREf >= 0 && ending && rollTime < rollTimeLimit)
         {
-            rollTime += Time.deltaTime;
+            rollTime += deltaTime;
             if(rollTime >= rollTimeLimit)
             {
                 rollTime = rollTimeLimit;
                 AREf = (int)ARE - 1000;
-                Destroy(piecesController.piecesInGame[piecesController.piecesInGame.Count-1]);
-                piecesController.UpdatePieceBag();
             }
         }
         if (AREf == (int)ARE - 401)
         {
-            lives = 1;
-            GameOver = true;
+            board.lives = 1;
+            //This will stop the further execution of everything else.
+            board.GameOver = true;
         }
         if(AREf < (int)ARE - 401)
         {
-            if(AREf % 10 == 0) SpawnFireworks();
+            if(AREf % 10 == 0) board.SpawnFireworks();
             if(AREf % 50 == 0 && grade < gradeSprites.Length - 1)
             {
                 grade++;
                 gradeIndicator.sprite = gradeSprites[grade];
-                AudioManager.PlayClip(gradeUp);
+                AudioManager.PlayClip("gradeUp");
             }
         }
+        /*this could be:
+        int nextsecint;
+        if ((curSect + 1) * sectionSize > endingLevel) nextsecint = endingLevel;
+        else if (level < endingLevel) nextsecint = (curSect + 1) * sectionSize;
+        else nextsecint = endingLevel;
+        up is a likely lowered one, down is written like what!?*/
         int nextsecint = (curSect + 1) * sectionSize > endingLevel ? endingLevel : level < endingLevel ? (curSect + 1) * sectionSize : endingLevel;
+
         levelTextRender.text = level.ToString();
         if(curSect < 21)nextSecLv.text = nextsecint.ToString();
         if(!ending)
         {
             timeCounter.text = TimeConversion.doubleFloatTimeCount(time);
-            if(AREf >= 0 && readyGoIndicator.sprite == null && rollTime < rollTimeLimit)sectionTime[curSect] += Time.deltaTime;
+            if(AREf >= 0 && rollTime < rollTimeLimit)sectionTime[curSect] += deltaTime;
         }
         rollTimeCounter.text = TimeConversion.doubleFloatTimeCount(rollTimeLimit - rollTime);
         if (comboKeepCounter == 0)
@@ -383,9 +352,11 @@ public class DefaultMode : IMode
 		int levelbonus = 1 + (level / 250);
 	
 		float point = basepoint * combobonus * levelbonus;
+        //point multiplication, huh?
         if (sectAfter20g >= 21) point *= 10;
         else if (sectAfter20g > 19) point *= 5;
         else if (sectAfter20g > 18) point *= 2;
+
 		gradePoints += point;
 		statGradePoints += point;
         while (gradePoints >= gradePointRequirement)
@@ -394,6 +365,7 @@ public class DefaultMode : IMode
             if (grade < gradeSprites.Length - 1) grade++;
             gradeIndicator.sprite = gradeSprites[grade];
             AudioManager.PlayClip("gradeUp");
+            //turns out this has some quirk. it'll likely go off to near infinity.
             gradePointRequirement *= Math.Abs(1 + (Math.Abs(Math.Floor((double)level / sectionSize) + 1) / 4));
             gradePointSlider.maxValue = (float)gradePointRequirement;
         }
@@ -412,3 +384,4 @@ public class DefaultMode : IMode
         throw new System.NotImplementedException();
     }
 }
+

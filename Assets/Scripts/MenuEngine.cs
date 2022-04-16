@@ -40,7 +40,7 @@ public class MenuEngine : MonoBehaviour
     public InputActionAsset modifiableInputAsset;
     public Language language;
     public static List<GameObject> players;
-    public NetworkBoard yourPlayer;
+    public NetworkBoard mainPlayer;
     public Discord.Discord discord;
     public static MenuEngine instance;
     public int menu = 0, prevMenu;
@@ -175,7 +175,7 @@ public class MenuEngine : MonoBehaviour
     }
     public void QuitGame()
     {
-        if (platformCompat() || Application.platform == RuntimePlatform.Android || Application.platform == RuntimePlatform.IPhonePlayer) 
+        if (platformCompat() || Application.isMobilePlatform) 
         {
             quitting = true;
             if(drpcSwitch) SwitchDRPC();
@@ -194,12 +194,12 @@ public class MenuEngine : MonoBehaviour
             {
                 audioSource.PlayOneShot(messageboxPopup);
                 mainMenuMusic.Pause();
-                MessageBoxHandler.MessageBox(new IntPtr(0), "You've used your only shot.", "Project Challenger", 0x00000010u);
+                MessageBoxHandler.MessageBox(IntPtr.Zero, "You've used your only shot.", "Project Challenger", 0x00000010u);
                 mainMenuMusic.UnPause();
                 return;
             }
             mainMenuMusic.Pause();
-            int messageboxOutput = MessageBoxHandler.MessageBox(default, "You'll have only one shot, but, you can beat it.", "Project Challenger", 0x00000024);
+            int messageboxOutput = MessageBoxHandler.MessageBox(IntPtr.Zero, "You'll have only one shot, but, you can beat it.", "Project Challenger", 0x00000024u);
             mainMenuMusic.UnPause();
             if (messageboxOutput == 7)
             {
@@ -475,27 +475,12 @@ public class MenuEngine : MonoBehaviour
         {
             var activityManager = discord.GetActivityManager();
             int rpclvl = 0;
-            if(yourPlayer != null) rpclvl = yourPlayer.level < yourPlayer.endingLevel ? (yourPlayer.curSect + 1) * 100 : yourPlayer.endingLevel;
+            if(mainPlayer) rpclvl = mainPlayer.level < mainPlayer.endingLevel ? (mainPlayer.curSect + 1) * 100 : mainPlayer.endingLevel;
             Activity activity;
-            if(yourPlayer != null)activity = new Activity
-            {
-                Details = yourPlayer.ending ? "Roll time left: " + yourPlayer.rollTimeCounter.text 
-                : curBoard != null ? "Level " + yourPlayer.level + " | " + rpclvl + (yourPlayer.level > 800 ? ". Struggling." : string.Empty) : null,
-
-                State = Application.genuineCheckAvailable ? "The game is tampered" : framerate > 2600 ? "Suspiciously smooth" : framerate < 10 ? "Performance issues" 
-                : yourPlayer.lives > 1 && yourPlayer.GameOver ? "Lost a life." : yourPlayer.rollTime >= yourPlayer.rollTimeLimit ? 
-                String.Format("Successful at level {0}", yourPlayer.endingLevel)
-                : yourPlayer.IntentionalGameOver ? "Exiting..." : yourPlayer.GameOver ? "Topped out" : curBoard != null && yourPlayer.paused && !yourPlayer.FrameStep ? "Paused" 
-                : curBoard != null && ReplayRecord.instance.mode == ReplayModeType.read ? "Currently replaying" 
-                : curBoard != null && yourPlayer.paused && yourPlayer.FrameStep ? "Currently playing (Framestepping)" 
-                : curBoard != null ? "Currently playing" : null,
-                Assets = {
-                    LargeImage = "icon"
-                }
-            };
+            if(mainPlayer) activity = mainPlayer.mode.GetDiscordActivity();
             else activity = new Activity
             {
-                State = Application.genuineCheckAvailable ? "The game is tampered" : framerate > 2600 ? "Suspiciously smooth" : framerate < 10 ? "Performance issues"
+                State = !Application.genuineCheckAvailable ? "The game's integrity couldn't confirmed." : framerate < 20 ? "Performance issues"
                 : curBoard != null ? "Currently playing" : quitting ? "Quitting" : menu == 1 ? "Currently in settings menu" : "Currently in main menu",
                 Assets = {
                     LargeImage = "icon"
