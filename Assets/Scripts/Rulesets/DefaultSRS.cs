@@ -4,12 +4,20 @@ using Unity.Mathematics;
 //I piece kicks are still awkward if using pivots.
 public class DefaultSRS : IRuleset
 {
-    public bool CanMovePiece()
+    public int Pieces { get; } = 7;
+    public bool Synchro { get; } = false;
+    public bool SwapRotation { get; } = false;
+    public string[] PieceNames { get; } =
+    {
+        "O", "I", "S", "T", "Z", "L", "J"
+    };
+
+    public bool CanMovePiece(in NetworkBoard board, int2 moveBy)
     {
         throw new NotImplementedException();
     }
 
-    public bool CanRotatePiece()
+    public bool CanRotatePiece(in NetworkBoard board, int oldRotationIndex, int rotationIndex)
     {
         throw new NotImplementedException();
     }
@@ -19,17 +27,22 @@ public class DefaultSRS : IRuleset
         throw new NotImplementedException();
     }
 
-    public void OnPieceMove()
+    public bool OnPieceMove(int2 moveBy)
     {
         throw new NotImplementedException();
     }
 
-    public void OnPieceRotate()
+    public bool OnPieceRotate(int oldRotationIndex, int rotationIndex)
     {
         throw new NotImplementedException();
     }
 
     public void OnPieceSpawn()
+    {
+        throw new NotImplementedException();
+    }
+
+    public void ProcessPiece()
     {
         throw new NotImplementedException();
     }

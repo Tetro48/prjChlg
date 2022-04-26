@@ -11,8 +11,9 @@ using Discord;
 //This is a gigantic mess that Tetro48 doesn't really want to mess with much.
 public class DefaultMode : IMode
 {
+    public FixedString64Bytes Name { get; set; } = "Challenger Mode";
+    public FixedString128Bytes Description { get; set; } = "The default mode of this project. Go as far as you can!";
     public double time, rollTime, rollTimeLimit = 11000, notifDelay, sectionlasttime, coolprevtime;
-    public GameObject gameObject;
     // this is odd
     public NativeArray<int> clearedLines = new NativeArray<int>(40, Allocator.Persistent);
     public int level, sectionSize = 100;
@@ -196,12 +197,21 @@ public class DefaultMode : IMode
         return DAS;
     }
     //why is this necessary???
-    public Activity GetDiscordActivity()
+    public Activity GetDiscordActivity() => new Activity
     {
-        throw new NotImplementedException();
-    }
+        State = "Playing a default mode.",
+        Details = $"Level {level}/{endingLevel}",
+        Assets = {
+                LargeImage = "icon"
+            },
+        Timestamps = {
+            Start = DateTime.Now.Ticks / 10000000 - (int)time,
+        }
+    };
     public void OnUpdate(float deltaTime, NetworkBoard board)
     {
+
+        throw new NotImplementedException();
         // a ref???
         ref double LockTicks = ref board.LockTicks;
     
@@ -272,7 +282,7 @@ public class DefaultMode : IMode
         throw new System.NotImplementedException();
     }
 
-    public void OnLineClear(int lines, bool spin)
+    public void OnLineClear(NetworkBoard boardRef, int lines, bool spin)
     {
         if (lines > 0)
         {
@@ -374,7 +384,7 @@ public class DefaultMode : IMode
         clearedLines[lines-1]++;
     }
 
-    public void OnLineDrop(int lines, bool spin)
+    public void OnLineDrop(NetworkBoard boardRef, int lines, bool spin)
     {
         throw new System.NotImplementedException();
     }
@@ -382,6 +392,11 @@ public class DefaultMode : IMode
     public void OnBlockOut()
     {
         throw new System.NotImplementedException();
+    }
+
+    public int GetResets()
+    {
+        return 20;
     }
 }
 

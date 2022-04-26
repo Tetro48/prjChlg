@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 using TMPro;
 
 /*
@@ -38,19 +39,46 @@ public class NotificationEngine : MonoBehaviour
     public void InstantiateNotification(string text, Color color = default)
     {
         if(GameEngine.debugMode) Debug.Log(text);
+        int strheight = Mathf.FloorToInt(text.Length/76) * 38 + 38;
         MenuEngine.instance.audioSource.PlayOneShot(notifyAudio);
         GameObject notifInstantiate = GameObject.Instantiate(prefab, transform);
         if(notificationInstance.Count > 0) for (int i = 0; i < notificationInstance.Count; i++)
         {
-            notificationInstance[i].transform.position += new Vector3(0.0f, 72f*(float)(Screen.height / 1080.0), 0.0f);
+            notificationInstance[i].transform.position += new Vector3(0.0f, (34f+ strheight)*(float)(Screen.height / 1080.0) , 0.0f);
         }
+        Vector3 notifPos = notifInstantiate.transform.localPosition;
+        notifPos.y += strheight - 38;
+        notifInstantiate.transform.localPosition = notifPos;
         notificationInstance.Add(notifInstantiate);
-        // notifInstantiate.GetComponent<SpriteRenderer>().color = color;
+        notifInstantiate.GetComponent<Image>().color = color;
+        RectTransform notifTransf = notifInstantiate.GetComponent<RectTransform>();
+        Vector3 size = notifTransf.sizeDelta;
+        size.y = strheight;
+        notifTransf.sizeDelta = size;
         TextMeshProUGUI textNotif = notifInstantiate.GetComponent<NotificationObject>().text.GetComponent<TextMeshProUGUI>();
         textNotification.Add(textNotif);
         textNotif.text = text;
         notifAnimFrames.Add(0);
         isOverboard.Add(true);
+    }
+    void OnEnable()
+    {
+        Application.logMessageReceived += LogCallback;
+    }
+
+    //Called when there is an exception
+    void LogCallback(string condition, string stackTrace, LogType type)
+    {
+        if(type == LogType.Exception || type == LogType.Error)
+        {
+            Notify(condition, Color.red);
+        }
+        // Notify("StackTrace: " + stackTrace, Color.red);
+    }
+
+    void OnDisable()
+    {
+        Application.logMessageReceived -= LogCallback;
     }
     // Start is called before the first frame update
     void Start()
@@ -71,7 +99,7 @@ public class NotificationEngine : MonoBehaviour
             else if (isOverboard[i])
             {
                 Vector3 getPos = notificationInstance[i].transform.localPosition;
-                getPos.x = 320f;
+                getPos.x = 308f;
                 notificationInstance[i].transform.localPosition = getPos;
                 isOverboard[i] = false;
             }

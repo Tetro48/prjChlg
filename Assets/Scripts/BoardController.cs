@@ -147,7 +147,7 @@ public class BoardController : MonoBehaviour {
     }
     private void LineClear(List<int> linesToClear)
     {
-        networkBoard.lineDropTicks++;
+        networkBoard.lineDropTicks += Time.deltaTime;
         if(networkBoard.lineDropTicks >= (int)Math.Floor(networkBoard.lineDropDelay) && networkBoard.lineDropDelay >= 1)
         {
             gameAudio.PlayOneShot(audioLineFall);

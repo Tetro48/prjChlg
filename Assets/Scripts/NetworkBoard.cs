@@ -63,6 +63,8 @@ public class NetworkBoard : MonoBehaviour
     };
     public IMode mode;
     public IRuleset ruleset;
+    public IGrid grid;
+    public IRandomizer randomizer;
     public int level, sectionSize = 100;
     public static int highestLevel;
 
@@ -107,7 +109,7 @@ public class NetworkBoard : MonoBehaviour
     public double spawnDelay = 41.66666666666666;
     public double spawnTicks = 42 - 300;
     public double lineSpawnDelay = 16.66666666666666666;
-    public int lineDropTicks = 0;
+    public double lineDropTicks = 0;
     public double lineDropDelay = 25;
     public float gravity = 3/64f;
 
@@ -163,6 +165,13 @@ public class NetworkBoard : MonoBehaviour
 
     public float2 movement;
 
+    public void Initialize(IMode mode, IRuleset ruleset, IRandomizer randomizer, IGrid grid)
+    {
+        this.mode = mode;
+        this.ruleset = ruleset;
+        this.randomizer = randomizer;
+        this.grid = grid;
+    }
     public void SpawnPiece(int textureID, int2[] tiles, float2 setPivot, PieceType type)
     {
         rotationIndex = 0;
@@ -427,7 +436,7 @@ public class NetworkBoard : MonoBehaviour
     //each mode implements its own.
     public void LineClears(int lines, bool spin)
     {
-        mode.OnLineClear(lines, spin);
+        mode.OnLineClear(this, lines, spin);
     }
     public void OnMovement(InputAction.CallbackContext value)
     {

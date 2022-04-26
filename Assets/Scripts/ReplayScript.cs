@@ -35,7 +35,7 @@ public static class ReplayScript
     /// <summary>
     ///Note: You have to manually manage this through code.
     /// </summary>
-    public static FileStream LoadData(string saveName)
+    public static dynamic LoadData(string saveName)
     {
         string path = Path.Combine(Application.persistentDataPath, saveName.ToString());
         if (File.Exists(path))
@@ -43,12 +43,15 @@ public static class ReplayScript
             BinaryFormatter formatter = new BinaryFormatter();
             FileStream stream = new FileStream(path, FileMode.Open);
 
-            return stream;
+            dynamic data = formatter.Deserialize(stream);
+
+            stream.Close();
+            return data;
         }
         else
         {
             Debug.LogError("A file is not there! Path: " + path);
-            return default;
+            return null;
         }
     }
     public static void SaveReplay(ReplayRecord replayRecord, string saveName)

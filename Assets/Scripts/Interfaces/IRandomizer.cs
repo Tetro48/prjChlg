@@ -1,10 +1,8 @@
-using Unity.Mathematics;
-using Unity.Collections;
-
 public interface IRandomizer
 {
-    //Initializer
-    public void InitRand();
-    public NativeArray<int2> GetPiece();
-    public int GetPieceID();
+    //Initialize a randomizer with a seed.
+    public void InitRand(long seed);
+    public void InitPieceIdentities(string[] ids);
+    public int GetPieceID(int nextPieces = 0);
+    public string GetPieceName(int nextPieces = 0);
 }

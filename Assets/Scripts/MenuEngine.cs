@@ -158,7 +158,7 @@ public class MenuEngine : MonoBehaviour
         newBoard.transform.localPosition += new Vector3(25f, 0f, 0f) * (NetworkBoard.player.Count -1);
         // newBoard.GetComponent<NetworkObject>().Spawn();
         NetworkBoard component = newBoard.GetComponent<NetworkBoard>();
-        component.mode = new DefaultMode();
+        component.mode = new MarathonMode();
         component.mode.OnObjectSpawn(newBoard.transform);
         component.ruleset = new DefaultSRS();
         component.LockDelay = LockDelay;
@@ -448,6 +448,11 @@ public class MenuEngine : MonoBehaviour
             reswidth = (float)(resolution.width / 1920.0);
         }
     }
+    public string GetGameObjectName(GameObject @object, string nullName = "Null")
+    {
+        if (@object == null) return nullName;
+        else return @object.name;
+    }
     // void OnDestroy()
     // {
     //     discord.Dispose();
@@ -485,6 +490,7 @@ public class MenuEngine : MonoBehaviour
             {
                 State = !Application.genuineCheckAvailable ? "The game's integrity couldn't confirmed." : framerate < 20 ? "Performance issues"
                 : curBoard != null ? "Currently playing" : quitting ? "Quitting" : menu == 1 ? "Currently in settings menu" : "Currently in main menu",
+                Details = "Highlighted: " + GetGameObjectName(UnityEngine.EventSystems.EventSystem.current.currentSelectedGameObject),
                 Assets = {
                     LargeImage = "icon"
                 }
