@@ -10,7 +10,7 @@ using static AudioManager;
 
 /*
     Project Challenger, an challenging Tetris game.
-    Copyright (C) 2021, Aymir
+    Copyright (C) 2022, Aymir
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
