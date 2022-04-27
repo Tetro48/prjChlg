@@ -1,3 +1,4 @@
+//This code is dead simple, most people can make this thing.
 using System;
 
 public static class SeedManager

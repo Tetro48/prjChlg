@@ -1,3 +1,4 @@
+//This is not a usual GPL code. It can easily be copied over!
 using System;
 using System.Runtime.InteropServices;
 public static class MessageBoxHandler
