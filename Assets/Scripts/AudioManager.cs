@@ -16,4 +16,8 @@ public static class AudioManager
     {
         GameEngine.instance.gameAudio.PlayOneShot(audioDictionary[clipName], volume);
     }
+    public static void ChangeBGMVolume(float volume)
+    {
+        GameEngine.instance.gameMusic.volume = volume;
+    }
 }

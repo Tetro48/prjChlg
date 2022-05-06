@@ -22,22 +22,22 @@ using Unity.Mathematics;
 public interface IRuleset
 {
     int Pieces { get; }
-    bool Synchro { get; }
     bool SwapRotation { get; }
     string[] PieceNames { get; }
     bool CanMovePiece(in NetworkBoard board, int2 moveBy);
     bool CanRotatePiece(in NetworkBoard board, int oldRotationIndex, int newRotationIndex);
-    void ProcessPiece();
+    void ProcessPiece(in NetworkBoard board, int2 moveBy, float2 movement);
 
     /// <summary>
     /// Please do not overuse this function. It outputs a ref struct!
     /// </summary>
-    Span<int2> GetPiece();
+    Span<int2> GetPiece(int id);
+    float3 GetPieceColor(int id);
 
     /// <summary>
     /// This is called once a piece spawns.
     /// </summary>
-    void OnPieceSpawn();
-    bool OnPieceMove(int2 moveBy);
-    bool OnPieceRotate(int oldRotationIndex, int rotationIndex);
+    void OnPieceSpawn(int id);
+    bool OnPieceMove(int id, int2 moveBy);
+    bool OnPieceRotate(int id, int oldRotationIndex, int rotationIndex);
 }

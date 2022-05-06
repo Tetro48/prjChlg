@@ -35,6 +35,7 @@ public interface IMode
     public double GetDAS();
     public int GetResets();
     public Activity GetDiscordActivity();
+    public int GetBGMType();
     /// <param name="board">A board reference. In case, you can use functions and/or directly modify variables in it. Be mindful though!</param>
     public void OnUpdate(float dt, NetworkBoard board);
     //why the piece name??? Mode creator(s) will struggle.

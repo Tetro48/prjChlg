@@ -48,8 +48,6 @@ public class BoardController : MonoBehaviour {
     int[] flatTextureIDs;
     int[,] textureIDs;
     float[,] transparencyGrid;
-    [SerializeField]
-    Chunk chunk;
     private void Start()
     {
         CreateGrid();

@@ -28,6 +28,20 @@ public class DummyRS : IRuleset
     {
         "O", "I", "S", "T", "Z", "L", "J"
     };
+    /// <summary>
+    /// RGB color array?
+    /// </summary>
+    public virtual float3[] PieceColors { get; } =
+    {
+        new float3 { x = 1, y = 1, z = 0}, //O
+        new float3 { x = 0, y = 1, z = 1}, //I
+        new float3 { x = 0, y = 1, z = 0}, //S
+        new float3 { x = 1, y = 0, z = 1}, //T
+        new float3 { x = 1, y = 0, z = 0}, //Z
+        new float3 { x = 1, y = 0.5f, z = 1}, //L
+        new float3 { x = 0, y = 0, z = 1}, //J
+
+    };
 
     // first index is piece id, second index is for rotation index. For most pieces, the first mino MUST BE in 0,0.
     private readonly Memory<int2>[][] pieceMatrix =
@@ -119,27 +133,36 @@ public class DummyRS : IRuleset
         return true;
     }
 
-    public virtual Span<int2> GetPiece()
+    public virtual Span<int2> GetPiece(int id)
     {
         throw new NotImplementedException();
     }
 
-    public virtual bool OnPieceMove(int2 moveBy)
+    public virtual bool OnPieceMove(int id, int2 moveBy)
     {
         throw new NotImplementedException();
     }
 
-    public virtual bool OnPieceRotate(int oldRotationIndex, int rotationIndex)
+    public virtual bool OnPieceRotate(int id, int oldRotationIndex, int rotationIndex)
     {
         throw new NotImplementedException();
     }
 
-    public virtual void OnPieceSpawn()
+    public virtual void OnPieceSpawn(int id)
     {
         throw new NotImplementedException();
     }
 
-    public virtual void ProcessPiece()
+    public virtual void ProcessPiece(in NetworkBoard board, int2 moveBy, float2 movement)
+    {
+        if (Synchro)
+        {
+
+        }
+        board.MovePiece(moveBy, true);
+    }
+
+    public float3 GetPieceColor(int id)
     {
         throw new NotImplementedException();
     }

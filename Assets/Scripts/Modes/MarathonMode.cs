@@ -42,6 +42,14 @@ public class MarathonMode : DummyMode
     {
         this.lines += lines;
         score += lineScoreCount[lines];
+        if (lines >= 4 || spin)
+        {
+            b2b = true;
+        }
+        else
+        {
+            b2b = false;
+        }
         if (this.lines >= 150)
         {
             boardRef.ending = true;

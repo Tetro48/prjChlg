@@ -1,3 +1,4 @@
+﻿
 /*
     Project Challenger, an challenging Tetris game.
     Copyright (C) 2022, Aymir
@@ -16,11 +17,28 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-public interface IRandomizer
+public class BagRand : DummyRand
 {
-    //Initialize a randomizer with a seed.
-    public void InitRand(int seed);
-    public void InitPieceIdentities(string[] ids);
-    public int GetPieceID(bool usePiece = true);
-    public string GetPieceName(bool usePiece = false);
+    public int[] bag;
+    public int iteration;
+    public override int GetPieceID(bool usePiece = true)
+    {
+        int piecesLen = PieceNames.Length;
+        if (iteration % piecesLen == 0)
+        {
+            bag.Shuffle();
+        }
+        iteration++;
+        return bag[iteration % piecesLen];
+    }
+
+    public override void InitPieceIdentities(string[] ids)
+    {
+        base.InitPieceIdentities(ids);
+        bag = new int[ids.Length];
+        for (int i = 0; i < ids.Length; i++)
+        {
+            bag[i] = i;
+        }
+    }
 }

@@ -40,27 +40,7 @@ public class NetworkBoard : MonoBehaviour
     public PiecesController piecesController;
     public int playerID;
     public bool GameOver, IntentionalGameOver;
-    public double time, rollTime, rollTimeLimit = 11000, notifDelay, sectionlasttime, coolprevtime;
-
-    public double[] sectionTime = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
-
-    public SectionState[] cools = new SectionState[21];
-
-    /// <summary>
-    /// Section COOL criteria Time 
-    /// </summary>
-	public static double[] tableTimeCool =
-	{
-		52, 52, 49, 45, 45, 42, 42, 38, 38, 38, 33, 33, 33, 28, 28, 22, 18, 14, 9, 6, -1
-	};
-
-    /// <summary>
-    /// Section REGRET criteria Time 
-    /// </summary>
-    public static double[] tableTimeRegret = 
-    {
-        90, 75, 75, 68, 60, 60, 50, 50, 50, 50, 45, 45, 45, 40, 40, 34, 30, 26, 17, 8, -1
-    };
+    public double time, notifDelay;
     public IMode mode;
     public IRuleset ruleset;
     public IGrid grid;
@@ -81,7 +61,6 @@ public class NetworkBoard : MonoBehaviour
 
     public double gradePoints, statGradePoints, gradePointRequirement = 100;
 
-    private int virtualBasePoint;
 
     public TextMeshPro levelTextRender, nextSecLv, timeCounter, rollTimeCounter, ppsCounter;
     public Slider gradePointSlider;
@@ -151,6 +130,14 @@ public class NetworkBoard : MonoBehaviour
     static Vector2Int int2ToV2Int(int2 integers) => new Vector2Int(integers.x, integers.y);
     #endregion
 
+    public void Initialize(IMode mode, IRuleset ruleset, IRandomizer randomizer, IGrid grid)
+    {
+        this.mode = mode;
+        this.ruleset = ruleset;
+        this.randomizer = randomizer;
+        this.grid = grid;
+    }
+
     #region Piece handling
     [Header("Piece")]
     public int3[] activePiece;
@@ -165,13 +152,6 @@ public class NetworkBoard : MonoBehaviour
 
     public float2 movement;
 
-    public void Initialize(IMode mode, IRuleset ruleset, IRandomizer randomizer, IGrid grid)
-    {
-        this.mode = mode;
-        this.ruleset = ruleset;
-        this.randomizer = randomizer;
-        this.grid = grid;
-    }
     public void SpawnPiece(int textureID, int2[] tiles, float2 setPivot, PieceType type)
     {
         rotationIndex = 0;

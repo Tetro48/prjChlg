@@ -41,9 +41,10 @@ public class DummyMode : IMode
 
     public virtual double GetLockDelay() => 30;
 
-    public int GetResets() => 20;
+    public int GetResets() => 32;
 
     public virtual double GetSpawnDelay() => 20;
+    public virtual int GetBGMType() => 0;
 
     public virtual void OnBlockOut()
     {

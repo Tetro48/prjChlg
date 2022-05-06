@@ -140,7 +140,29 @@ public class DefaultMode : IMode
 		{1.0f,1.5f,1.8f,2.0f,2.2f,2.3f,2.4f,2.5f,2.6f,3.0f},
 		{1.0f,1.5f,1.8f,2.0f,2.2f,2.3f,2.4f,2.5f,2.6f,3.0f},
 	};
-	private void checkCool() {
+    public int bgmlv = 1;
+    int[] tableBGMFadeout = { 385, 585, 680, 860, 950, 1440, -1, -1 };
+    int[] tableBGMChange = { 400, 600, 700, 900, 1000, 1500, 2100, -1 };
+    private AudioSource gameMusic = GameEngine.instance.gameMusic;
+    void FadeoutBGM()
+    {
+        if (tableBGMFadeout[bgmlv - 1] != -1 && NetworkBoard.highestLevel >= tableBGMFadeout[bgmlv - 1])
+        {
+            gameMusic.volume -= (Time.deltaTime / 3);
+        }
+    }
+    void ChangeBGM()
+    {
+        if (tableBGMChange[bgmlv - 1] != -1 && NetworkBoard.highestLevel >= tableBGMChange[bgmlv - 1])
+        {
+            bgmlv += 1;
+            gameMusic.volume = 1;
+            gameMusic.Stop();
+            gameMusic.clip = GameEngine.instance.bgm_1p_lv[bgmlv - 1];
+            if (bgmlv < 7) gameMusic.Play();
+        }
+    }
+    private void checkCool() {
 		// COOL check
 		if((level % sectionSize >= sectionSize * 0.7) && (coolchecked == false && level <= sectionSize * cools.Length)) {
 			int section = level / sectionSize;
@@ -343,6 +365,7 @@ public class DefaultMode : IMode
                 lineDropDelay *= percentage;
                 LockDelay *= percentage;
                 sectAfter20g++;
+                //It's there to avoid locking right after a piece spawned.
                 if(LockDelay < 1)
                 {
                     LockDelay = 1.000001d;
@@ -415,6 +438,11 @@ public class DefaultMode : IMode
     public int GetResets()
     {
         return 20;
+    }
+
+    public int GetBGMType()
+    {
+        return bgmlv;
     }
 }
 
