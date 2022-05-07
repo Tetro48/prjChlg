@@ -1,15 +1,12 @@
-﻿using System;
-using System.Collections;
+﻿using Discord;
+using System;
 using System.Collections.Generic;
-using Unity.Mathematics;
+using TMPro;
 using Unity.Collections;
 using Unity.Jobs;
+using Unity.Mathematics;
 using UnityEngine;
 using UnityEngine.InputSystem;
-using UnityEngine.UI;
-using Discord;
-using TMPro;
-using Unity.Netcode;
 
 /*
     Project Challenger, an challenging Tetris game.
@@ -29,7 +26,7 @@ using Unity.Netcode;
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-public enum Language {English, Русский, 日本語};
+public enum Language { English, Русский, 日本語 };
 
 // Please note: Cosmic rays can affect your computer's bits. If you experience bugs that is NOT caused by a code, it's extremely likely that bit flip IS a cause of it.
 // These bit flips are soft errors, and it's quite hard to notice.
@@ -52,7 +49,7 @@ public class MenuEngine : MonoBehaviour
     public bool pressedSubMenu;
     public bool pressedBack;
 
-    public string[] gradeStringConversion = {"9","8","7","6","5","4","3","2","1","S1","S2","S3","S4","S5","S6","S7","S8","S9","GM","FPGM"};
+    public string[] gradeStringConversion = { "9", "8", "7", "6", "5", "4", "3", "2", "1", "S1", "S2", "S3", "S4", "S5", "S6", "S7", "S8", "S9", "GM", "FPGM" };
 
     public TextMeshProUGUI framerateCounter;
 
@@ -108,7 +105,7 @@ public class MenuEngine : MonoBehaviour
     }
 
     #region Player Configuration
-    public double[] timings = {50, 41.6666666, 16.6666666, 25, 3/64};
+    public double[] timings = { 50, 41.6666666, 16.6666666, 25, 3 / 64 };
     public RotationSystems rotationSystems;
     public int nextPieces = 7, endingLevel = 2100;
     public bool[] switches;
@@ -128,11 +125,11 @@ public class MenuEngine : MonoBehaviour
         switch (index)
         {
             case 0:
-            switchName = "Frozen lines: {0}";
-            break;
+                switchName = "Frozen lines: {0}";
+                break;
             default:
-            switchName = "No-name switch: {0}";
-            break;
+                switchName = "No-name switch: {0}";
+                break;
         }
         switchesGUIText[index].text = String.Format(switchName, switches[index] ? "ON" : "OFF");
     }
@@ -143,10 +140,12 @@ public class MenuEngine : MonoBehaviour
         .WithControlsExcluding("<Mouse>/*")
         .WithControlsExcluding("*/escape")
         .OnMatchWaitForAnother(1f)
-        .OnComplete(callback => {
+        .OnComplete(callback =>
+        {
             Notify("Rebound! Currently it'll reset when the game is closed.", Color.green);
             modifiableInputAsset.Enable();
-            callback.Dispose();})
+            callback.Dispose();
+        })
         .Start();
     }
     #endregion
@@ -159,7 +158,7 @@ public class MenuEngine : MonoBehaviour
         int nextPieces = 7)
     {
         GameObject newBoard = Instantiate(inGameBoard, transform);
-        newBoard.transform.localPosition += new Vector3(25f, 0f, 0f) * (NetworkBoard.player.Count -1);
+        newBoard.transform.localPosition += new Vector3(25f, 0f, 0f) * (NetworkBoard.player.Count - 1);
         NetworkBoard component = newBoard.GetComponent<NetworkBoard>();
         component.mode = mode;
         component.mode.OnObjectSpawn(newBoard.transform);
@@ -172,10 +171,10 @@ public class MenuEngine : MonoBehaviour
     }
     public void QuitGame()
     {
-        if (platformCompat() || Application.isMobilePlatform) 
+        if (platformCompat() || Application.isMobilePlatform)
         {
             quitting = true;
-            if(drpcSwitch) SwitchDRPC();
+            if (drpcSwitch) SwitchDRPC();
         }
     }
     public void TriggerGameOver()
@@ -185,21 +184,21 @@ public class MenuEngine : MonoBehaviour
     }
     public void PlayGame()
     {
-        if(!starting && !startGame) 
-        { 
+        if (!starting && !startGame)
+        {
             startGame = true;
             Notify(LanguageList.LangString[(int)LangArray.notifications][(int)language, 15], Color.white);
         }
     }
     public void SubMenu(int subMenuContext)
     {
-        if (!starting && !pressedSubMenu) 
+        if (!starting && !pressedSubMenu)
         {
-            pressedSubMenu = true; 
+            pressedSubMenu = true;
             menu = subMenuContext + 1;
         }
     }
-    
+
     public void Back()
     {
         if (!pressedBack && !pressedSubMenu)
@@ -212,7 +211,7 @@ public class MenuEngine : MonoBehaviour
             }
         }
     }
-    
+
     public void ChangeMenu(int menuType)
     {
         /*
@@ -281,10 +280,10 @@ public class MenuEngine : MonoBehaviour
     private int resRefreshrates = 0;
     void Start()
     {
-        if(!platformCompat()) 
+        if (!platformCompat())
         {
             reswidth = 1f;
-            menuSectors[1].transform.position += new Vector3(0f,60.00f * (Screen.width / 1920.0f),0f);
+            menuSectors[1].transform.position += new Vector3(0f, 60.00f * (Screen.width / 1920.0f), 0f);
         }
         imgprjchlg.SetActive(true);
         if (platformCompat())
@@ -297,11 +296,12 @@ public class MenuEngine : MonoBehaviour
             for (int i = 0; i < resolutions.Length; i++)
             {
                 string option = $"{resolutions[i].width}x{resolutions[i].height}@{resolutions[i].refreshRate}";
+                options.Add(option);
                 if (resolutions[i].width == Screen.currentResolution.width &&
                     resolutions[i].height == Screen.currentResolution.height &&
                     resolutions[i].refreshRate == Screen.currentResolution.refreshRate)
                 {
-                    currentResolutionIndex = i/resRefreshrates;
+                    currentResolutionIndex = i / resRefreshrates;
                     reswidth = resolutions[i / resRefreshrates].width / 1920;
                 }
             }
@@ -315,26 +315,29 @@ public class MenuEngine : MonoBehaviour
             reswidth = (float)(Screen.width / 1920.0);
             settingsGUIMovement[0].gameObject.SetActive(false);
             settingsGUIPartMovement[0].gameObject.SetActive(false);
-            if(!Application.isMobilePlatform)mainMenuGUIMovement[2].gameObject.SetActive(false);
+            if (!Application.isMobilePlatform) mainMenuGUIMovement[2].gameObject.SetActive(false);
         }
         starting = true;
     }
     public void ExtractStatsToNotifications(NetworkBoard board)
     {
-        if(board.singles > 0) Notify(LanguageList.Extract(LangArray.notifications, language, 0) + board.singles, Color.white); // Singles
-        if(board.doubles > 0) Notify(LanguageList.Extract(LangArray.notifications, language, 1) + board.doubles, Color.white); // Doubles
-        if(board.triples > 0) Notify(LanguageList.Extract(LangArray.notifications, language, 2) + board.triples, Color.white); // Triples
-        if(board.tetrises > 0) Notify(LanguageList.Extract(LangArray.notifications, language, 3) + board.tetrises, Color.white); // Tetrises
-        if(board.pentrises > 0) Notify("5 " + LanguageList.Extract(LangArray.notifications, language, 4) + board.pentrises, Color.white); // 5 lines
-        if(board.sixtrises > 0) Notify("6 " + LanguageList.Extract(LangArray.notifications, language, 4) + board.sixtrises, Color.white); // 6 lines
-        if(board.septrises > 0) Notify("7 " + LanguageList.Extract(LangArray.notifications, language, 4) + board.septrises, Color.white); // 7 lines
-        if(board.octrises > 0) Notify("8+ " + LanguageList.Extract(LangArray.notifications, language, 4) + board.octrises, Color.white); // 8+ lines
-        if(board.allClears > 0) Notify(LanguageList.Extract(LangArray.notifications, language, 16) + board.allClears, Color.white); // All Clears
-        if(board.totalLines > 0) Notify(LanguageList.Extract(LangArray.notifications, language, 5) + LanguageList.Extract(LangArray.notifications, language, 4) + board.totalLines, Color.white); // Total lines
-        if(board.piecesController.lockedPieces > 0) Notify(LanguageList.LangString[(int)LangArray.notifications][(int)language, 6] + (board.piecesController.lockedPieces), Color.white); // Pieces
+        if (board.singles > 0) Notify(LanguageList.Extract(LangArray.notifications, language, 0) + board.singles, Color.white); // Singles
+        if (board.doubles > 0) Notify(LanguageList.Extract(LangArray.notifications, language, 1) + board.doubles, Color.white); // Doubles
+        if (board.triples > 0) Notify(LanguageList.Extract(LangArray.notifications, language, 2) + board.triples, Color.white); // Triples
+        if (board.tetrises > 0) Notify(LanguageList.Extract(LangArray.notifications, language, 3) + board.tetrises, Color.white); // Tetrises
+        if (board.pentrises > 0) Notify("5 " + LanguageList.Extract(LangArray.notifications, language, 4) + board.pentrises, Color.white); // 5 lines
+        if (board.sixtrises > 0) Notify("6 " + LanguageList.Extract(LangArray.notifications, language, 4) + board.sixtrises, Color.white); // 6 lines
+        if (board.septrises > 0) Notify("7 " + LanguageList.Extract(LangArray.notifications, language, 4) + board.septrises, Color.white); // 7 lines
+        if (board.octrises > 0) Notify("8+ " + LanguageList.Extract(LangArray.notifications, language, 4) + board.octrises, Color.white); // 8+ lines
+        if (board.allClears > 0) Notify(LanguageList.Extract(LangArray.notifications, language, 16) + board.allClears, Color.white); // All Clears
+        if (board.totalLines > 0) Notify(LanguageList.Extract(LangArray.notifications, language, 5) + LanguageList.Extract(LangArray.notifications, language, 4) + board.totalLines, Color.white); // Total lines
+        if (board.piecesController.lockedPieces > 0) Notify(LanguageList.LangString[(int)LangArray.notifications][(int)language, 6] + (board.piecesController.lockedPieces), Color.white); // Pieces
         Notify(LanguageList.LangString[(int)LangArray.notifications][(int)language, 7] + gradeStringConversion[board.grade], Color.white); // Grade
-        if(board.statGradePoints > 0) {Notify(LanguageList.LangString[(int)LangArray.notifications][(int)language, 8], Color.white); // Total grade score
-        Notify(Math.Floor(board.statGradePoints).ToString(), Color.white);}
+        if (board.statGradePoints > 0)
+        {
+            Notify(LanguageList.LangString[(int)LangArray.notifications][(int)language, 8], Color.white); // Total grade score
+            Notify(Math.Floor(board.statGradePoints).ToString(), Color.white);
+        }
         Notify(LanguageList.LangString[(int)LangArray.notifications][(int)language, 9] + board.level + "/" + (board.level < 2100 ? (board.curSect + 1) * 100 : 2100), Color.white); // Level
         Notify(LanguageList.LangString[(int)LangArray.notifications][(int)language, 10] + (board.gravity / 6 * Time.fixedDeltaTime * 1000), Color.white); // Gravity
         Notify(LanguageList.Extract(LangArray.notifications, language, 11) + board.timeCounter.text, Color.white);
@@ -345,7 +348,7 @@ public class MenuEngine : MonoBehaviour
     }
     public void UpdateLang()
     {
-        if(language == Language.日本語)
+        if (language == Language.日本語)
         {
             Notify("Notice! Japanese translation is not perfect.");
             Notify("通知！ 日本語の翻訳は完璧ではありません。");
@@ -359,11 +362,11 @@ public class MenuEngine : MonoBehaviour
             settingsGUIText[sguiIndex].text = LanguageList.Extract(LangArray.settingsMenu, language, sguiIndex);
         }
     }
-    public void SetResolution (int index)
+    public void SetResolution(int index)
     {
         if (platformCompat())
         {
-            Resolution resolution = resolutions[(resRefreshrates-1)+index*resRefreshrates];
+            Resolution resolution = resolutions[(resRefreshrates - 1) + index * resRefreshrates];
             Screen.SetResolution(resolution.width, resolution.height, true);
             reswidth = (float)(resolution.width / 1920.0);
         }
@@ -379,7 +382,7 @@ public class MenuEngine : MonoBehaviour
     // }
     void OnApplicationQuit()
     {
-        if (platformCompat() && drpcSwitch)discord.Dispose();
+        if (platformCompat() && drpcSwitch) discord.Dispose();
     }
     double framerate;
     bool executedOnce = false;
@@ -398,29 +401,30 @@ public class MenuEngine : MonoBehaviour
             previousLang = language;
             UpdateLang();
         }
-        if(drpcSwitch) if (platformCompat())
-        {
-            var activityManager = discord.GetActivityManager();
-            int rpclvl = 0;
-            if(mainPlayer) rpclvl = mainPlayer.level < mainPlayer.endingLevel ? (mainPlayer.curSect + 1) * 100 : mainPlayer.endingLevel;
-            Activity activity;
-            if(mainPlayer) activity = mainPlayer.mode.GetDiscordActivity();
-            else activity = new Activity
+        if (drpcSwitch) if (platformCompat())
             {
-                State = !Application.genuineCheckAvailable ? "The game's integrity couldn't confirmed." : framerate < 20 ? "Performance issues"
-                : curBoard != null ? "Currently playing" : quitting ? "Quitting" : menu == 1 ? "Currently in settings menu" : "Currently in main menu",
-                Details = "Highlighted: " + GetGameObjectName(UnityEngine.EventSystems.EventSystem.current.currentSelectedGameObject),
-                Assets = {
+                var activityManager = discord.GetActivityManager();
+                int rpclvl = 0;
+                if (mainPlayer) rpclvl = mainPlayer.level < mainPlayer.endingLevel ? (mainPlayer.curSect + 1) * 100 : mainPlayer.endingLevel;
+                Activity activity;
+                if (mainPlayer) activity = mainPlayer.mode.GetDiscordActivity();
+                else activity = new Activity
+                {
+                    State = !Application.genuineCheckAvailable ? "The game's integrity couldn't confirmed." : framerate < 20 ? "Performance issues"
+                    : curBoard != null ? "Currently playing" : quitting ? "Quitting" : menu == 1 ? "Currently in settings menu" : "Currently in main menu",
+                    Details = "Highlighted: " + GetGameObjectName(UnityEngine.EventSystems.EventSystem.current.currentSelectedGameObject),
+                    Assets = {
                     LargeImage = "icon"
                 }
-            };
+                };
 
-            activityManager.UpdateActivity(activity, (res) => {
-            });
-            if(drpcSwitch)discord.RunCallbacks();
-        }
+                activityManager.UpdateActivity(activity, (res) =>
+                {
+                });
+                if (drpcSwitch) discord.RunCallbacks();
+            }
 
-        if(curBoard == null && Input.GetKeyDown(KeyCode.Escape))
+        if (curBoard == null && Input.GetKeyDown(KeyCode.Escape))
         {
             if (menu > 0)
             {
@@ -434,15 +438,15 @@ public class MenuEngine : MonoBehaviour
             }
         }
         reswidth = (float)(Screen.width / 1920.0);
-        framerateCounter.text = (Math.Floor((framerate)*100)/100) + " FPS";
+        framerateCounter.text = (Math.Floor((framerate) * 100) / 100) + " FPS";
         if (quitting || startGame)
         {
-            if(quitting && segments[0].MoveCoupleUIElements(false))
+            if (quitting && segments[0].MoveCoupleUIElements(false))
             {
                 Application.Quit();
             }
-            else if(!segments[0].MoveCoupleUIElements(false)) return;
-            else if(PlayerPrefs.GetInt("Oneshot", 0) == 3 && switches[2])
+            else if (!segments[0].MoveCoupleUIElements(false)) return;
+            else if (PlayerPrefs.GetInt("Oneshot", 0) == 3 && switches[2])
             {
                 // audioSource.PlayOneShot(messageboxPopup);
                 mainMenuMusic.Pause();
@@ -461,7 +465,7 @@ public class MenuEngine : MonoBehaviour
                     UnityEngine.Random.InitState(SeedManager.NewSeed());
                     ReplayRecord.instance.Reset();
                     ReplayRecord.seed = SeedManager.seed;
-                    
+
                     if (ReplayRecord.instance.mode == ReplayModeType.read)
                     {
                         ReplayRecord.instance.LoadReplay("1");
@@ -483,19 +487,19 @@ public class MenuEngine : MonoBehaviour
                 }
             }
         }
-        if(pressedSubMenu)
+        if (pressedSubMenu)
         {
-            if(segments[prevMenu].MoveCoupleUIElements(false))
-            if(segments[menu].MoveCoupleUIElements(true))
-            pressedSubMenu = false;
+            if (segments[prevMenu].MoveCoupleUIElements(false))
+                if (segments[menu].MoveCoupleUIElements(true))
+                    pressedSubMenu = false;
         }
         if (starting)
         {
-            if (!mainMenuMusic.isPlaying)mainMenuMusic.Play();
+            if (!mainMenuMusic.isPlaying) mainMenuMusic.Play();
             menuSectors[0].SetActive(true);
-           
+
             //Movement to the right
-            if(segments[0].MoveCoupleUIElements(true, 0.5)) starting = false;
+            if (segments[0].MoveCoupleUIElements(true, 0.5)) starting = false;
         }
     }
 }
