@@ -80,4 +80,9 @@ public class DummyMode : IMode
     {
         
     }
+
+    public virtual bool BeforeStart()
+    {
+        return true;
+    }
 }

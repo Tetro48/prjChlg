@@ -444,5 +444,7 @@ public class DefaultMode : IMode
     {
         return bgmlv;
     }
+
+    public bool BeforeStart() => true;
 }
 

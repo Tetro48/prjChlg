@@ -78,12 +78,6 @@ public class MenuEngine : MonoBehaviour
     /// </summary>
     public double buttonMovementInSeconds;
 
-    #region Player Configuration
-    public double[] timings = {50, 41.6666666, 16.6666666, 25, 3/64};
-    public RotationSystems rotationSystems;
-    public int nextPieces = 7, endingLevel = 2100;
-    public bool[] switches;
-
     [BurstCompatible]
     public struct int3Array : IJobParallelFor
     {
@@ -99,7 +93,7 @@ public class MenuEngine : MonoBehaviour
     {
         float time = Time.realtimeSinceStartup;
         NativeArray<int3> int3s = new NativeArray<int3>(size, Allocator.TempJob);
-        int3 setTo = new int3(1023,255,511);
+        int3 setTo = new int3(1023, 255, 511);
         var job = new int3Array()
         {
             array = int3s,
@@ -112,6 +106,12 @@ public class MenuEngine : MonoBehaviour
         Notify("Time: " + (afterTime - time) + ". Jobified Ints: " + size * 3);
         int3s.Dispose();
     }
+
+    #region Player Configuration
+    public double[] timings = {50, 41.6666666, 16.6666666, 25, 3/64};
+    public RotationSystems rotationSystems;
+    public int nextPieces = 7, endingLevel = 2100;
+    public bool[] switches;
 
     public void ChangeTiming(int index, double timing)
     {
@@ -152,28 +152,22 @@ public class MenuEngine : MonoBehaviour
     #endregion
 
     Language previousLang;
-    public GameObject InstantiatePlayer(double LockDelay = 50, double spawnDelay = 41.6666666, double lineSpawnDelay = 16.6666666, double lineDropDelay = 25, float gravity = 3 / 64f, RotationSystems rotationSystem = RotationSystems.SRS, int nextPieces = 7, int endingLevel = 2100)
+    public GameObject InstantiatePlayer(
+        IMode mode,
+        IRuleset rotationSystem,
+        IRandomizer randomizer,
+        int nextPieces = 7)
     {
         GameObject newBoard = Instantiate(inGameBoard, transform);
         newBoard.transform.localPosition += new Vector3(25f, 0f, 0f) * (NetworkBoard.player.Count -1);
-        // newBoard.GetComponent<NetworkObject>().Spawn();
         NetworkBoard component = newBoard.GetComponent<NetworkBoard>();
-        component.mode = new MarathonMode();
+        component.mode = mode;
         component.mode.OnObjectSpawn(newBoard.transform);
-        component.ruleset = new DefaultSRS();
-        component.LockDelay = LockDelay;
-        component.spawnDelay = spawnDelay;
-        component.spawnTicks = (int)spawnDelay - 300;
-        component.lineSpawnDelay = lineSpawnDelay;
-        component.lineDropDelay = lineDropDelay;
-        component.gravity = gravity;
+        component.ruleset = rotationSystem;
+        component.randomizer = randomizer;
+        component.randomizer.InitPieceIdentities(rotationSystem.PieceNames);
         component.nextPieces = nextPieces;
-        component.RS = rotationSystem;
-        component.lineFreezingMechanic = switches[0];
-        component.bigMode = switches[1];
-        component.oneshot = switches[2];
         component.piecesController.InitiatePieces();
-        component.endingLevel = endingLevel;
         return newBoard;
     }
     public void QuitGame()
@@ -191,27 +185,11 @@ public class MenuEngine : MonoBehaviour
     }
     public void PlayGame()
     {
-        if (switches[2] && PlayerPrefs.GetInt("oneshot", 0) != 3)
-        {
-            if (PlayerPrefs.GetInt("oneshot", 0) != 3) 
-            {
-                audioSource.PlayOneShot(messageboxPopup);
-                mainMenuMusic.Pause();
-                MessageBoxHandler.MessageBox(IntPtr.Zero, "You've used your only shot.", "Project Challenger", 0x00000010u);
-                mainMenuMusic.UnPause();
-                return;
-            }
-            mainMenuMusic.Pause();
-            int messageboxOutput = MessageBoxHandler.MessageBox(IntPtr.Zero, "You'll have only one shot, but, you can beat it.", "Project Challenger", 0x00000024u);
-            mainMenuMusic.UnPause();
-            if (messageboxOutput == 7)
-            {
-                return;
-            }
-            switches[2] = true;
-            endingLevel = 1000;
+        if(!starting && !startGame) 
+        { 
+            startGame = true;
+            Notify(LanguageList.LangString[(int)LangArray.notifications][(int)language, 15], Color.white);
         }
-        if(!starting && !startGame) { startGame = true; if (PlayerPrefs.GetInt("Oneshot", 0) != 3 || !switches[2]) Notify(LanguageList.LangString[(int)LangArray.notifications][(int)language, 15], Color.white); }
     }
     public void SubMenu(int subMenuContext)
     {
@@ -256,26 +234,22 @@ public class MenuEngine : MonoBehaviour
     bool platformLogged = false;
     public bool platformCompat()
     {
-        if (Application.platform == RuntimePlatform.WindowsPlayer || Application.platform == RuntimePlatform.WindowsEditor)
+        switch (Application.platform)
         {
-            if(!platformLogged) Debug.Log("Windows platform");
-            platformLogged = true;
-            return true;
+            case RuntimePlatform.WindowsPlayer:
+            case RuntimePlatform.WindowsEditor:
+            case RuntimePlatform.OSXPlayer:
+            case RuntimePlatform.OSXEditor:
+            case RuntimePlatform.LinuxPlayer:
+            case RuntimePlatform.LinuxEditor:
+                platformLogged = true;
+                return true;
         }
-        if (Application.platform == RuntimePlatform.OSXPlayer || Application.platform == RuntimePlatform.OSXEditor)
+        if (!platformLogged)
         {
-            if(!platformLogged) Debug.Log("macOS platform");
-            platformLogged = true;
-            return true;
+            Debug.Log("Other platform");
+            Debug.Log("Some functions are disabled for compatibility.");
         }
-        if (Application.platform == RuntimePlatform.LinuxPlayer || Application.platform == RuntimePlatform.LinuxEditor)
-        {
-            if(!platformLogged) Debug.Log("Linux platform");
-            platformLogged = true;
-            return true;
-        }
-        if(!platformLogged) Debug.Log("Other platform");
-        if(!platformLogged) Debug.Log("Some functions are disabled for compatibility.");
         platformLogged = true;
         return false;
     }
@@ -307,46 +281,11 @@ public class MenuEngine : MonoBehaviour
     private int resRefreshrates = 0;
     void Start()
     {
-        if(!platformCompat()) {reswidth = 1f; menuSectors[1].transform.position += new Vector3(0f,60.00f * (Screen.width / 1920.0f),0f);}
-        GameObject[] objs = GameObject.FindGameObjectsWithTag("menuenginerelated");
-        GameObject[] canvasobjs = GameObject.FindGameObjectsWithTag("Canvas");
-        GameObject[] gameoverseobjs = GameObject.FindGameObjectsWithTag("GameOverSE");
-        GameObject[] buttonseobjs = GameObject.FindGameObjectsWithTag("ButtonSE");
-
-        // if(canvasobjs.Length > 1)
-        // {
-        //     for (int i = 0; i < canvasobjs.Length; i++)
-        //     {
-        //         if (i % 2 == 1) Destroy(canvasobjs[i/2+1]);
-        //     }
-        // }
-        // if(gameoverseobjs.Length > 1)
-        // {
-        //     for (int i = 0; i < gameoverseobjs.Length; i++)
-        //     {
-        //         if (i % 2 == 1) Destroy(gameoverseobjs[i/2+1]);
-        //     }
-        // }
-        // if(buttonseobjs.Length > 1)
-        // {
-        //     for (int i = 0; i < buttonseobjs.Length; i++)
-        //     {
-        //         if (i % 2 == 1) Destroy(buttonseobjs[i/2+1]);
-        //     }
-        // }
-        // if (objs.Length > 1)
-        // {
-        //     for (int i = 0; i < objs.Length; i++)
-        //     {
-        //         if (i % 2 == 1) Destroy(objs[i/2+1]);
-        //     }
-        // }
-
-        // DontDestroyOnLoad(objs[0]);
-        // DontDestroyOnLoad(canvasobjs[0]);
-        // DontDestroyOnLoad(gameoverseobjs[0]);
-        // DontDestroyOnLoad(buttonseobjs[0]);
-        // imgbg.SetActive(true);
+        if(!platformCompat()) 
+        {
+            reswidth = 1f;
+            menuSectors[1].transform.position += new Vector3(0f,60.00f * (Screen.width / 1920.0f),0f);
+        }
         imgprjchlg.SetActive(true);
         if (platformCompat())
         {
@@ -355,26 +294,15 @@ public class MenuEngine : MonoBehaviour
             List<string> options = new List<string>();
 
             int currentResolutionIndex = 1;
-            bool matchedrefrrate = true;
-            for (int j = 0; j < resolutions.Length && matchedrefrrate == true; j++)
-            {
-                if (j > 1)
-                {
-                    if (resolutions[1].refreshRate == resolutions[j].refreshRate)
-                    {
-                        matchedrefrrate = false;
-                    }
-                    resRefreshrates++;
-                }
-            }
             for (int i = 0; i < resolutions.Length; i++)
             {
-                string option = resolutions[i].width + "x" + resolutions[i].height;
-                if (resolutions[i].refreshRate == 60) options.Add(option);
-                if (resolutions[i].width == Screen.currentResolution.width && resolutions[i].height == Screen.currentResolution.height && resolutions[i].refreshRate == 60)
+                string option = $"{resolutions[i].width}x{resolutions[i].height}@{resolutions[i].refreshRate}";
+                if (resolutions[i].width == Screen.currentResolution.width &&
+                    resolutions[i].height == Screen.currentResolution.height &&
+                    resolutions[i].refreshRate == Screen.currentResolution.refreshRate)
                 {
                     currentResolutionIndex = i/resRefreshrates;
-                    reswidth = (float)(resolutions[i/resRefreshrates].width / 1920);
+                    reswidth = resolutions[i / resRefreshrates].width / 1920;
                 }
             }
             resDropdown.AddOptions(options);
@@ -390,14 +318,6 @@ public class MenuEngine : MonoBehaviour
             if(!Application.isMobilePlatform)mainMenuGUIMovement[2].gameObject.SetActive(false);
         }
         starting = true;
-        if (Application.systemLanguage == SystemLanguage.Russian)
-        {
-            language = Language.Русский;
-        }
-        if (Application.systemLanguage == SystemLanguage.Japanese)
-        {
-            language = Language.日本語;
-        }
     }
     public void ExtractStatsToNotifications(NetworkBoard board)
     {
@@ -462,7 +382,6 @@ public class MenuEngine : MonoBehaviour
         if (platformCompat() && drpcSwitch)discord.Dispose();
     }
     double framerate;
-    [SerializeField] double[] frameratebuffer = new double[10];
     bool executedOnce = false;
     bool isMessageBoxActive = false;
     // Updates once every frame.
@@ -551,7 +470,7 @@ public class MenuEngine : MonoBehaviour
                     menuSectors[0].SetActive(false);
                     executedOnce = true;
 
-                    curBoard = InstantiatePlayer(timings[0], timings[1], timings[2], timings[3], (float)timings[4], rotationSystems, nextPieces, endingLevel);
+                    curBoard = InstantiatePlayer(new MarathonMode(), new DefaultSRS(), new BagRand());
                     mainMenuMusic.Stop();
                 }
                 if (UITimeDeltas[0] < -0.17)
@@ -576,7 +495,7 @@ public class MenuEngine : MonoBehaviour
             menuSectors[0].SetActive(true);
            
             //Movement to the right
-            if(segments[0].MoveCoupleUIElements(true, 1f, 0.5)) starting = false;
+            if(segments[0].MoveCoupleUIElements(true, 0.5)) starting = false;
         }
     }
 }

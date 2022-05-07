@@ -36,6 +36,11 @@ public interface IMode
     public int GetResets();
     public Activity GetDiscordActivity();
     public int GetBGMType();
+    /// <summary>
+    /// This will get executed when pressing Start. It'll determine if you can start it.
+    /// </summary>
+    /// <returns>False -> Stops from starting up a mode.</returns>
+    public bool BeforeStart();
     /// <param name="board">A board reference. In case, you can use functions and/or directly modify variables in it. Be mindful though!</param>
     public void OnUpdate(float dt, NetworkBoard board);
     //why the piece name??? Mode creator(s) will struggle.

@@ -27,17 +27,17 @@ public interface IRuleset
     bool CanMovePiece(in NetworkBoard board, int2 moveBy);
     bool CanRotatePiece(in NetworkBoard board, int oldRotationIndex, int newRotationIndex);
     void ProcessPiece(in NetworkBoard board, int2 moveBy, float2 movement);
-
+    int GetTextureID(int pieceID);
     /// <summary>
     /// Please do not overuse this function. It outputs a ref struct!
     /// </summary>
-    Span<int2> GetPiece(int id);
-    float3 GetPieceColor(int id);
+    Span<int2> GetPiece(int pieceID);
+    float3 GetPieceColor(int pieceID);
 
     /// <summary>
     /// This is called once a piece spawns.
     /// </summary>
-    void OnPieceSpawn(int id);
-    bool OnPieceMove(int id, int2 moveBy);
-    bool OnPieceRotate(int id, int oldRotationIndex, int rotationIndex);
+    void OnPieceSpawn(int pieceID);
+    bool OnPieceMove(int pieceID, int2 moveBy);
+    bool OnPieceRotate(int pieceID, int oldRotationIndex, int rotationIndex);
 }

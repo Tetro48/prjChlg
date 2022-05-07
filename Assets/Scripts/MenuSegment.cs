@@ -22,9 +22,10 @@ using UnityEngine.EventSystems;
 */
 public class MenuSegment : MonoBehaviour
 {
-    double UITimeDelta, buttonMovementInSeconds;
-    float reswidth;
+    double UITimeDelta;
+    double buttonMovementInSeconds;
     [SerializeField] RectTransform[] UIElements, UIPartElements;
+    [SerializeField] GameObject[] DisableUIElements;
     [SerializeField] EventSystem control;
     // Start is called before the first frame update
     void Start()
@@ -33,13 +34,15 @@ public class MenuSegment : MonoBehaviour
         {
             UIElements[i].position -= new Vector3(3000,0f,0f);
         }
+        for (int i = 0; i < DisableUIElements.Length; i++)
+        {
+            DisableUIElements[i].SetActive(false);
+        }
     }
 
     // Update is called once per frame
     void Update()
     {
-        reswidth = 1;
-        // reswidth = MenuEngine.instance.reswidth;
         buttonMovementInSeconds = MenuEngine.instance.buttonMovementInSeconds;
     }
     bool CheckUIScroll(bool side, int count, double speed = 1d)
@@ -67,10 +70,10 @@ public class MenuSegment : MonoBehaviour
         return output;
     }
     /// <param name="side"> False -> Left side. True -> Right side. </param>
-    public bool MoveCoupleUIElements(bool side, float multiplication = 1f, double speed = 1d)
+    public bool MoveCoupleUIElements(bool side, double speed = 1d)
     {
         float time = Time.deltaTime;
-        if(multiplication == 1f) if(CheckUIScroll(side, UIElements.Length, speed))
+        if(CheckUIScroll(side, UIElements.Length, speed))
         MenuEngine.instance.audioSource.PlayOneShot(MenuEngine.instance.clip);
         // Debug.Log(time);
         float reversibleTime = time;
@@ -83,32 +86,40 @@ public class MenuSegment : MonoBehaviour
             for (int i = 0; i < UIElements.Length; i++)
             {
                 Vector3 tempPos = UIElements[i].localPosition;
-                tempPos.x = Mathf.Clamp((timeToPosX - 300 * i) * reswidth * multiplication, (-150f * reswidth * multiplication) - 50f, (150f * reswidth * multiplication) - 50f);
+                tempPos.x = Mathf.Clamp(timeToPosX - (300 * i), -200f, 100f);
                 // Debug.Log(tempPos.x);
                 UIElements[i].localPosition = tempPos;
                 if(i < UIPartElements.Length)
                 {
-                    UIPartElements[i].localPosition = new Vector3(tempPos.x * 3.5f, tempPos.y, tempPos.z);
+                    tempPos.x *= 3.5f;
+                    UIPartElements[i].localPosition = tempPos;
                 }
             }
             if(UITimeDelta > UIElements.Length * buttonMovementInSeconds)
             {
                 UITimeDelta = UIElements.Length * buttonMovementInSeconds;
-                control.SetSelectedGameObject(UIElements[0].gameObject);
+                for (int i = 0; i < UIElements.Length; i++)
+                {
+                    if (UIElements[i].gameObject.activeSelf)
+                    {
+                        control.SetSelectedGameObject(UIElements[i].gameObject);
+                    }
+                }
                 return true;
             }
         }
         else
         {
-            for (int i = UIElements.Length - 1; i >= 0 ; i--)
+            for (int i = UIElements.Length - 1; i >= 0; i--)
             {
                 Vector3 tempPos = UIElements[i].localPosition;
-                tempPos.x = Mathf.Clamp((timeToPosX - 300 * (UIElements.Length-i-1)) * reswidth * multiplication, (-150f * reswidth * multiplication) - 50f, (150f * reswidth * multiplication) - 50f);
+                tempPos.x = Mathf.Clamp(timeToPosX - (300 * (UIElements.Length - i - 1)), -200f, 100f);
                 // Debug.Log(tempPos.x);
                 UIElements[i].localPosition = tempPos;
                 if(UIPartElements.Length > i)
                 {
-                    UIPartElements[i].localPosition = new Vector3(tempPos.x * 3.5f, tempPos.y, tempPos.z);
+                    tempPos.x *= 3.5f;
+                    UIPartElements[i].localPosition = tempPos;
                 }
             }
             if(UITimeDelta < 0) 

@@ -205,10 +205,8 @@ public class BoardController : MonoBehaviour {
                     transparencyGrid[x, additive] = transparencyGrid[x, y];
                     if (y == 0)
                     {
-                        additive = networkBoard.RS == RotationSystems.SRS ? 8 : 0;
-                        if(networkBoard.sectAfter20g > 1) textureIDs[x,y] = 16 + additive;
+                        if(networkBoard.sectAfter20g > 1) textureIDs[x,y] = 16;
                         else textureIDs[x,y] = 0 + additive;
-
                     }
                 }        
             }

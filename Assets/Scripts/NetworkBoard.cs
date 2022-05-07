@@ -41,9 +41,13 @@ public class NetworkBoard : MonoBehaviour
     public int playerID;
     public bool GameOver, IntentionalGameOver;
     public double time, notifDelay;
+    [SerializeReference]
     public IMode mode;
+    [SerializeReference]
     public IRuleset ruleset;
+    [SerializeReference]
     public IGrid grid;
+    [SerializeReference]
     public IRandomizer randomizer;
     public int level, sectionSize = 100;
     public static int highestLevel;
