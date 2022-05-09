@@ -1,10 +1,6 @@
 ﻿using System;
-using System.Collections;
-using System.Collections.Generic;
 using Unity.Mathematics;
-using System.Linq;
 using UnityEngine;
-using UnityEngine.SceneManagement;
 
 /*
     Project Challenger, an challenging Tetris game.
@@ -26,7 +22,8 @@ using UnityEngine.SceneManagement;
 
 public enum PieceType { O, I, S, Z, L, J, T }
 
-public class PieceController : MonoBehaviour {
+public class PieceController : MonoBehaviour
+{
 
     public PieceType curType;
     public Sprite[] tileSprites;
@@ -47,13 +44,13 @@ public class PieceController : MonoBehaviour {
     public GameObject[] tiles;
     public TileController[] tileContainers;
     [SerializeField]
-    GameObject tileBlock;
+    private GameObject tileBlock;
     public Material[] materials;
-    [SerializeField]int[] numberToTextureIDs;
-    [SerializeField] int2 spawnLocation;
+    [SerializeField] private int[] numberToTextureIDs;
+    [SerializeField] private int2 spawnLocation;
 
-    [SerializeField] bool fullyLocked;
-    int textureRelation;
+    [SerializeField] private bool fullyLocked;
+    private int textureRelation;
     /// <summary>
     /// Called as soon as the piece is initialized. Initializes some necessary values.
     /// </summary>
@@ -67,19 +64,26 @@ public class PieceController : MonoBehaviour {
         materials = new Material[positions.Length];
         Vector2 offset = new Vector2();
         offset = Vector2.right;
-        offset -= new Vector2(-(float)(textureID % scaling.x) / scaling.x, (float)Math.Floor((double)textureID/4+1) / scaling.y);
-        if(GameEngine.debugMode) Debug.Log(new Vector2((float)(textureID % scaling.x) / scaling.x, (float)Math.Floor((double)textureID/4+1) / scaling.y));
+        offset -= new Vector2(-(float)(textureID % scaling.x) / scaling.x, (float)Math.Floor((double)textureID / 4 + 1) / scaling.y);
+        if (GameEngine.debugMode)
+        {
+            Debug.Log(new Vector2((float)(textureID % scaling.x) / scaling.x, (float)Math.Floor((double)textureID / 4 + 1) / scaling.y));
+        }
+
         for (int i = 0; i < positions.Length; i++)
         {
             GameObject tile = Instantiate(tileBlock, transform);
             tile.transform.localPosition = (Vector2)int2ToV2Int(positions[i] + spawnLocation);
-            tile.transform.localRotation = Quaternion.Euler(0,-90,0);
+            tile.transform.localRotation = Quaternion.Euler(0, -90, 0);
             tiles[i] = tile;
             materials[i] = tiles[i].GetComponent<MeshRenderer>().material;
-            materials[i].mainTextureScale = new float2(1,1) / scaling;
+            materials[i].mainTextureScale = new float2(1, 1) / scaling;
             materials[i].mainTextureOffset = offset;
         }
-        if(zombieContr) fullyLocked = true;
+        if (zombieContr)
+        {
+            fullyLocked = true;
+        }
         // for(int i = 1; i <= tiles.Length; i++)
         // {
         //     if(!zombieContr || i == 1)
@@ -92,7 +96,7 @@ public class PieceController : MonoBehaviour {
     }
 
     //Transitioning to dynamic timing
-    void FixedUpdate()
+    private void FixedUpdate()
     {
         // if(!isPieceIsInNextQueue)
         // {
@@ -115,7 +119,7 @@ public class PieceController : MonoBehaviour {
         //             }
         //             else board.LockDelayEnable = false;
         //         }
-            
+
         //         if(board.LockDelayEnable && !harddrop && !fullyLocked)
         //         {
         //             if(board.LockTicks == 0 && board.LockDelay > 4)
@@ -193,7 +197,7 @@ public class PieceController : MonoBehaviour {
             if (!CanTileMove(movement + tileContainers[i].position))
             {
                 // Debug.Log("Cant Go there!");
-                if(int2ToV2Int(movement) == Vector2Int.down && harddrop == true)
+                if (int2ToV2Int(movement) == Vector2Int.down && harddrop == true)
                 {
                     SetPiece();
                 }
@@ -203,20 +207,37 @@ public class PieceController : MonoBehaviour {
 
         UnisonPieceMove(movement);
         board.LockTicks = 0;
-        if(movement.y >= 0) if(!offset) if(board.LockDelay > 5 || board.gravity < 19) AudioManager.PlayClip(board.moveSE);
-        if(!CanMovePiece(new int2(0,-1)))board.countLockResets++;
-        if(board.countLockResets >= board.maxLockResets)
+        if (movement.y >= 0)
+        {
+            if (!offset)
+            {
+                if (board.LockDelay > 5 || board.gravity < 19)
+                {
+                    AudioManager.PlayClip(board.moveSE);
+                }
+            }
+        }
+
+        if (!CanMovePiece(new int2(0, -1)))
+        {
+            board.countLockResets++;
+        }
+
+        if (board.countLockResets >= board.maxLockResets)
         {
             board.LockTicks = board.LockDelay;
         }
-        if (!CanMovePiece(new int2(0,-1)) && fullyLocked == false)  
+        if (!CanMovePiece(new int2(0, -1)) && fullyLocked == false)
         {
-            if(board.LockDelayEnable == false && board.piecesController.piecemovementlocked == false)  
+            if (board.LockDelayEnable == false && board.piecesController.piecemovementlocked == false)
             {
-                board.LockTicks = 0;  board.LockDelayEnable = true;
+                board.LockTicks = 0; board.LockDelayEnable = true;
             }
         }
-        else board.LockDelayEnable = false;
+        else
+        {
+            board.LockDelayEnable = false;
+        }
 
         return true;
     }
@@ -229,7 +250,7 @@ public class PieceController : MonoBehaviour {
         pivot += movement;
     }
 
-    public bool isPieceLocked(){return fullyLocked;}
+    public bool isPieceLocked() { return fullyLocked; }
 
     /// <summary>
     /// Rotates the piece by 90 degrees in specified direction. Offest operations should almost always be attempted,
@@ -242,7 +263,10 @@ public class PieceController : MonoBehaviour {
     {
         int oldRotationIndex = rotationIndex;
         rotationIndex += clockwise ? 1 : -1;
-        if (UD)rotationIndex += clockwise ? 1 : -1;
+        if (UD)
+        {
+            rotationIndex += clockwise ? 1 : -1;
+        }
 
         rotationIndex = Mod(rotationIndex, 4);
         // if (GameEngine.instance.RS == RotationSystems.ARS && (curType == PieceType.S || curType == PieceType.Z))
@@ -260,11 +284,11 @@ public class PieceController : MonoBehaviour {
         if (!shouldOffset)
         {
             int2[,] curOffsetData;
-            if(curType == PieceType.O)
+            if (curType == PieceType.O)
             {
                 curOffsetData = board.piecesController.O_OFFSET_DATA;
             }
-            else if(curType == PieceType.I)
+            else if (curType == PieceType.I)
             {
                 curOffsetData = board.piecesController.I_OFFSET_DATA;
             }
@@ -293,7 +317,7 @@ public class PieceController : MonoBehaviour {
     /// <param name="x">The dividend</param>
     /// <param name="m">The divisor</param>
     /// <returns>Returns the remainder of x divided by m</returns>
-    int Mod(int x, int m)
+    private int Mod(int x, int m)
     {
         return (x % m + m) % m;
     }
@@ -304,16 +328,16 @@ public class PieceController : MonoBehaviour {
     /// <param name="oldRotIndex">Original rotation index of the piece</param>
     /// <param name="newRotIndex">Rotation index the piece will be rotating to</param>
     /// <returns>True if one of the tests passed and a final location was found. False if all test failed.</returns>
-    bool Offset(int oldRotIndex, int newRotIndex, bool clockwise, bool UD = false)
+    private bool Offset(int oldRotIndex, int newRotIndex, bool clockwise, bool UD = false)
     {
         int2 offsetVal1, offsetVal2, endOffset;
         int2[,] curOffsetData;
-        
-        if(curType == PieceType.O)
+
+        if (curType == PieceType.O)
         {
             curOffsetData = board.piecesController.O_OFFSET_DATA;
         }
-        else if(curType == PieceType.I)
+        else if (curType == PieceType.I)
         {
             curOffsetData = board.piecesController.I_OFFSET_DATA;
         }
@@ -331,8 +355,12 @@ public class PieceController : MonoBehaviour {
             offsetVal1 = curOffsetData[testIndex, oldRotIndex];
             offsetVal2 = curOffsetData[testIndex, newRotIndex];
             endOffset = offsetVal1 - offsetVal2;
-            if(board.bigMode) endOffset *= 2;
-            if(testIndex == 0)
+            if (board.bigMode)
+            {
+                endOffset *= 2;
+            }
+
+            if (testIndex == 0)
             {
                 RotateInUnison(clockwise, UD);
             }
@@ -347,8 +375,15 @@ public class PieceController : MonoBehaviour {
         {
             MovePiece(endOffset, true);
         }
-        else RotateInUnison(!clockwise, UD);
-        if(board.LockDelay > 6 || board.gravity < 19) AudioManager.PlayClip(board.rotateSE);
+        else
+        {
+            RotateInUnison(!clockwise, UD);
+        }
+
+        if (board.LockDelay > 6 || board.gravity < 19)
+        {
+            AudioManager.PlayClip(board.rotateSE);
+        }
         // else
         // {
         //     Debug.Log("Move impossible");
@@ -366,11 +401,15 @@ public class PieceController : MonoBehaviour {
         board.piecesController.lockedPieces++;
         fullyLocked = true;
         board.countLockResets = 0;
-        for(int i = 0; i < tileContainers.Length; i++)
+        for (int i = 0; i < tileContainers.Length; i++)
         {
             if (!board.boardController.SetTile(tileContainers[i].position.xyx))
             {
-                if(GameEngine.debugMode) Debug.Log("GAME OVER!");
+                if (GameEngine.debugMode)
+                {
+                    Debug.Log("GAME OVER!");
+                }
+
                 board.GameOver = true;
                 board.piecesController.GameOver();
             }
@@ -380,16 +419,16 @@ public class PieceController : MonoBehaviour {
             if (Input.GetKey(KeyCode.E) && GameEngine.debugMode)
             {
                 int incrementbyfrozenlines = board.lineFreezingMechanic ? board.linesFrozen[board.curSect] : 0;
-                board.boardController.FillLine(0+incrementbyfrozenlines);
-                board.boardController.FillLine(1+incrementbyfrozenlines);
-                board.boardController.FillLine(2+incrementbyfrozenlines);
-                board.boardController.FillLine(3+incrementbyfrozenlines);
+                board.boardController.FillLine(0 + incrementbyfrozenlines);
+                board.boardController.FillLine(1 + incrementbyfrozenlines);
+                board.boardController.FillLine(2 + incrementbyfrozenlines);
+                board.boardController.FillLine(3 + incrementbyfrozenlines);
             }
             board.boardController.CheckLineClears();
             board.piecesController.UpdatePieceBag();
         }
     }
-    
+
     /// <summary>
     /// Rotates the tile by 90 degrees about the origin tile.
     /// </summary>
@@ -407,7 +446,11 @@ public class PieceController : MonoBehaviour {
         // newPos += originPos;
         // UpdatePosition(obj, newPos);
         int multi = clockwise ? 1 : -1;
-        if(UD) multi *= 2;
+        if (UD)
+        {
+            multi *= 2;
+        }
+
         obj.transform.position = (Vector2)int2ToV2Int(tilePos);
         obj.transform.RotateAround(pivotPos, Vector3.forward, -90 * multi);
         obj.transform.Rotate(new Vector3(90f * multi, 0f, 0f), Space.Self);
@@ -439,22 +482,37 @@ public class PieceController : MonoBehaviour {
     {
         return board.boardController.IsPosEmpty(endPos) && board.boardController.IsInBounds(endPos);
     }
-    static Vector3 localObjPos(GameObject obj)
+
+    private static Vector3 localObjPos(GameObject obj)
     {
         return obj.transform.localPosition;
     }
-    static int2 V3ToInt2(Vector3 vector3)
+
+    private static int2 V3ToInt2(Vector3 vector3)
     {
         return new int2(Mathf.FloorToInt(vector3.x + 0.5f), Mathf.FloorToInt(vector3.y + 0.5f));
     }
-    static Vector2Int int2ToV2Int(int2 integers)
-    {return new Vector2Int(integers.x, integers.y);}
-    static int maxNumberComparison(int num1, int num2, bool flipIfNeg = false)
+
+    private static Vector2Int int2ToV2Int(int2 integers)
+    { return new Vector2Int(integers.x, integers.y); }
+
+    private static int maxNumberComparison(int num1, int num2, bool flipIfNeg = false)
     {
         int output;
-        if(num1 > num2) output = num1;
-        else output = num2;
-        if(output < 0 && flipIfNeg) output *= -1;
+        if (num1 > num2)
+        {
+            output = num1;
+        }
+        else
+        {
+            output = num2;
+        }
+
+        if (output < 0 && flipIfNeg)
+        {
+            output *= -1;
+        }
+
         return output;
     }
 
@@ -466,6 +524,6 @@ public class PieceController : MonoBehaviour {
         harddrop = true;
         board.piecesController.PrevInputs[0] = true;
         AudioManager.PlayClip(board.hardDropSE);
-        while (MovePiece(new int2(0,-1), true)) {}
+        while (MovePiece(new int2(0, -1), true)) { }
     }
 }

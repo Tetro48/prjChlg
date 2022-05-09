@@ -1,8 +1,7 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
-using TMPro;
 
 /*
     Project Challenger, an challenging Tetris game.
@@ -31,21 +30,29 @@ public class NotificationEngine : MonoBehaviour
     public List<GameObject> notificationInstance;
     public List<float> notifAnimFrames;
     public List<bool> isOverboard;
-    
+
     public static void Notify(string text, Color color = default)
     {
         instance.InstantiateNotification(text, color);
     }
     public void InstantiateNotification(string text, Color color = default)
     {
-        if(GameEngine.debugMode) Debug.Log(text);
-        int strheight = Mathf.FloorToInt(text.Length/76) * 38 + 38;
+        if (GameEngine.debugMode)
+        {
+            Debug.Log(text);
+        }
+
+        int strheight = Mathf.FloorToInt(text.Length / 76) * 38 + 38;
         MenuEngine.instance.audioSource.PlayOneShot(notifyAudio);
         GameObject notifInstantiate = GameObject.Instantiate(prefab, transform);
-        if(notificationInstance.Count > 0) for (int i = 0; i < notificationInstance.Count; i++)
+        if (notificationInstance.Count > 0)
         {
-            notificationInstance[i].transform.position += new Vector3(0.0f, (34f+ strheight)*(float)(Screen.height / 1080.0) , 0.0f);
+            for (int i = 0; i < notificationInstance.Count; i++)
+            {
+                notificationInstance[i].transform.position += new Vector3(0.0f, (34f + strheight) * (float)(Screen.height / 1080.0), 0.0f);
+            }
         }
+
         Vector3 notifPos = notifInstantiate.transform.localPosition;
         notifPos.y += strheight - 38;
         notifInstantiate.transform.localPosition = notifPos;
@@ -61,59 +68,64 @@ public class NotificationEngine : MonoBehaviour
         notifAnimFrames.Add(0);
         isOverboard.Add(true);
     }
-    void OnEnable()
+
+    private void OnEnable()
     {
         Application.logMessageReceived += LogCallback;
     }
 
     //Called when there is an exception
-    void LogCallback(string condition, string stackTrace, LogType type)
+    private void LogCallback(string condition, string stackTrace, LogType type)
     {
-        if(type == LogType.Exception || type == LogType.Error)
+        if (type == LogType.Exception || type == LogType.Error)
         {
             Notify(condition, Color.red);
         }
         // Notify("StackTrace: " + stackTrace, Color.red);
     }
 
-    void OnDisable()
+    private void OnDisable()
     {
         Application.logMessageReceived -= LogCallback;
     }
+
     // Start is called before the first frame update
-    void Start()
+    private void Start()
     {
         instance = this;
     }
 
     // Update is called once per frame
-    void Update()
+    private void Update()
     {
-        if(notificationInstance.Count > 0) for (int i = 0; i < notificationInstance.Count; i++)
+        if (notificationInstance.Count > 0)
         {
-            notifAnimFrames[i] += Time.deltaTime / Time.fixedDeltaTime;
-            if (notifAnimFrames[i] < 50)
+            for (int i = 0; i < notificationInstance.Count; i++)
             {
-                notificationInstance[i].transform.position -= new Vector3((384/25)*MenuEngine.instance.reswidth * (Time.deltaTime / Time.fixedDeltaTime), 0, 0);
-            }
-            else if (isOverboard[i])
-            {
-                Vector3 getPos = notificationInstance[i].transform.localPosition;
-                getPos.x = 308f;
-                notificationInstance[i].transform.localPosition = getPos;
-                isOverboard[i] = false;
-            }
-            if (notifAnimFrames[i] > 449)
-            {
-                notificationInstance[i].transform.position += new Vector3((384/25)*MenuEngine.instance.reswidth * (Time.deltaTime / Time.fixedDeltaTime), 0, 0);
-            }
-            if (notifAnimFrames[i] > 500)
-            {
-                Destroy(notificationInstance[i]);
-                notificationInstance.RemoveAt(i);
-                textNotification.RemoveAt(i);
-                notifAnimFrames.RemoveAt(i);
-                isOverboard.RemoveAt(i);
+                notifAnimFrames[i] += Time.deltaTime / Time.fixedDeltaTime;
+                if (notifAnimFrames[i] < 50)
+                {
+                    notificationInstance[i].transform.position -= new Vector3((384 / 25) * MenuEngine.instance.reswidth * (Time.deltaTime / Time.fixedDeltaTime), 0, 0);
+                }
+                else if (isOverboard[i])
+                {
+                    Vector3 getPos = notificationInstance[i].transform.localPosition;
+                    getPos.x = 308f;
+                    notificationInstance[i].transform.localPosition = getPos;
+                    isOverboard[i] = false;
+                }
+                if (notifAnimFrames[i] > 449)
+                {
+                    notificationInstance[i].transform.position += new Vector3((384 / 25) * MenuEngine.instance.reswidth * (Time.deltaTime / Time.fixedDeltaTime), 0, 0);
+                }
+                if (notifAnimFrames[i] > 500)
+                {
+                    Destroy(notificationInstance[i]);
+                    notificationInstance.RemoveAt(i);
+                    textNotification.RemoveAt(i);
+                    notifAnimFrames.RemoveAt(i);
+                    isOverboard.RemoveAt(i);
+                }
             }
         }
     }

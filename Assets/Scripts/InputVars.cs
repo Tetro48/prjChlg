@@ -1,5 +1,3 @@
-using System.Collections;
-
 /*
     Project Challenger, an challenging Tetris game.
     Copyright (C) 2022, Aymir
@@ -22,5 +20,5 @@ using System.Collections;
 //left unused for some reason.
 public class InputVars
 {
-    
+
 }

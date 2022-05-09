@@ -1,5 +1,3 @@
-using System;
-
 /*
     Project Challenger, an challenging Tetris game.
     Copyright (C) 2022, Aymir
@@ -18,7 +16,7 @@ using System;
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 //This might be the most messy of a language system.
-public enum LangArray {mainMenu, settingsMenu, inputsMenu, notifications}
+public enum LangArray { mainMenu, settingsMenu, inputsMenu, notifications }
 public static class LanguageList
 {
     public static string Extract(LangArray array, Language language, int select)

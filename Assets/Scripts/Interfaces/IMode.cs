@@ -1,6 +1,6 @@
-using UnityEngine;
-using Unity.Collections;
 using Discord;
+using Unity.Collections;
+using UnityEngine;
 
 /*
     Project Challenger, an challenging Tetris game.
@@ -23,8 +23,8 @@ using Discord;
 //Mode system???
 public interface IMode
 {
-    public FixedString64Bytes Name { get; set; }
-    public FixedString128Bytes Description { get; set; }
+    public FixedString64Bytes Name { get; }
+    public FixedString128Bytes Description { get; }
     public void OnObjectSpawn(Transform transformRef);
     //Reminder: Keep these getters simple. Seriously.
     //Computing a new variable every time a mode or a core tries to get from will be considered somewhat wasteful, since those 7 could be accessed quite frequently.

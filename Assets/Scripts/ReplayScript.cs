@@ -1,6 +1,6 @@
-using UnityEngine;
 using System.IO;
 using System.Runtime.Serialization.Formatters.Binary;
+using UnityEngine;
 
 /*
     Project Challenger, an challenging Tetris game.
@@ -65,7 +65,7 @@ public static class ReplayScript
         stream.Close();
     }
 
-    public static ReplayVars LoadReplay (string saveName)
+    public static ReplayVars LoadReplay(string saveName)
     {
         string path = Path.Combine(Application.persistentDataPath, "replay-" + saveName + ".clg");
         if (File.Exists(path))
@@ -95,7 +95,7 @@ public static class ReplayScript
         stream.Close();
     }
 
-    public static InputVars LoadInputConfig (string saveName)
+    public static InputVars LoadInputConfig(string saveName)
     {
         string path = Path.Combine(Application.persistentDataPath, "replay-" + saveName + ".clg");
         if (File.Exists(path))

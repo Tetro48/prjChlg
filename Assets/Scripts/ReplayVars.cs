@@ -1,9 +1,6 @@
-using System.Collections;
-using System.Collections.Generic;
-using Unity.Collections;
-using Unity.Collections.LowLevel.Unsafe;
-using Unity.Mathematics;
 using System;
+using System.Collections.Generic;
+using Unity.Mathematics;
 
 /*
     Project Challenger, an challenging Tetris game.
@@ -32,12 +29,12 @@ public class ReplayVars : IDisposable
     public float2[][] movementVector;
     public bool4x2[][] inputs;
     public bool[][] switches;
-    
+
     public void Dispose()
     {
         UnityEngine.Debug.Log("Disposed of ReplayVars");
     }
-    public ReplayVars (ReplayRecord replay)
+    public ReplayVars(ReplayRecord replay)
     {
         boards = replay.boards;
         inputs = arrayOfListsToArrayOfArrays(replay.inputs);

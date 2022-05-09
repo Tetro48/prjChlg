@@ -1,6 +1,6 @@
 using Discord;
-using Unity.Collections;
 using TMPro;
+using Unity.Collections;
 
 /*
     Project Challenger, an challenging Tetris game.
@@ -27,9 +27,9 @@ public class MarathonMode : DummyMode
     private bool b2b;
     private TextMeshPro _text;
     private static readonly int[] lineScoreCount = { 100, 200, 400, 800, 1200, 1600, 2000, 2500 };
-    public override FixedString64Bytes Name { get; set; } = "150 Lines Marathon";
+    public override FixedString64Bytes Name { get; } = "150 Lines Marathon";
 
-    public override FixedString128Bytes Description { get; set; } = "A standard mode. Clear 150 lines!";
+    public override FixedString128Bytes Description { get; } = "A standard mode. Clear 150 lines!";
     public override Activity GetDiscordActivity() => new Activity
     {
         State = "Playing Marathon.",

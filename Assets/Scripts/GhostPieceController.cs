@@ -1,7 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using Unity.Mathematics;
-using UnityEngine;
+﻿using UnityEngine;
 
 /*
     Project Challenger, an challenging Tetris game.
@@ -28,13 +25,16 @@ public class GhostPieceController : MonoBehaviour
     public GameObject[] tiles;
     public GameObject[] textureReading;
     public bool visibility;
-    SpriteRenderer sprRnd;
+    private SpriteRenderer sprRnd;
 
     public void Initiate(PieceController connector)
     {
         networkBoard = connector.board;
-        if (networkBoard.level < networkBoard.sectionSize || networkBoard.TLS) visibility = true;
-        else 
+        if (networkBoard.level < networkBoard.sectionSize || networkBoard.TLS)
+        {
+            visibility = true;
+        }
+        else
         {
             Destroy(gameObject);
             return;
@@ -104,7 +104,7 @@ public class GhostPieceController : MonoBehaviour
     //     }
     //     MoveGhostPiece(new int2(0,-1));
     // }
-    
+
     // // Update is called once per frame
     // void Update()
     // {

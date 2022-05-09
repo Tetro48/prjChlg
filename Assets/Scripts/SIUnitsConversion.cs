@@ -21,18 +21,20 @@ using System;
 public static class SIUnitsConversion
 {
     //called Double Sided Comparison
-    static bool DSC(double compareFrom, double compareTo)
+    private static bool DSC(double compareFrom, double compareTo)
     {
         return compareFrom >= compareTo || compareFrom <= -compareTo;
     }
-    static double valueScale(double input, double scale)
+
+    private static double valueScale(double input, double scale)
     {
-        return Math.Floor((input/scale)*100)/100;
+        return Math.Floor((input / scale) * 100) / 100;
     }
-    static double[] timeScales = new double[] {3600, 60, 1, 0.001, 0.000001, 0.000000001};
-    static string[] timeIndicators = new string[] {"h", "m", "s", "ms", "μs", "ns"};
-    static double[] sizeScales = new double[] {1000000, 1000, 1, 0.001, 0.000001, 0.000000001};
-    static string[] sizeIndicators = new string[] {"mgm", "km", "m", "mm", "μm", "nm"};
+
+    private static double[] timeScales = new double[] { 3600, 60, 1, 0.001, 0.000001, 0.000000001 };
+    private static string[] timeIndicators = new string[] { "h", "m", "s", "ms", "μs", "ns" };
+    private static double[] sizeScales = new double[] { 1000000, 1000, 1, 0.001, 0.000001, 0.000000001 };
+    private static string[] sizeIndicators = new string[] { "mgm", "km", "m", "mm", "μm", "nm" };
 
     ///<summary>
     /// This function assumes one unit is one meter in its configuration.
@@ -42,7 +44,7 @@ public static class SIUnitsConversion
         double value;
         for (int i = 0; i < sizeScales.Length; i++)
         {
-            if (DSC(time, sizeScales[i])) 
+            if (DSC(time, sizeScales[i]))
             {
                 value = valueScale(time, sizeScales[i]);
                 return value + (showSymbol ? sizeIndicators[i] : string.Empty);
@@ -58,7 +60,7 @@ public static class SIUnitsConversion
         double value;
         for (int i = 0; i < timeScales.Length; i++)
         {
-            if (DSC(time, timeScales[i])) 
+            if (DSC(time, timeScales[i]))
             {
                 value = valueScale(time, timeScales[i]);
                 return value + (showSymbol ? timeIndicators[i] : string.Empty);

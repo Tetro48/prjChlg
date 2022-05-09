@@ -1,10 +1,8 @@
 ﻿
 // global using static AudioManager;
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using Unity.Mathematics;
-using System.Linq;
 using UnityEngine;
 using static AudioManager;
 
@@ -26,7 +24,8 @@ using static AudioManager;
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-public class BoardController : MonoBehaviour {
+public class BoardController : MonoBehaviour
+{
 
     public NetworkBoard networkBoard;
     public BoardParticleSystem boardParticles;
@@ -38,16 +37,14 @@ public class BoardController : MonoBehaviour {
     public AudioSource gameAudio;
     public AudioClip[] audioLineClear, audioTSpinClear;
     public AudioClip audioLineFall, audioPieceLock, audioLineClone, warning;
-
-    bool linecleared = false;
-    bool arereseted = false;
-    List<int> ldldy = new List<int>();
-    [SerializeField]Vector2 boneblockw, boneblock;
-
-    List<int> allClearFireworkTime = new List<int>();
-    int[] flatTextureIDs;
-    int[,] textureIDs;
-    float[,] transparencyGrid;
+    private bool linecleared = false;
+    private bool arereseted = false;
+    private List<int> ldldy = new List<int>();
+    [SerializeField] private Vector2 boneblockw, boneblock;
+    private List<int> allClearFireworkTime = new List<int>();
+    private int[] flatTextureIDs;
+    private int[,] textureIDs;
+    private float[,] transparencyGrid;
     private void Start()
     {
         CreateGrid();
@@ -67,18 +64,21 @@ public class BoardController : MonoBehaviour {
             }
             allClearFireworkTime[fire]++;
         }
-        if(networkBoard.framestepped && !networkBoard.GameOver)
+        if (networkBoard.framestepped && !networkBoard.GameOver)
         {
-            if(linecleared == true)
+            if (linecleared == true)
             {
                 LineClear(ldldy);
                 arereseted = false;
             }
-            else if(ldldy.Count > 0 && arereseted == false)
+            else if (ldldy.Count > 0 && arereseted == false)
             {
                 arereseted = true;
                 networkBoard.lineDropTicks = 0;
-                if(networkBoard.level < networkBoard.endingLevel - 1)networkBoard.spawnTicks = (int)Math.Floor(networkBoard.spawnDelay - networkBoard.lineSpawnDelay);
+                if (networkBoard.level < networkBoard.endingLevel - 1)
+                {
+                    networkBoard.spawnTicks = (int)Math.Floor(networkBoard.spawnDelay - networkBoard.lineSpawnDelay);
+                }
             }
         }
     }
@@ -92,7 +92,8 @@ public class BoardController : MonoBehaviour {
         // }
     }
     public int GetMino(int x, int y) => textureIDs[x, y];
-    void UpdateRender()
+
+    private void UpdateRender()
     {
         // //turns out my implementation of chunks literally wastes triangles
         // chunk.UpdateChunk(new int2(gridSizeX, gridSizeY), textureIDs, transparencyGrid);
@@ -101,14 +102,14 @@ public class BoardController : MonoBehaviour {
         {
             for (int y = 0; y < gridSizeY; y++)
             {
-                UpdateOccupiedPosition(new int3(x,y, textureIDs[x,y]));
+                UpdateOccupiedPosition(new int3(x, y, textureIDs[x, y]));
             }
         }
     }
     public void UpdateOccupiedPosition(int3 tile)
     {
         // throw new NotImplementedException("No use of it in chunk state.");
-        
+
         if (math.any(tile.xy < int2.zero | tile.xy >= new int2(gridSizeX, gridSizeY)))
         {
             return;
@@ -128,29 +129,32 @@ public class BoardController : MonoBehaviour {
         {
             for (int x = 0; x < gridSizeX; x++)
             {
-                if (textureIDs[x,y] >= 0)
+                if (textureIDs[x, y] >= 0)
                 {
-                    tilesToWarn += y-14;
+                    tilesToWarn += y - 14;
                 }
             }
         }
         if (tilesToWarn > 18 && !networkBoard.GameOver)
         {
             gameAudio.loop = true;
-            if(!gameAudio.isPlaying)gameAudio.Play();
+            if (!gameAudio.isPlaying)
+            {
+                gameAudio.Play();
+            }
         }
         else
-        {gameAudio.loop = false;}
+        { gameAudio.loop = false; }
 
     }
     private void LineClear(List<int> linesToClear)
     {
         networkBoard.lineDropTicks += Time.deltaTime;
-        if(networkBoard.lineDropTicks >= (int)Math.Floor(networkBoard.lineDropDelay) && networkBoard.lineDropDelay >= 1)
+        if (networkBoard.lineDropTicks >= (int)Math.Floor(networkBoard.lineDropDelay) && networkBoard.lineDropDelay >= 1)
         {
             gameAudio.PlayOneShot(audioLineFall);
             linecleared = false;
-            for(int i = 0; i < linesToClear.Count; i++)
+            for (int i = 0; i < linesToClear.Count; i++)
             {
                 /* The initial index of lineToDrop is calculated by taking the index of the first line
                 * that was cleared then adding 1 to indicate the index of the line above the cleared line,
@@ -178,7 +182,10 @@ public class BoardController : MonoBehaviour {
         int amount = 0;
         for (int x = 0; x < gridSizeX; x++)
         {
-            if(textureIDs[x,line] >= 0)amount++;
+            if (textureIDs[x, line] >= 0)
+            {
+                amount++;
+            }
         }
         return amount;
     }
@@ -186,34 +193,54 @@ public class BoardController : MonoBehaviour {
     {
         for (int x = 0; x < gridSizeX; x++)
         {
-            textureIDs[x,line] = 0;
+            textureIDs[x, line] = 0;
         }
     }
     public void CloneLineToBottom()
     {
         int isBigMode = networkBoard.bigMode ? 2 : 1;
-        for (int i = 0; i < isBigMode; i++) for (int x = 0; x < gridSizeX; x++)
+        for (int i = 0; i < isBigMode; i++)
         {
-            for (int y = gridSizeY - 1; y >= 0 ; y--)
+            for (int x = 0; x < gridSizeX; x++)
             {
-                int additive;
-                if(y+1 >= gridSizeY) additive = y;
-                else additive = y + 1;
-                if (textureIDs[x, y] >= 0 || textureIDs[x, additive] >= 0)
+                for (int y = gridSizeY - 1; y >= 0; y--)
                 {
-                    textureIDs[x, additive] = textureIDs[x, y];
-                    transparencyGrid[x, additive] = transparencyGrid[x, y];
-                    if (y == 0)
+                    int additive;
+                    if (y + 1 >= gridSizeY)
                     {
-                        if(networkBoard.sectAfter20g > 1) textureIDs[x,y] = 16;
-                        else textureIDs[x,y] = 0 + additive;
+                        additive = y;
                     }
-                }        
+                    else
+                    {
+                        additive = y + 1;
+                    }
+
+                    if (textureIDs[x, y] >= 0 || textureIDs[x, additive] >= 0)
+                    {
+                        textureIDs[x, additive] = textureIDs[x, y];
+                        transparencyGrid[x, additive] = transparencyGrid[x, y];
+                        if (y == 0)
+                        {
+                            if (networkBoard.sectAfter20g > 1)
+                            {
+                                textureIDs[x, y] = 16;
+                            }
+                            else
+                            {
+                                textureIDs[x, y] = 0 + additive;
+                            }
+                        }
+                    }
+                }
             }
         }
+
         PlayClip(audioLineClone);
         UpdateRender();
-        if (networkBoard.LockDelayEnable) networkBoard.MovePiece(new int2(0,1), true);
+        if (networkBoard.LockDelayEnable)
+        {
+            networkBoard.MovePiece(new int2(0, 1), true);
+        }
     }
     /// <summary>
     /// Destroys a line of tiles. Coded to also handle empty grid unit.
@@ -222,14 +249,18 @@ public class BoardController : MonoBehaviour {
     {
         for (int i = 0; i < gridSizeX; i++)
         {
-            if(textureIDs[i,line] < 0) continue;
-            if(particles)
+            if (textureIDs[i, line] < 0)
             {
-                int tileTexture = textureIDs[i,line];
+                continue;
+            }
+
+            if (particles)
+            {
+                int tileTexture = textureIDs[i, line];
                 boardParticles.SummonParticles(new int2(i, line), tileTexture);
             }
-            textureIDs[i,line] = -1;
-            transparencyGrid[i,line] = 0f;
+            textureIDs[i, line] = -1;
+            transparencyGrid[i, line] = 0f;
         }
     }
     /// <summary>
@@ -252,7 +283,10 @@ public class BoardController : MonoBehaviour {
     public void DecayTile(int2 coords, float percentage)
     {
         if (textureIDs[coords.x, coords.y] < 0)
+        {
             return;
+        }
+
         transparencyGrid[coords.x, coords.y] += percentage;
     }
     /// <summary>
@@ -278,7 +312,7 @@ public class BoardController : MonoBehaviour {
         {
             for (int y = 0; y < gridSizeY; y++)
             {
-                textureIDs[x,y] = -1;
+                textureIDs[x, y] = -1;
                 // GameObject instantiatedTile = Instantiate(tileBlock, transform);
                 // instantiatedTile.transform.localPosition = new Vector2(x,y);
                 // gridOfMaterials[x,y] = instantiatedTile.GetComponent<MeshRenderer>().material;
@@ -311,7 +345,7 @@ public class BoardController : MonoBehaviour {
     /// <returns>Returns true if the coordinate is not occupied by a tetris piece</returns>
     public bool IsPosEmpty(int2 coordToTest)
     {
-        if(coordToTest.y >= gridSizeY)
+        if (coordToTest.y >= gridSizeY)
         {
             return false;
         }
@@ -320,8 +354,14 @@ public class BoardController : MonoBehaviour {
             return false;
         }
 
-        else if(coordToTest.x >= gridSizeX) return false;
-        else return textureIDs[coordToTest.x, coordToTest.y] < 0;
+        else if (coordToTest.x >= gridSizeX)
+        {
+            return false;
+        }
+        else
+        {
+            return textureIDs[coordToTest.x, coordToTest.y] < 0;
+        }
     }
 
     /// <summary>
@@ -344,7 +384,10 @@ public class BoardController : MonoBehaviour {
         {
             for (int y = 0; y < gridSizeY; y++)
             {
-                if (textureIDs[x,y] >= 0) return false;
+                if (textureIDs[x, y] >= 0)
+                {
+                    return false;
+                }
             }
         }
         gameAudio.PlayOneShot(networkBoard.piecesController.levelup);
@@ -366,12 +409,13 @@ public class BoardController : MonoBehaviour {
         int consecutiveLineClears = 0;
 
         int linesFrozen = networkBoard.lineFreezingMechanic ? networkBoard.linesFrozen[networkBoard.curSect] : 0;
-        for(int y = linesFrozen; y < gridSizeY; y++)
+        for (int y = linesFrozen; y < gridSizeY; y++)
         {
             bool lineClear = true;
-            for(int x = 0; x < gridSizeX; x++)
+            for (int x = 0; x < gridSizeX; x++)
             {
-                if (textureIDs[x, y] < 0){
+                if (textureIDs[x, y] < 0)
+                {
                     lineClear = false;
                     consecutiveLineClears = 0;
                 }
@@ -382,13 +426,16 @@ public class BoardController : MonoBehaviour {
                 consecutiveLineClears++;
                 if (consecutiveLineClears == 4)
                 {
-                    if(GameEngine.debugMode) Debug.Log("<color=red>T</color>" +
+                    if (GameEngine.debugMode)
+                    {
+                        Debug.Log("<color=red>T</color>" +
                               "<color=orange>E</color>" +
                               "<color=yellow>T</color>" +
                               "<color=lime>R</color>" +
                               "<color=aqua>I</color>" +
                               "<color=purple>S</color>" +
                               "<color=blue>!</color>");
+                    }
                 }
                 ClearLine(y);
             }
@@ -402,25 +449,25 @@ public class BoardController : MonoBehaviour {
             bool tspinned = networkBoard.tSpin;
             if (tspinned)
             {
-                int limitedTSSEcount = linesToClear.Count > audioTSpinClear.Length ? audioTSpinClear.Length-1 : linesToClear.Count-1;
+                int limitedTSSEcount = linesToClear.Count > audioTSpinClear.Length ? audioTSpinClear.Length - 1 : linesToClear.Count - 1;
                 gameAudio.PlayOneShot(audioTSpinClear[limitedTSSEcount]);
                 networkBoard.tSpin = false;
             }
             else
             {
-                int limitedSEcount = linesToClear.Count > audioLineClear.Length ? audioLineClear.Length-1 : linesToClear.Count-1;
+                int limitedSEcount = linesToClear.Count > audioLineClear.Length ? audioLineClear.Length - 1 : linesToClear.Count - 1;
                 gameAudio.PlayOneShot(audioLineClear[limitedSEcount]);
             }
             networkBoard.LineClears(linesToClear.Count, tspinned);
-            
+
             CheckAllClear();
 
             // networkBoard.piecesController.lineDropTicks++;
-            if(networkBoard.lineDropDelay < 1)
+            if (networkBoard.lineDropDelay < 1)
             {
                 gameAudio.PlayOneShot(audioLineFall);
                 linecleared = false;
-                for(int i = 0; i < linesToClear.Count; i++)
+                for (int i = 0; i < linesToClear.Count; i++)
                 {
                     /* The initial index of lineToDrop is calculated by taking the index of the first line
                     * that was cleared then adding 1 to indicate the index of the line above the cleared line,
@@ -439,7 +486,7 @@ public class BoardController : MonoBehaviour {
                             }
                         }
                     }
-                }    
+                }
             }
         }
         UpdateRender();
@@ -452,7 +499,7 @@ public class BoardController : MonoBehaviour {
     public bool SetTile(int3 tile)
     {
 
-        if (!IsPosEmpty(tile.xy) || tile.x >= 10) 
+        if (!IsPosEmpty(tile.xy) || tile.x >= 10)
         {
             // OccupyPos(tile);
             return false;
@@ -479,12 +526,16 @@ public class BoardController : MonoBehaviour {
     /// Clears all tiles from a specified line
     /// </summary>
     /// <param name="lineToClear">Index of the line to be cleared</param>
-    void ClearLine(int lineToClear)
+    private void ClearLine(int lineToClear)
     {
         int linesFrozen = networkBoard.lineFreezingMechanic ? networkBoard.linesFrozen[networkBoard.curSect] : 0;
-        if(lineToClear < linesFrozen || lineToClear > gridSizeY)
+        if (lineToClear < linesFrozen || lineToClear > gridSizeY)
         {
-            if(GameEngine.debugMode) Debug.LogError("Error: Cannot Clear Line: " + lineToClear);
+            if (GameEngine.debugMode)
+            {
+                Debug.LogError("Error: Cannot Clear Line: " + lineToClear);
+            }
+
             return;
         }
         // for(int x = 0; x < gridSizeX; x++)

@@ -75,6 +75,6 @@ public class History6Rand : DummyRand
         {
             randID2 = GetRandomPieceID();
         }
-        PieceHistory = new int[] {randID1, randID2, randID1, randID2};
+        PieceHistory = new int[] { randID1, randID2, randID1, randID2 };
     }
 }

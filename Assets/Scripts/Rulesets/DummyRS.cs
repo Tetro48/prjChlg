@@ -164,6 +164,8 @@ public class DummyRS : IRuleset
 
     public float3 GetPieceColor(int id)
     {
-        throw new NotImplementedException();
+        return PieceColors[id];
     }
+
+    public int GetTextureID(int pieceID) => 0;
 }

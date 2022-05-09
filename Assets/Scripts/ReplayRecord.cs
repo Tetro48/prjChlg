@@ -1,10 +1,7 @@
-using System.Collections;
 using System.Collections.Generic;
-using Unity.Mathematics;
-using Unity.Collections;
-using Unity.Collections.LowLevel.Unsafe;
-using UnityEngine;
 using TMPro;
+using Unity.Mathematics;
+using UnityEngine;
 
 /*
     Project Challenger, an challenging Tetris game.
@@ -37,7 +34,7 @@ public class ReplayRecord : MonoBehaviour
     public bool4x2[][] replayInputs;
     public bool[][] switches;
     public static int seed;
-    [SerializeField] TextMeshProUGUI textMode;
+    [SerializeField] private TextMeshProUGUI textMode;
 
     public void SaveReplay(string name)
     {
@@ -51,7 +48,11 @@ public class ReplayRecord : MonoBehaviour
 
         boards = data.boards;
         frames = new List<int>();
-        for (int i = 0; i < boards; i++) frames.Add(0);
+        for (int i = 0; i < boards; i++)
+        {
+            frames.Add(0);
+        }
+
         replayMovementVector = data.movementVector;
         replayInputs = data.inputs;
         switches = data.switches;
@@ -67,12 +68,12 @@ public class ReplayRecord : MonoBehaviour
         mode++;
         mode = (ReplayModeType)((int)mode % 3);
         textMode.text = "Replay type: " + (mode == ReplayModeType.write ? "Write" : mode == ReplayModeType.read ? "Read" : "OFF");
-        if(mode != ReplayModeType.read)
+        if (mode != ReplayModeType.read)
         {
             for (int i = 0; i < boards; i++)
             {
-                inputs[i].RemoveRange(frames[i],inputs[i].Count-frames[i]);
-                movementVector[i].RemoveRange(frames[i],movementVector[i].Count-frames[i]);
+                inputs[i].RemoveRange(frames[i], inputs[i].Count - frames[i]);
+                movementVector[i].RemoveRange(frames[i], movementVector[i].Count - frames[i]);
             }
             Time.timeScale = 1.0f;
         }
@@ -89,18 +90,20 @@ public class ReplayRecord : MonoBehaviour
             movementVector[i] = new List<float2>();
             inputs[i] = new List<bool4x2>();
         }
-        
+
     }
-    void Awake()
+
+    private void Awake()
     {
         instance = this;
         Reset();
     }
-    void FixedUpdate()
+
+    private void FixedUpdate()
     {
         if (MenuEngine.instance.mainPlayer != null)
         {
-            if (mode == ReplayModeType.write && MenuEngine.instance.mainPlayer.spawnTicks > (int)MenuEngine.instance.mainPlayer.spawnDelay -401)
+            if (mode == ReplayModeType.write && MenuEngine.instance.mainPlayer.spawnTicks > (int)MenuEngine.instance.mainPlayer.spawnDelay - 401)
             {
                 for (int i = 0; i < NetworkBoard.player.Count; i++)
                 {
@@ -109,9 +112,15 @@ public class ReplayRecord : MonoBehaviour
 
                 }
             }
-            else for (int i = 0; i < boards; i++)
+            else
             {
-                if(NetworkBoard.player[i].framestepped)frames[i]++;
+                for (int i = 0; i < boards; i++)
+                {
+                    if (NetworkBoard.player[i].framestepped)
+                    {
+                        frames[i]++;
+                    }
+                }
             }
         }
     }

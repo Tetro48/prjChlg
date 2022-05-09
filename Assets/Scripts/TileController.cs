@@ -1,5 +1,5 @@
-﻿using UnityEngine;
-using Unity.Mathematics;
+﻿using Unity.Mathematics;
+using UnityEngine;
 
 /*
     Project Challenger, an challenging Tetris game.
@@ -19,8 +19,9 @@ using Unity.Mathematics;
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-public class TileController : MonoBehaviour {
+public class TileController : MonoBehaviour
+{
     public int textureID;
     public int2 position;
-    float transparency;
+    private float transparency;
 }

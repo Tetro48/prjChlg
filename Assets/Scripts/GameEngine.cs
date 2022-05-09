@@ -1,11 +1,8 @@
 ﻿using System;
 using System.Collections;
-using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
 using UnityEngine.InputSystem;
-using UnityEngine.InputSystem.Utilities;
-using UnityEngine.SceneManagement;
-using TMPro;
 
 /*
     Project Challenger, an challenging Tetris game.
@@ -28,8 +25,8 @@ using TMPro;
 /// <summary>
 /// Section states. It can't be both cool and regret in this implementation.
 /// </summary>
-public enum SectionState {checking, cool, regret, missed}
-public enum RotationSystems {SRS, ARS}
+public enum SectionState { checking, cool, regret, missed }
+public enum RotationSystems { SRS, ARS }
 /// <summary>
 /// This script does A LOT of stuff that you might not want to mess up with.
 /// This script is also quite congested. It's not easy to read stuff in it.
@@ -38,7 +35,7 @@ public class GameEngine : MonoBehaviour
 {
     public int time, rollTime, rollTimeLimit = 11000, notifDelay, sectionlasttime, coolprevtime;
 
-    public int[] sectionTime = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+    public int[] sectionTime = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
 
     public SectionState[] cools = new SectionState[21];
 
@@ -46,14 +43,14 @@ public class GameEngine : MonoBehaviour
     /// Section COOL criteria Time 
     /// </summary>
 	public static int[] tableTimeCool =
-	{
-		5200, 5200, 4900, 4500, 4500, 4200, 4200, 3800, 3800, 3800, 3300, 3300, 3300, 2800, 2800, 2200, 1800, 1400, 900, 600, -1
-	};
+    {
+        5200, 5200, 4900, 4500, 4500, 4200, 4200, 3800, 3800, 3800, 3300, 3300, 3300, 2800, 2800, 2200, 1800, 1400, 900, 600, -1
+    };
 
     /// <summary>
     /// Section REGRET criteria Time 
     /// </summary>
-    public static int[] tableTimeRegret = 
+    public static int[] tableTimeRegret =
     {
         9000, 7500, 7500, 6800, 6000, 6000, 5000, 5000, 500, 5000, 4500, 4500, 4500, 4000, 4000, 3400, 3000, 2600, 1700, 800, -1
     };
@@ -128,13 +125,13 @@ public class GameEngine : MonoBehaviour
     public double lineDropDelay = 25;
 
     [Range(0, 60)]
-    public float gravity = 3/64f;
+    public float gravity = 3 / 64f;
 
     public int singles, doubles, triples, tetrises, pentrises, sixtrises, septrises, octrises;
 
     public int totalLines;
 
-    public int[] lineClonePerPiece = {2147483647,2147483647,20,20,20,20,20,20,20,20,16,16,16,8,8,6,5,4,3,2,2,2};
+    public int[] lineClonePerPiece = { 2147483647, 2147483647, 20, 20, 20, 20, 20, 20, 20, 20, 16, 16, 16, 8, 8, 6, 5, 4, 3, 2, 2, 2 };
 
     public int lineClonePiecesLeft = 20;
 
@@ -154,83 +151,92 @@ public class GameEngine : MonoBehaviour
     public static bool debugMode;
 
     public ReplayRecord replay;
+    private bool cool, cooldisplayed;
+    private void checkCool()
+    {
+        // COOL check
+        if ((level % 100 >= 70) && (coolchecked == false && level < 2001))
+        {
+            int section = level / 100;
 
-    bool cool, cooldisplayed;
-	private void checkCool() {
-		// COOL check
-		if((level % 100 >= 70) && (coolchecked == false && level < 2001)) {
-			int section = level / 100;
+            if ((sectionTime[section] <= tableTimeCool[section]) &&
+                ((previouscool == false) || ((previouscool == true) && (sectionTime[section] <= coolprevtime + 60))))
+            {
+                cool = true;
+                cools[section] = SectionState.cool;
+            }
+            else
+            {
+                cools[section] = SectionState.missed;
+            }
 
-			if( (sectionTime[section] <= tableTimeCool[section]) &&
-				((previouscool == false) || ((previouscool == true) && (sectionTime[section] <= coolprevtime + 60))) )
-			{
-				cool = true;
-				cools[section] = SectionState.cool;
-			}
-			else cools[section] = SectionState.missed;
-			coolprevtime = sectionTime[section];
-			coolchecked = true;
-		}
+            coolprevtime = sectionTime[section];
+            coolchecked = true;
+        }
 
-		// COOLиЎЁз¤є
-		if((level % 100 >= 82) && (cool == true) && (cooldisplayed == false)) {
-			gameAudio.PlayOneShot(coolSE);
-			// cooldispframe = 180;
-			cooldisplayed = true;
-			virtualBasePoint += 600;
-		}
-	}
+        // COOLиЎЁз¤є
+        if ((level % 100 >= 82) && (cool == true) && (cooldisplayed == false))
+        {
+            gameAudio.PlayOneShot(coolSE);
+            // cooldispframe = 180;
+            cooldisplayed = true;
+            virtualBasePoint += 600;
+        }
+    }
 
-	/**
+    /**
 	 * REGRETгЃ® check
 	 * @param engine GameEngine
 	 * @param levelb Line clearе‰ЌгЃ® level
 	 */
-	private void checkRegret(int levelb) {
-		int section = levelb / 100;
-		if(sectionlasttime > tableTimeRegret[section]) {
+    private void checkRegret(int levelb)
+    {
+        int section = levelb / 100;
+        if (sectionlasttime > tableTimeRegret[section])
+        {
 
-			virtualBasePoint -= 600;
+            virtualBasePoint -= 600;
 
-			// regretdispframe = 180;
-			gameAudio.PlayOneShot(regretSE);
-			cools[section] = SectionState.regret;
-		}
-	}
+            // regretdispframe = 180;
+            gameAudio.PlayOneShot(regretSE);
+            cools[section] = SectionState.regret;
+        }
+    }
 
-	/** Line clear時に入る段位 point */
-	static int[] tableGradePoint = {10, 30, 60, 120, 180, 240, 300, 400, 520, 640, 780, 920, 1060, 1200, 1500, 1800, 2100, 2400, 3000, 4000, 5500, 7500, 10000};
+    /** Line clear時に入る段位 point */
+    private static int[] tableGradePoint = { 10, 30, 60, 120, 180, 240, 300, 400, 520, 640, 780, 920, 1060, 1200, 1500, 1800, 2100, 2400, 3000, 4000, 5500, 7500, 10000 };
 
-	/** 段位 pointのCombo bonus */
-	private static float[,] tableGradeComboBonus =
-	{
-		{1.0f,1.0f,1.0f,1.0f,1.0f,1.0f,1.0f,1.0f,1.0f,1.0f},
-		{1.0f,1.2f,1.2f,1.4f,1.4f,1.4f,1.4f,1.5f,1.5f,2.0f},
-		{1.0f,1.4f,1.5f,1.6f,1.7f,1.8f,1.9f,2.0f,2.1f,2.5f},
-		{1.0f,1.5f,1.8f,2.0f,2.2f,2.3f,2.4f,2.5f,2.6f,3.0f},
-		{1.0f,1.5f,1.8f,2.0f,2.2f,2.3f,2.4f,2.5f,2.6f,3.0f},
-		{1.0f,1.5f,1.8f,2.0f,2.2f,2.3f,2.4f,2.5f,2.6f,3.0f},
-		{1.0f,1.5f,1.8f,2.0f,2.2f,2.3f,2.4f,2.5f,2.6f,3.0f},
-		{1.0f,1.5f,1.8f,2.0f,2.2f,2.3f,2.4f,2.5f,2.6f,3.0f},
-		{1.0f,1.5f,1.8f,2.0f,2.2f,2.3f,2.4f,2.5f,2.6f,3.0f},
-		{1.0f,1.5f,1.8f,2.0f,2.2f,2.3f,2.4f,2.5f,2.6f,3.0f},
-		{1.0f,1.5f,1.8f,2.0f,2.2f,2.3f,2.4f,2.5f,2.6f,3.0f},
-		{1.0f,1.5f,1.8f,2.0f,2.2f,2.3f,2.4f,2.5f,2.6f,3.0f},
-		{1.0f,1.5f,1.8f,2.0f,2.2f,2.3f,2.4f,2.5f,2.6f,3.0f},
-		{1.0f,1.5f,1.8f,2.0f,2.2f,2.3f,2.4f,2.5f,2.6f,3.0f},
-		{1.0f,1.5f,1.8f,2.0f,2.2f,2.3f,2.4f,2.5f,2.6f,3.0f},
-		{1.0f,1.5f,1.8f,2.0f,2.2f,2.3f,2.4f,2.5f,2.6f,3.0f},
-		{1.0f,1.5f,1.8f,2.0f,2.2f,2.3f,2.4f,2.5f,2.6f,3.0f},
-		{1.0f,1.5f,1.8f,2.0f,2.2f,2.3f,2.4f,2.5f,2.6f,3.0f},
-		{1.0f,1.5f,1.8f,2.0f,2.2f,2.3f,2.4f,2.5f,2.6f,3.0f},
-		{1.0f,1.5f,1.8f,2.0f,2.2f,2.3f,2.4f,2.5f,2.6f,3.0f},
-		{1.0f,1.5f,1.8f,2.0f,2.2f,2.3f,2.4f,2.5f,2.6f,3.0f},
-		{1.0f,1.5f,1.8f,2.0f,2.2f,2.3f,2.4f,2.5f,2.6f,3.0f},
-		{1.0f,1.5f,1.8f,2.0f,2.2f,2.3f,2.4f,2.5f,2.6f,3.0f},
-	};
-    static int[] lvlLineIncrement = {1, 3, 6, 10, 15, 21, 28, 36, 48, 70, 88, 90, 90, 90, 90, 90, 90, 90, 90, 90, 90, 90, 90};
+    /** 段位 pointのCombo bonus */
+    private static float[,] tableGradeComboBonus =
+    {
+        {1.0f,1.0f,1.0f,1.0f,1.0f,1.0f,1.0f,1.0f,1.0f,1.0f},
+        {1.0f,1.2f,1.2f,1.4f,1.4f,1.4f,1.4f,1.5f,1.5f,2.0f},
+        {1.0f,1.4f,1.5f,1.6f,1.7f,1.8f,1.9f,2.0f,2.1f,2.5f},
+        {1.0f,1.5f,1.8f,2.0f,2.2f,2.3f,2.4f,2.5f,2.6f,3.0f},
+        {1.0f,1.5f,1.8f,2.0f,2.2f,2.3f,2.4f,2.5f,2.6f,3.0f},
+        {1.0f,1.5f,1.8f,2.0f,2.2f,2.3f,2.4f,2.5f,2.6f,3.0f},
+        {1.0f,1.5f,1.8f,2.0f,2.2f,2.3f,2.4f,2.5f,2.6f,3.0f},
+        {1.0f,1.5f,1.8f,2.0f,2.2f,2.3f,2.4f,2.5f,2.6f,3.0f},
+        {1.0f,1.5f,1.8f,2.0f,2.2f,2.3f,2.4f,2.5f,2.6f,3.0f},
+        {1.0f,1.5f,1.8f,2.0f,2.2f,2.3f,2.4f,2.5f,2.6f,3.0f},
+        {1.0f,1.5f,1.8f,2.0f,2.2f,2.3f,2.4f,2.5f,2.6f,3.0f},
+        {1.0f,1.5f,1.8f,2.0f,2.2f,2.3f,2.4f,2.5f,2.6f,3.0f},
+        {1.0f,1.5f,1.8f,2.0f,2.2f,2.3f,2.4f,2.5f,2.6f,3.0f},
+        {1.0f,1.5f,1.8f,2.0f,2.2f,2.3f,2.4f,2.5f,2.6f,3.0f},
+        {1.0f,1.5f,1.8f,2.0f,2.2f,2.3f,2.4f,2.5f,2.6f,3.0f},
+        {1.0f,1.5f,1.8f,2.0f,2.2f,2.3f,2.4f,2.5f,2.6f,3.0f},
+        {1.0f,1.5f,1.8f,2.0f,2.2f,2.3f,2.4f,2.5f,2.6f,3.0f},
+        {1.0f,1.5f,1.8f,2.0f,2.2f,2.3f,2.4f,2.5f,2.6f,3.0f},
+        {1.0f,1.5f,1.8f,2.0f,2.2f,2.3f,2.4f,2.5f,2.6f,3.0f},
+        {1.0f,1.5f,1.8f,2.0f,2.2f,2.3f,2.4f,2.5f,2.6f,3.0f},
+        {1.0f,1.5f,1.8f,2.0f,2.2f,2.3f,2.4f,2.5f,2.6f,3.0f},
+        {1.0f,1.5f,1.8f,2.0f,2.2f,2.3f,2.4f,2.5f,2.6f,3.0f},
+        {1.0f,1.5f,1.8f,2.0f,2.2f,2.3f,2.4f,2.5f,2.6f,3.0f},
+    };
+    private static int[] lvlLineIncrement = { 1, 3, 6, 10, 15, 21, 28, 36, 48, 70, 88, 90, 90, 90, 90, 90, 90, 90, 90, 90, 90, 90, 90 };
 
-    public int[] linesFrozen = {0, 0, 0, 6, 4, 0, 0, 0, 8, 0, 0, 12, 16, 0, 0, 0, 19, 0, 0, 0, 10, 14};
+    public int[] linesFrozen = { 0, 0, 0, 6, 4, 0, 0, 0, 8, 0, 0, 12, 16, 0, 0, 0, 19, 0, 0, 0, 10, 14 };
+
     // public void LineClears(int lines, bool spin)
     // {
     //     if (lines > 0)
@@ -305,7 +311,7 @@ public class GameEngine : MonoBehaviour
     //         if (lines == 5) virtualBasePoint += 70;
     //         if (lines >= 6) virtualBasePoint += 100 + (lines - 6) * 40;
     //     }
-	// 	int basepoint = tableGradePoint[lines - 1];
+    // 	int basepoint = tableGradePoint[lines - 1];
     //     basepoint += virtualBasePoint;
     //     virtualBasePoint = 0;
 
@@ -313,18 +319,18 @@ public class GameEngine : MonoBehaviour
     //     if (indexcombo < 0) indexcombo = 0;
     //     if (indexcombo > 9) indexcombo = 9;
     //     float combobonus = tableGradeComboBonus[lines - 1, indexcombo];
-	
-	// 	int levelbonus = 1 + (level / 250);
-	
-	// 	float point = basepoint * combobonus * levelbonus;
+
+    // 	int levelbonus = 1 + (level / 250);
+
+    // 	float point = basepoint * combobonus * levelbonus;
     //     if (sectAfter20g >= 21) point *= 10;
     //     else if (sectAfter20g > 19) point *= 5;
     //     else if (sectAfter20g > 18) point *= 2;
-	// 	gradePoints += point;
-	// 	statGradePoints += point;
+    // 	gradePoints += point;
+    // 	statGradePoints += point;
     //     while (gradePoints >= gradePointRequirement)
     //     {
-	// 		gradePoints -= gradePointRequirement;
+    // 		gradePoints -= gradePointRequirement;
     //         if (grade < 18) grade++;
     //         gradeIndicator.sprite = gradeSprites[grade];
     //         gameAudio.PlayOneShot(gradeUp);
@@ -345,7 +351,7 @@ public class GameEngine : MonoBehaviour
     // private void Awake()
     // {
     // }
-    void Start()
+    private void Start()
     {
         // DontDestroyOnLoad(this);
         instance = this;
@@ -358,22 +364,41 @@ public class GameEngine : MonoBehaviour
     }
     private IEnumerator LoadLevelMusic(int lv)
     {
-        
+
         WWW request;
-        if(lv < 6) request = GetAudioFromFile(audioPath, "lv"+(lv+1)+".wav");
-        else request = GetAudioFromFile(audioPath, "ending.wav");
+        if (lv < 6)
+        {
+            request = GetAudioFromFile(audioPath, "lv" + (lv + 1) + ".wav");
+        }
+        else
+        {
+            request = GetAudioFromFile(audioPath, "ending.wav");
+        }
+
         yield return request;
         int lvindex = lv;
-        if(lv == 6) lvindex++;
+        if (lv == 6)
+        {
+            lvindex++;
+        }
+
         bgm_1p_lv[lvindex] = request.GetAudioClip();
-        bgm_1p_lv[lvindex].name = (lv < 6 ? "lv"+(lv+1)+"" : "ending");
-        if (lv == 0) gameMusic.clip = bgm_1p_lv[0];
+        bgm_1p_lv[lvindex].name = (lv < 6 ? "lv" + (lv + 1) + "" : "ending");
+        if (lv == 0)
+        {
+            gameMusic.clip = bgm_1p_lv[0];
+        }
     }
-    AudioClip MMmusic;
+
+    private AudioClip MMmusic;
     private IEnumerator LoadMainMenuMusic()
     {
         WWW request = GetAudioFromFile(audioPath, "menu.wav");
-        if(GameEngine.debugMode) Debug.Log(request);
+        if (GameEngine.debugMode)
+        {
+            Debug.Log(request);
+        }
+
         yield return request;
 
         MMmusic = request.GetAudioClip();
@@ -388,64 +413,117 @@ public class GameEngine : MonoBehaviour
         return request;
     }
 
-    int[] tableBGMFadeout = {385,585,680,860,950,1440,-1,-1};
-    int[] tableBGMChange  = {400,600,700,900,1000,1500,2100,-1};
-    void FadeoutBGM()
+    private int[] tableBGMFadeout = { 385, 585, 680, 860, 950, 1440, -1, -1 };
+    private int[] tableBGMChange = { 400, 600, 700, 900, 1000, 1500, 2100, -1 };
+
+    private void FadeoutBGM()
     {
-	    if (tableBGMFadeout[bgmlv-1] != -1 && NetworkBoard.highestLevel >= tableBGMFadeout[bgmlv-1])
+        if (tableBGMFadeout[bgmlv - 1] != -1 && NetworkBoard.highestLevel >= tableBGMFadeout[bgmlv - 1])
         {
             gameMusic.volume -= (Time.deltaTime / 3);
         }
     }
-    void ChangeBGM()
+
+    private void ChangeBGM()
     {
-        if (tableBGMChange[bgmlv-1] != -1 && NetworkBoard.highestLevel >= tableBGMChange[bgmlv-1]) { bgmlv += 1; gameMusic.volume = 1; gameMusic.Stop(); gameMusic.clip = bgm_1p_lv[bgmlv-1]; if(bgmlv < 7)gameMusic.Play();}
+        if (tableBGMChange[bgmlv - 1] != -1 && NetworkBoard.highestLevel >= tableBGMChange[bgmlv - 1])
+        {
+            bgmlv += 1; gameMusic.volume = 1; gameMusic.Stop(); gameMusic.clip = bgm_1p_lv[bgmlv - 1]; if (bgmlv < 7)
+            {
+                gameMusic.Play();
+            }
+        }
     }
     public void OnMovement(InputAction.CallbackContext value)
     {
         if (replay.mode != ReplayModeType.read)
         {
             movement = value.ReadValue<Vector2>();
-            if (value.ReadValue<Vector2>().y > 0.5) {Inputs[0] = true;}
-            else {Inputs[0] = false;}
+            if (value.ReadValue<Vector2>().y > 0.5) { Inputs[0] = true; }
+            else { Inputs[0] = false; }
         }
         else if (value.performed)
         {
             if (value.ReadValue<Vector2>().x > 0.5 && Time.timeScale < 100)
+            {
                 Time.timeScale += 1.0f;
+            }
+
             if (value.ReadValue<Vector2>().x < -0.5 && Time.timeScale > 1)
+            {
                 Time.timeScale -= 1.0f;
+            }
         }
     }
     public void OnCounterclockwise(InputAction.CallbackContext value)
     {
-        if (replay.mode != ReplayModeType.read){
-        if (value.performed) Inputs[1] = true;
-        else Inputs[1] = false;}
+        if (replay.mode != ReplayModeType.read)
+        {
+            if (value.performed)
+            {
+                Inputs[1] = true;
+            }
+            else
+            {
+                Inputs[1] = false;
+            }
+        }
     }
     public void OnClockwise(InputAction.CallbackContext value)
     {
-        if (replay.mode != ReplayModeType.read){
-        if (value.performed) Inputs[2] = true;
-        else Inputs[2] = false;}
+        if (replay.mode != ReplayModeType.read)
+        {
+            if (value.performed)
+            {
+                Inputs[2] = true;
+            }
+            else
+            {
+                Inputs[2] = false;
+            }
+        }
     }
     public void OnClockwise2(InputAction.CallbackContext value)
     {
-        if (replay.mode != ReplayModeType.read){
-        if (value.performed) Inputs[6] = true;
-        else Inputs[6] = false;}
+        if (replay.mode != ReplayModeType.read)
+        {
+            if (value.performed)
+            {
+                Inputs[6] = true;
+            }
+            else
+            {
+                Inputs[6] = false;
+            }
+        }
     }
     public void OnUpsideDown(InputAction.CallbackContext value)
     {
-        if (replay.mode != ReplayModeType.read){
-        if (value.performed) Inputs[3] = true;
-        else Inputs[3] = false;}
+        if (replay.mode != ReplayModeType.read)
+        {
+            if (value.performed)
+            {
+                Inputs[3] = true;
+            }
+            else
+            {
+                Inputs[3] = false;
+            }
+        }
     }
     public void OnHold(InputAction.CallbackContext value)
     {
-        if (replay.mode != ReplayModeType.read){
-        if (value.performed) Inputs[4] = true;
-        else Inputs[4] = false;}
+        if (replay.mode != ReplayModeType.read)
+        {
+            if (value.performed)
+            {
+                Inputs[4] = true;
+            }
+            else
+            {
+                Inputs[4] = false;
+            }
+        }
     }
     public void OnPause(InputAction.CallbackContext value)
     {
@@ -471,19 +549,28 @@ public class GameEngine : MonoBehaviour
     }
     public string timeCount(int time)
     {
-        return Math.Floor(((double)time/60000)%6).ToString() + Math.Floor(((double)time/6000)%10) + ":" + Math.Floor(((double)time%6000/1000)%6) + Math.Floor(((double)time%6000/100)%10) + ":" + Math.Floor((((double)time%100/1000)*100)%10) + Math.Floor((((double)time%100/100)*100)%10);
+        return Math.Floor(((double)time / 60000) % 6).ToString() + Math.Floor(((double)time / 6000) % 10) + ":" + Math.Floor(((double)time % 6000 / 1000) % 6) + Math.Floor(((double)time % 6000 / 100) % 10) + ":" + Math.Floor((((double)time % 100 / 1000) * 100) % 10) + Math.Floor((((double)time % 100 / 100) * 100) % 10);
     }
+
     // public void SpawnFireworks()
     // {
     //     BoardParticleSystem.instance.SummonFirework(new Vector2(0f, 10f), new Vector2(10f,10f));
     // }
-    bool showinvis = false;
+    private bool showinvis = false;
+
     // Update is called once per frame
-    void FixedUpdate()
+    private void FixedUpdate()
     {
         checkCool();
-        if(level > endingLevel) level = endingLevel;
-        if(time == 1 || (spawnTicks == -1 && ending)) gameMusic.Play();
+        if (level > endingLevel)
+        {
+            level = endingLevel;
+        }
+
+        if (time == 1 || (spawnTicks == -1 && ending))
+        {
+            gameMusic.Play();
+        }
         // // musicTime += Time.deltaTime;
         // if(notifDelay > 0)notifDelay--;
         // if(MenuEngine.instance.curBoard != null){int pieceCountHoldRed = PiecesController.instance.pieceHold == 28 ? -1 : -2;
@@ -498,8 +585,8 @@ public class GameEngine : MonoBehaviour
         // if (Input.GetKeyDown(KeyCode.H) && debugMode) {gradePoints += gradePointRequirement; statGradePoints += gradePointRequirement;}
         // if((paused == false || (FrameStep == true && Inputs[7])) && MenuEngine.instance.GameOver == false)
         // {
-            FadeoutBGM();
-            ChangeBGM();
+        FadeoutBGM();
+        ChangeBGM();
         //     if (replay.mode == ReplayModeType.read && spawnTicks > (int)spawnDelay - 401)
         //     {
         //         // Vector2 tempmov;
@@ -522,7 +609,7 @@ public class GameEngine : MonoBehaviour
         //         if(GameEngine.debugMode) Debug.Log(whichline);
         //         BoardController.instance.DestroyLine(whichline);
         //     }
-            
+
         //     if(ending && !showinvis)tileInvisTime = 20 - (rollTime / (400/6*10));
         //     else tileInvisTime = -1;
         //     if (spawnTicks == (int)spawnDelay - 399) gameAudio.PlayOneShot(excellent);

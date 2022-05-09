@@ -1,5 +1,4 @@
 using System;
-using UnityEngine;
 
 /*
     Project Challenger, an challenging Tetris game.
@@ -30,12 +29,12 @@ public static class TimeConversion
     public static string timeCount(int time)
     {
         return String.Format("{0}{1}:{2}{3}:{4}{5}",
-        Math.Floor((double)time/60000)%6,
-        Math.Floor((double)time/6000)%10,
-        Math.Floor((double)time%6000/1000)%6,
-        Math.Floor((double)time%6000/100)%10,
-        Math.Floor(((double)time%100/1000)*100)%10,
-        Math.Floor(((double)time%100/100)*100)%10);
+        Math.Floor((double)time / 60000) % 6,
+        Math.Floor((double)time / 6000) % 10,
+        Math.Floor((double)time % 6000 / 1000) % 6,
+        Math.Floor((double)time % 6000 / 100) % 10,
+        Math.Floor(((double)time % 100 / 1000) * 100) % 10,
+        Math.Floor(((double)time % 100 / 100) * 100) % 10);
     }
     //Explains itself.
     public static string doubleFloatTimeCount(double time)

@@ -70,6 +70,6 @@ public class History4Rand : DummyRand
     {
         base.InitPieceIdentities(ids);
         int randID = GetRandomPieceID();
-        PieceHistory = new int[] {randID, randID, randID, randID};
+        PieceHistory = new int[] { randID, randID, randID, randID };
     }
 }
