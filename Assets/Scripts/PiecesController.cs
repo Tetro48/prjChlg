@@ -488,7 +488,7 @@ public class PiecesController : MonoBehaviour
             }
             ProcessMovement();
             //This is temporary.
-            if (Input.GetKeyDown(KeyCode.Escape) && board.mode.OnBlockOut())
+            if (Input.GetKeyDown(KeyCode.Escape))
             {
                 MenuEngine.instance.mainPlayer.GameOver = true;
                 MenuEngine.instance.mainPlayer.IntentionalGameOver = true;
