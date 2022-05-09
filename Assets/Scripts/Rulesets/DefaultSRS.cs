@@ -62,6 +62,8 @@ public class DefaultSRS : IRuleset
         throw new NotImplementedException();
     }
 
+    public int GetTextureID(int pieceID) => 0;
+
     public bool OnPieceMove(int id, int2 moveBy)
     {
         throw new NotImplementedException();
