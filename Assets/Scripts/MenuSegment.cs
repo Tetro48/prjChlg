@@ -60,7 +60,7 @@ public class MenuSegment : MonoBehaviour
         {
             _UITimePassed += Time.unscaledDeltaTime * speed;
             buttonTime *= System.Math.Ceiling(_UITimePassed / buttonTime);
-            if (_UITimePassed >= count * buttonMovementInSeconds)
+            if (_UITimePassed >= count * buttonTime)
             {
                 output = false;
             }
@@ -71,15 +71,15 @@ public class MenuSegment : MonoBehaviour
         }
         else
         {
-            UITimePassed -= Time.unscaledDeltaTime * speed;
-            buttonTime *= System.Math.Floor(UITimePassed / buttonTime);
-            if (UITimePassed <= 0d)
+            _UITimePassed -= Time.unscaledDeltaTime * speed;
+            buttonTime *= System.Math.Floor(_UITimePassed / buttonTime);
+            if (_UITimePassed <= 0d)
             {
                 output = false;
             }
             else
             {
-                output = UITimePassed < buttonTime;
+                output = _UITimePassed < buttonTime;
             }
         }
 
@@ -92,7 +92,7 @@ public class MenuSegment : MonoBehaviour
         float time = Time.deltaTime;
         if (CheckUIScroll(side, UIElements.Length, speed))
         {
-            MenuEngine.instance.audioSource.PlayOneShot(MenuEngine.instance.clip);
+            AudioManager.PlayClip("scroll");
         }
 
         // Debug.Log(time);
@@ -104,7 +104,6 @@ public class MenuSegment : MonoBehaviour
 
         UITimePassed += reversibleTime * speed;
         float timeToPosX = (float)(UITimePassed / buttonMovementInSeconds) * 300 - 200;
-        float timeToPosXPart = (float)(UITimePassed / buttonMovementInSeconds) * 300 + 100;
         if (side)
         {
             for (int i = 0; i < UIElements.Length; i++)
@@ -125,11 +124,12 @@ public class MenuSegment : MonoBehaviour
             if (UITimePassed > UIElements.Length * buttonMovementInSeconds)
             {
                 UITimePassed = UIElements.Length * buttonMovementInSeconds;
-                foreach (RectTransform rectTransform in UIElements)
+                for (int i = 0; i < UIElements.Length; i++)
                 {
-                    if (rectTransform.gameObject.activeSelf)
+                    if (UIElements[i].gameObject.activeSelf)
                     {
-                        control.SetSelectedGameObject(rectTransform.gameObject);
+                        control.SetSelectedGameObject(UIElements[i].gameObject);
+                        break;
                     }
                 }
                 return true;

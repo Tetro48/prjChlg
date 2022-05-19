@@ -157,9 +157,15 @@ public class DummyRS : IRuleset
     {
         if (Synchro)
         {
-
+            board.piecesController.ProcessRotation();
+            board.piecesController.ProcessMovement();
         }
-        board.MovePiece(moveBy, true);
+        else
+        {
+            board.piecesController.ProcessMovement();
+            board.piecesController.ProcessRotation();
+        }
+        board.piecesController.ProcessGravity();
     }
 
     public float3 GetPieceColor(int id)

@@ -316,8 +316,8 @@ public class MenuEngine : MonoBehaviour
                     resolutions[i].height == Screen.currentResolution.height &&
                     resolutions[i].refreshRate == Screen.currentResolution.refreshRate)
                 {
-                    currentResolutionIndex = i / resRefreshrates;
-                    reswidth = resolutions[i / resRefreshrates].width / 1920;
+                    currentResolutionIndex = i;
+                    reswidth = resolutions[i].width / 1920;
                 }
             }
             resDropdown.AddOptions(options);
@@ -428,7 +428,7 @@ public class MenuEngine : MonoBehaviour
     {
         if (platformCompat())
         {
-            Resolution resolution = resolutions[(resRefreshrates - 1) + index * resRefreshrates];
+            Resolution resolution = resolutions[index];
             Screen.SetResolution(resolution.width, resolution.height, true);
             reswidth = (float)(resolution.width / 1920.0);
         }

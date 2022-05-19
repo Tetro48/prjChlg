@@ -510,6 +510,7 @@ MonoBehaviour:
   - {fileID: 1341476720}
   - {fileID: 1400816860}
   UIPartElements: []
+  PlatformIncompatibleUIElements: []
   control: {fileID: 484171426}
 --- !u!1 &126381615
 GameObject:
@@ -7100,6 +7101,7 @@ MonoBehaviour:
   - {fileID: 988892280}
   - {fileID: 2003372441}
   UIPartElements: []
+  PlatformIncompatibleUIElements: []
   control: {fileID: 484171426}
 --- !u!1 &988892279
 GameObject:
@@ -7787,6 +7789,7 @@ MonoBehaviour:
   - {fileID: 1265435308}
   - {fileID: 599057522}
   UIPartElements: []
+  PlatformIncompatibleUIElements: []
   control: {fileID: 484171426}
 --- !u!1 &1065151639
 GameObject:
@@ -8088,6 +8091,7 @@ MonoBehaviour:
   - {fileID: 2023189184}
   UIPartElements:
   - {fileID: 213451760}
+  PlatformIncompatibleUIElements: []
   control: {fileID: 484171426}
 --- !u!1 &1108641587
 GameObject:
@@ -8730,6 +8734,7 @@ MonoBehaviour:
   - {fileID: 232766768}
   - {fileID: 1661435965}
   UIPartElements: []
+  PlatformIncompatibleUIElements: []
   control: {fileID: 484171426}
 --- !u!1 &1162803617
 GameObject:
@@ -9318,6 +9323,7 @@ MonoBehaviour:
   - {fileID: 2034173225}
   - {fileID: 753168842}
   UIPartElements: []
+  PlatformIncompatibleUIElements: []
   control: {fileID: 484171426}
 --- !u!1 &1182796249
 GameObject:
@@ -12376,7 +12382,7 @@ MonoBehaviour:
   m_fontSize: 22
   m_fontSizeBase: 22
   m_fontWeight: 400
-  m_enableAutoSizing: 0
+  m_enableAutoSizing: 1
   m_fontSizeMin: 18
   m_fontSizeMax: 72
   m_fontStyle: 0
@@ -15081,7 +15087,7 @@ MonoBehaviour:
   modifiableInputAsset: {fileID: -944628639613478452, guid: d8dbe9088492df045911014303ed65a7,
     type: 3}
   language: 0
-  yourPlayer: {fileID: 0}
+  mainPlayer: {fileID: 0}
   menu: 0
   prevMenu: 0
   quitting: 0
@@ -15196,6 +15202,7 @@ MonoBehaviour:
   - 0.046875
   rotationSystems: 0
   nextPieces: 7
+  endingLevel: 2100
   switches: 000000
   alreadystarted: 0
   audioClips:
@@ -15247,17 +15254,6 @@ MonoBehaviour:
   - {fileID: 8300000, guid: 82f3999481bf2bb468b7238726593bd3, type: 3}
   - {fileID: 8300000, guid: 260787bb5f18be9499e3a8e860ce992a, type: 3}
   drpcSwitch: 0
-  frameratebuffer:
-  - 0
-  - 0
-  - 0
-  - 0
-  - 0
-  - 0
-  - 0
-  - 0
-  - 0
-  - 0
 --- !u!4 &1564083146
 Transform:
   m_ObjectHideFlags: 0
@@ -15485,11 +15481,11 @@ MonoBehaviour:
   LockDelay: 30
   DAS: 15
   SDF: 6
-  ARE: 25
-  AREf: 24
-  AREline: 10
-  lineDelayf: 0
-  lineDelay: 15
+  spawnDelay: 41.66666666666666
+  spawnTicks: -258
+  lineSpawnDelay: 16.666666666666668
+  lineDropTicks: 0
+  lineDropDelay: 25
   gravity: 0.046875
   singles: 0
   doubles: 0
@@ -19123,7 +19119,7 @@ MonoBehaviour:
   m_fontSize: 28
   m_fontSizeBase: 28
   m_fontWeight: 400
-  m_enableAutoSizing: 0
+  m_enableAutoSizing: 1
   m_fontSizeMin: 18
   m_fontSizeMax: 72
   m_fontStyle: 0
@@ -20129,6 +20125,7 @@ MonoBehaviour:
   - {fileID: 1985443506}
   - {fileID: 895228134}
   UIPartElements: []
+  PlatformIncompatibleUIElements: []
   control: {fileID: 484171426}
 --- !u!1 &1958343456
 GameObject:

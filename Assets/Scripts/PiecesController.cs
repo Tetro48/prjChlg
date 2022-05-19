@@ -534,7 +534,7 @@ public class PiecesController : MonoBehaviour
         }
     }
 
-    private void ProcessGravity()
+    public void ProcessGravity()
     {
         int tilesCounted = 0;
         if (piecemovementlocked == false)
@@ -556,7 +556,7 @@ public class PiecesController : MonoBehaviour
         board.MovePiece(new int2(0, -tilesCounted), true);
     }
 
-    private void ProcessRotation()
+    public void ProcessRotation()
     {
         if (((board.Inputs.c0.z && !PrevInputs.c0.z) || (board.Inputs.c1.z && !PrevInputs.c1.z) || IRSCW) && !piecemovementlocked)
         {
@@ -584,7 +584,7 @@ public class PiecesController : MonoBehaviour
         }
     }
 
-    private void ProcessMovement()
+    public void ProcessMovement()
     {
         if (board.movement.y < -deadzone && !piecemovementlocked)
         {
