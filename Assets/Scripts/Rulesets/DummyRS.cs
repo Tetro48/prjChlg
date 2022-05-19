@@ -36,76 +36,76 @@ namespace Tetro48.Rulesets
         /// </summary>
         public virtual float3[] PieceColors { get; } =
         {
-        new float3 { x = 1, y = 1, z = 0}, //O
-        new float3 { x = 0, y = 1, z = 1}, //I
-        new float3 { x = 0, y = 1, z = 0}, //S
-        new float3 { x = 1, y = 0, z = 1}, //T
-        new float3 { x = 1, y = 0, z = 0}, //Z
-        new float3 { x = 1, y = 0.5f, z = 1}, //L
-        new float3 { x = 0, y = 0, z = 1}, //J
+            new float3 { x = 1, y = 1, z = 0}, //O
+            new float3 { x = 0, y = 1, z = 1}, //I
+            new float3 { x = 0, y = 1, z = 0}, //S
+            new float3 { x = 1, y = 0, z = 1}, //T
+            new float3 { x = 1, y = 0, z = 0}, //Z
+            new float3 { x = 1, y = 0.5f, z = 1}, //L
+            new float3 { x = 0, y = 0, z = 1}, //J
 
-    };
+        };
 
         // first index is piece id, second index is for rotation index. For most pieces, the first mino MUST BE in 0,0.
         private readonly Memory<int2>[][] pieceMatrix =
         {
-        //O piece
-        new Memory<int2>[]
-        {
-            new int2[] { new int2(0, 0), new int2(0, 1), new int2(1, 0), new int2(1, 1) },
-            new int2[] { new int2(0, 0), new int2(0, 1), new int2(1, 0), new int2(1, 1) },
-            new int2[] { new int2(0, 0), new int2(0, 1), new int2(1, 0), new int2(1, 1) },
-            new int2[] { new int2(0, 0), new int2(0, 1), new int2(1, 0), new int2(1, 1) },
-        },
-        //I piece
-        new Memory<int2>[]
-        {
-            new int2[] { new int2(0, 0), new int2(1, 0), new int2(-1, 0), new int2(-2, 0) },
-            new int2[] { new int2(0, 0), new int2(0, 1), new int2(0, -2), new int2(0, -1) },
-            new int2[] { new int2(0, -1), new int2(1, -1), new int2(-1, -1), new int2(-2, -1) },
-            new int2[] { new int2(-1, 0), new int2(-1, 1), new int2(-1, -2), new int2(-1, -1)},
-        },
-        //S piece
-        new Memory<int2>[]
-        {
-            new int2[] { new int2(0, 0), new int2(-1,0), new int2(1,1), new int2(0,1) },
-            new int2[] { new int2(0, 0), new int2(0, 1), new int2(1, 0), new int2(1, -1) },
-            new int2[] { new int2(0, 0), new int2(-1, -1), new int2(1, 0), new int2(0, -1) },
-            new int2[] { new int2(0, 0), new int2(-1, 0), new int2(-1, 1), new int2(0, -1) },
-        },
-        //T piece
-        new Memory<int2>[]
-        {
-            new int2[] { new int2(0, 0), new int2(1, 0), new int2(-1, 0), new int2(0, 1)},
-            new int2[] { new int2(0, 0), new int2(1, 0), new int2(0, -1), new int2(0, 1)},
-            new int2[] { new int2(0, 0), new int2(1, 0), new int2(-1, 0), new int2(0, -1)},
-            new int2[] { new int2(0, 0), new int2(-1, 0), new int2(0, -1), new int2(0, 1)},
-        },
-        //Z piece
-        new Memory<int2>[]
-        {
-            new int2[] { new int2(0, 0), new int2(1, 0), new int2(-1, 1), new int2(0, 1)},
-            new int2[] { new int2(0, 0), new int2(1, 0), new int2(1, -1), new int2(0, 1)},
-            new int2[] { new int2(0, 0), new int2(1, 0), new int2(-1, 0), new int2(0, -1)},
-            new int2[] { new int2(0, 0), new int2(-1, 0), new int2(0, -1), new int2(0, 1)},
-        },
-        // L piece
-        new Memory<int2>[]
-        {
-            new int2[] { new int2(0, 0), new int2(1, 0), new int2(-1, 0), new int2(1, 1)},
-            new int2[] { new int2(0, 0), new int2(1, -1), new int2(0, -1), new int2(0, 1)},
-            new int2[] { new int2(0, 0), new int2(1, 0), new int2(-1, 0), new int2(0, -1)},
-            new int2[] { new int2(0, 0), new int2(-1, 0), new int2(0, -1), new int2(0, 1)},
-        },
-        // J piece
-        new Memory<int2>[]
-        {
-            new int2[] { new int2(0, 0), new int2(1, 0), new int2(-1, 0), new int2(0, 1)},
-            new int2[] { new int2(0, 0), new int2(1, 0), new int2(0, -1), new int2(0, 1)},
-            new int2[] { new int2(0, 0), new int2(1, 0), new int2(-1, 0), new int2(0, -1)},
-            new int2[] { new int2(0, 0), new int2(-1, 0), new int2(0, -1), new int2(0, 1)},
-        },
-    };
+            //O piece
+            new Memory<int2>[]
+            {
+                new int2[] { new int2(0, 0), new int2(0, 1), new int2(1, 0), new int2(1, 1) },
+                new int2[] { new int2(0, 0), new int2(0, 1), new int2(1, 0), new int2(1, 1) },
+                new int2[] { new int2(0, 0), new int2(0, 1), new int2(1, 0), new int2(1, 1) },
+                new int2[] { new int2(0, 0), new int2(0, 1), new int2(1, 0), new int2(1, 1) },
+            },
+            //I piece
+            new Memory<int2>[]
+            {
+                new int2[] { new int2(0, 0), new int2(1, 0), new int2(-1, 0), new int2(-2, 0) },
+                new int2[] { new int2(0, 0), new int2(0, 1), new int2(0, -2), new int2(0, -1) },
+                new int2[] { new int2(0, -1), new int2(1, -1), new int2(-1, -1), new int2(-2, -1) },
+                new int2[] { new int2(-1, 0), new int2(-1, 1), new int2(-1, -2), new int2(-1, -1)},
+            },
+            //S piece
+            new Memory<int2>[]
+            {
+                new int2[] { new int2(0, 0), new int2(-1,0), new int2(1,1), new int2(0,1) },
+                new int2[] { new int2(0, 0), new int2(0, 1), new int2(1, 0), new int2(1, -1) },
+                new int2[] { new int2(0, 0), new int2(-1, -1), new int2(1, 0), new int2(0, -1) },
+                new int2[] { new int2(0, 0), new int2(-1, 0), new int2(-1, 1), new int2(0, -1) },
+            },
+            //T piece
+            new Memory<int2>[]
+            {
+                new int2[] { new int2(0, 0), new int2(1, 0), new int2(-1, 0), new int2(0, 1)},
+                new int2[] { new int2(0, 0), new int2(1, 0), new int2(0, -1), new int2(0, 1)},
+                new int2[] { new int2(0, 0), new int2(1, 0), new int2(-1, 0), new int2(0, -1)},
+                new int2[] { new int2(0, 0), new int2(-1, 0), new int2(0, -1), new int2(0, 1)},
+            },
+            //Z piece
+            new Memory<int2>[]
+            {
+                new int2[] { new int2(0, 0), new int2(1, 0), new int2(-1, 1), new int2(0, 1)},
+                new int2[] { new int2(0, 0), new int2(1, 0), new int2(1, -1), new int2(0, 1)},
+                new int2[] { new int2(0, 0), new int2(1, 0), new int2(-1, 0), new int2(0, -1)},
+                new int2[] { new int2(0, 0), new int2(-1, 0), new int2(0, -1), new int2(0, 1)},
+            },
+            // L piece
+            new Memory<int2>[]
+            {
+                new int2[] { new int2(0, 0), new int2(1, 0), new int2(-1, 0), new int2(1, 1)},
+                new int2[] { new int2(0, 0), new int2(1, -1), new int2(0, -1), new int2(0, 1)},
+                new int2[] { new int2(0, 0), new int2(1, 0), new int2(-1, 0), new int2(0, -1)},
+                new int2[] { new int2(0, 0), new int2(-1, 0), new int2(0, -1), new int2(0, 1)},
+            },
+            // J piece
+            new Memory<int2>[]
+            {
+                new int2[] { new int2(0, 0), new int2(1, 0), new int2(-1, 0), new int2(0, 1)},
+                new int2[] { new int2(0, 0), new int2(1, 0), new int2(0, -1), new int2(0, 1)},
+                new int2[] { new int2(0, 0), new int2(1, 0), new int2(-1, 0), new int2(0, -1)},
+                new int2[] { new int2(0, 0), new int2(-1, 0), new int2(0, -1), new int2(0, 1)},
+            },
+        };
         private Memory<int2> GetPieceInMatrix(int id, int rotationIndex)
         {
             return pieceMatrix[id][rotationIndex];

@@ -29,21 +29,21 @@ namespace Tetro48.Rulesets
         public bool SwapRotation { get; } = false;
         public string[] PieceNames { get; } =
         {
-        "O", "I", "S", "T", "Z", "L", "J"
-    };
+            "O", "I", "S", "T", "Z", "L", "J"
+        };
         /// <summary>
         /// RGB color array?
         /// </summary>
         public float3[] PieceColors { get; } =
         {
-        new float3 { x = 1, y = 1, z = 0}, //O
-        new float3 { x = 0, y = 1, z = 1}, //I
-        new float3 { x = 0, y = 1, z = 0}, //S
-        new float3 { x = 1, y = 0, z = 1}, //T
-        new float3 { x = 1, y = 0, z = 0}, //Z
-        new float3 { x = 1, y = 0.5f, z = 1}, //L
-        new float3 { x = 0, y = 0, z = 1}, //J
-    };
+            new float3 { x = 1, y = 1, z = 0}, //O
+            new float3 { x = 0, y = 1, z = 1}, //I
+            new float3 { x = 0, y = 1, z = 0}, //S
+            new float3 { x = 1, y = 0, z = 1}, //T
+            new float3 { x = 1, y = 0, z = 0}, //Z
+            new float3 { x = 1, y = 0.5f, z = 1}, //L
+            new float3 { x = 0, y = 0, z = 1}, //J
+        };
 
         public bool CanMovePiece(in NetworkBoard board, int2 moveBy)
         {
