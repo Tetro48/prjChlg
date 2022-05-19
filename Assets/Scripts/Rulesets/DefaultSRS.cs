@@ -1,5 +1,6 @@
 using System;
 using Unity.Mathematics;
+using Tetro48.Interfaces;
 
 /*
     Project Challenger, an challenging Tetris game.
@@ -20,19 +21,21 @@ using Unity.Mathematics;
 */
 
 //I piece kicks are still awkward if using pivots.
-public class DefaultSRS : IRuleset
+namespace Tetro48.Rulesets
 {
-    public int Pieces { get; } = 7;
-    public bool SwapRotation { get; } = false;
-    public string[] PieceNames { get; } =
+    public class DefaultSRS : IRuleset
     {
+        public int Pieces { get; } = 7;
+        public bool SwapRotation { get; } = false;
+        public string[] PieceNames { get; } =
+        {
         "O", "I", "S", "T", "Z", "L", "J"
     };
-    /// <summary>
-    /// RGB color array?
-    /// </summary>
-    public float3[] PieceColors { get; } =
-    {
+        /// <summary>
+        /// RGB color array?
+        /// </summary>
+        public float3[] PieceColors { get; } =
+        {
         new float3 { x = 1, y = 1, z = 0}, //O
         new float3 { x = 0, y = 1, z = 1}, //I
         new float3 { x = 0, y = 1, z = 0}, //S
@@ -42,45 +45,46 @@ public class DefaultSRS : IRuleset
         new float3 { x = 0, y = 0, z = 1}, //J
     };
 
-    public bool CanMovePiece(in NetworkBoard board, int2 moveBy)
-    {
-        throw new NotImplementedException();
-    }
+        public bool CanMovePiece(in NetworkBoard board, int2 moveBy)
+        {
+            throw new NotImplementedException();
+        }
 
-    public bool CanRotatePiece(in NetworkBoard board, int oldRotationIndex, int rotationIndex)
-    {
-        throw new NotImplementedException();
-    }
+        public bool CanRotatePiece(in NetworkBoard board, int oldRotationIndex, int rotationIndex)
+        {
+            throw new NotImplementedException();
+        }
 
-    public Span<int2> GetPiece(int id)
-    {
-        throw new NotImplementedException();
-    }
+        public Span<int2> GetPiece(int id)
+        {
+            throw new NotImplementedException();
+        }
 
-    public float3 GetPieceColor(int id)
-    {
-        throw new NotImplementedException();
-    }
+        public float3 GetPieceColor(int id)
+        {
+            throw new NotImplementedException();
+        }
 
-    public int GetTextureID(int pieceID) => 0;
+        public int GetTextureID(int pieceID) => 0;
 
-    public bool OnPieceMove(int id, int2 moveBy)
-    {
-        throw new NotImplementedException();
-    }
+        public bool OnPieceMove(int id, int2 moveBy)
+        {
+            throw new NotImplementedException();
+        }
 
-    public bool OnPieceRotate(int id, int oldRotationIndex, int rotationIndex)
-    {
-        throw new NotImplementedException();
-    }
+        public bool OnPieceRotate(int id, int oldRotationIndex, int rotationIndex)
+        {
+            throw new NotImplementedException();
+        }
 
-    public void OnPieceSpawn(int id)
-    {
-        throw new NotImplementedException();
-    }
+        public void OnPieceSpawn(int id)
+        {
+            throw new NotImplementedException();
+        }
 
-    public void ProcessPiece(in NetworkBoard board, int2 moveBy, float2 movement)
-    {
-        throw new NotImplementedException();
+        public void ProcessPiece(in NetworkBoard board, int2 moveBy, float2 movement)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

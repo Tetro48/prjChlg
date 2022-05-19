@@ -16,11 +16,14 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-public interface IRandomizer
+namespace Tetro48.Interfaces
 {
-    //Initialize a randomizer with a seed.
-    public void InitRand(int seed);
-    public void InitPieceIdentities(string[] ids);
-    public int GetPieceID(bool usePiece = true);
-    public string GetPieceName(bool usePiece = false);
+    public interface IRandomizer
+    {
+        //Initialize a randomizer with a seed.
+        public void InitRand(int seed);
+        public void InitPieceIdentities(string[] ids);
+        public int GetPieceID(bool usePiece = true);
+        public string GetPieceName(bool usePiece = false);
+    }
 }

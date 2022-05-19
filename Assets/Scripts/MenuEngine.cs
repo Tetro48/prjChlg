@@ -7,6 +7,8 @@ using Unity.Jobs;
 using Unity.Mathematics;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using Tetro48.Interfaces;
+using Tetro48.Modes;
 
 /*
     Project Challenger, an challenging Tetris game.
@@ -70,6 +72,15 @@ public class MenuEngine : MonoBehaviour
     public TextMeshProUGUI[] switchesGUIText, mainMenuGUIText, settingsGUIText, inputsGUIText;
     private Resolution[] resolutions;
     public float reswidth;
+
+    [SerializeReference]
+    public IMode selectedMode;
+    [SerializeReference]
+    public IRuleset selectedRuleset;
+    [SerializeReference]
+    public IRandomizer selectedRandomizer;
+    [SerializeReference]
+    public IGrid selectedGrid;
     /// <summary>
     /// How long does each button takes to move
     /// </summary>

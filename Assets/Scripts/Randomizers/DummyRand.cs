@@ -1,4 +1,5 @@
-﻿
+﻿using Tetro48.Interfaces;
+
 /*
     Project Challenger, an challenging Tetris game.
     Copyright (C) 2022, Aymir
@@ -20,31 +21,35 @@
 /// <summary>
 /// This by itself can't be used. It must be inherited and overriden.
 /// </summary>
-public class DummyRand : IRandomizer
+
+namespace Tetro48.Randomizers
 {
-    public Unity.Mathematics.Random _random;
-    public string[] PieceNames;
-    public int GetRandomPieceID()
+    public class DummyRand : IRandomizer
     {
-        return _random.NextInt(0, PieceNames.Length - 1);
-    }
-    public virtual int GetPieceID(bool usePiece = true)
-    {
-        throw new System.NotImplementedException();
-    }
+        public Unity.Mathematics.Random _random;
+        public string[] PieceNames;
+        public int GetRandomPieceID()
+        {
+            return _random.NextInt(0, PieceNames.Length - 1);
+        }
+        public virtual int GetPieceID(bool usePiece = true)
+        {
+            throw new System.NotImplementedException();
+        }
 
-    public virtual string GetPieceName(bool usePiece = false)
-    {
-        return PieceNames[GetPieceID(usePiece)];
-    }
+        public virtual string GetPieceName(bool usePiece = false)
+        {
+            return PieceNames[GetPieceID(usePiece)];
+        }
 
-    public virtual void InitPieceIdentities(string[] ids)
-    {
-        PieceNames = ids;
-    }
+        public virtual void InitPieceIdentities(string[] ids)
+        {
+            PieceNames = ids;
+        }
 
-    public void InitRand(int seed)
-    {
-        _random = new Unity.Mathematics.Random((uint)seed);
+        public void InitRand(int seed)
+        {
+            _random = new Unity.Mathematics.Random((uint)seed);
+        }
     }
 }

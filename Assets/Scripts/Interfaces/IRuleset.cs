@@ -18,26 +18,29 @@ using Unity.Mathematics;
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
-//Gives a lot of flexibility, however, you have to do a lot on your own.
-public interface IRuleset
+namespace Tetro48.Interfaces
 {
-    int Pieces { get; }
-    bool SwapRotation { get; }
-    string[] PieceNames { get; }
-    bool CanMovePiece(in NetworkBoard board, int2 moveBy);
-    bool CanRotatePiece(in NetworkBoard board, int oldRotationIndex, int newRotationIndex);
-    void ProcessPiece(in NetworkBoard board, int2 moveBy, float2 movement);
-    int GetTextureID(int pieceID);
-    /// <summary>
-    /// Please do not overuse this function. It outputs a ref struct!
-    /// </summary>
-    Span<int2> GetPiece(int pieceID);
-    float3 GetPieceColor(int pieceID);
+    //Gives a lot of flexibility, however, you have to do a lot on your own.
+    public interface IRuleset
+    {
+        int Pieces { get; }
+        bool SwapRotation { get; }
+        string[] PieceNames { get; }
+        bool CanMovePiece(in NetworkBoard board, int2 moveBy);
+        bool CanRotatePiece(in NetworkBoard board, int oldRotationIndex, int newRotationIndex);
+        void ProcessPiece(in NetworkBoard board, int2 moveBy, float2 movement);
+        int GetTextureID(int pieceID);
+        /// <summary>
+        /// Please do not overuse this function. It outputs a ref struct!
+        /// </summary>
+        Span<int2> GetPiece(int pieceID);
+        float3 GetPieceColor(int pieceID);
 
-    /// <summary>
-    /// This is called once a piece spawns.
-    /// </summary>
-    void OnPieceSpawn(int pieceID);
-    bool OnPieceMove(int pieceID, int2 moveBy);
-    bool OnPieceRotate(int pieceID, int oldRotationIndex, int rotationIndex);
+        /// <summary>
+        /// This is called once a piece spawns.
+        /// </summary>
+        void OnPieceSpawn(int pieceID);
+        bool OnPieceMove(int pieceID, int2 moveBy);
+        bool OnPieceRotate(int pieceID, int oldRotationIndex, int rotationIndex);
+    }
 }

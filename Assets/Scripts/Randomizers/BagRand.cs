@@ -17,28 +17,31 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-public class BagRand : DummyRand
+namespace Tetro48.Randomizers
 {
-    public int[] bag;
-    public int iteration;
-    public override int GetPieceID(bool usePiece = true)
+    public class BagRand : DummyRand
     {
-        int piecesLen = PieceNames.Length;
-        if (iteration % piecesLen == 0)
+        public int[] bag;
+        public int iteration;
+        public override int GetPieceID(bool usePiece = true)
         {
-            bag.Shuffle();
+            int piecesLen = PieceNames.Length;
+            if (iteration % piecesLen == 0)
+            {
+                bag.Shuffle();
+            }
+            iteration++;
+            return bag[iteration % piecesLen];
         }
-        iteration++;
-        return bag[iteration % piecesLen];
-    }
 
-    public override void InitPieceIdentities(string[] ids)
-    {
-        base.InitPieceIdentities(ids);
-        bag = new int[ids.Length];
-        for (int i = 0; i < ids.Length; i++)
+        public override void InitPieceIdentities(string[] ids)
         {
-            bag[i] = i;
+            base.InitPieceIdentities(ids);
+            bag = new int[ids.Length];
+            for (int i = 0; i < ids.Length; i++)
+            {
+                bag[i] = i;
+            }
         }
     }
 }

@@ -20,33 +20,37 @@ using UnityEngine;
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-//Mode system???
-public interface IMode
+namespace Tetro48.Interfaces
 {
-    public FixedString64Bytes Name { get; }
-    public FixedString128Bytes Description { get; }
-    public void OnObjectSpawn(Transform transformRef);
-    //Reminder: Keep these getters simple. Seriously.
-    //Computing a new variable every time a mode or a core tries to get from will be considered somewhat wasteful, since those 7 could be accessed quite frequently.
-    public double GetSpawnDelay();
-    public double GetLockDelay();
-    public double GetLineDropDelay();
-    public double GetLineSpawnDelay();
-    public double GetDAS();
-    public int GetResets();
-    public Activity GetDiscordActivity();
-    public int GetBGMType();
-    /// <summary>
-    /// This will get executed when pressing Start. It'll determine if you can start it.
-    /// </summary>
-    /// <returns>False -> Stops from starting up a mode.</returns>
-    public bool BeforeStart();
-    /// <param name="board">A board reference. In case, you can use functions and/or directly modify variables in it. Be mindful though!</param>
-    public void OnUpdate(float dt, NetworkBoard board);
-    //why the piece name??? Mode creator(s) will struggle.
-    public void OnPieceSpawn(string piece_name);
-    public void OnPieceLock(string piece_name);
-    public void OnLineClear(NetworkBoard boardRef, int lines, bool spin);
-    public void OnLineDrop(NetworkBoard boardRef, int lines, bool spin);
-    public void OnBlockOut();
+    //Mode system???
+    public interface IMode
+    {
+        public FixedString64Bytes Name { get; }
+        public FixedString128Bytes Description { get; }
+        public void OnObjectSpawn(Transform transformRef);
+        //Reminder: Keep these getters simple. Seriously.
+        //Computing a new variable every time a mode or a core tries to get from will be considered somewhat wasteful, since those 7 could be accessed quite frequently.
+        public double GetSpawnDelay();
+        public double GetLockDelay();
+        public double GetLineDropDelay();
+        public double GetLineSpawnDelay();
+        public double GetDAS();
+        public int GetResets();
+        public Activity GetDiscordActivity();
+        public int GetBGMType();
+        /// <summary>
+        /// This will get executed when pressing Start. It'll determine if you can start it.
+        /// Side note: This won't work with C# version lower than 8.
+        /// </summary>
+        /// <returns>False -> Stops from starting up a mode.</returns>
+        public bool BeforeStart();
+        /// <param name="board">A board reference. In case, you can use functions and/or directly modify variables in it. Be mindful though!</param>
+        public void OnUpdate(float dt, NetworkBoard board);
+        //why the piece name??? Mode creator(s) will struggle.
+        public void OnPieceSpawn(string piece_name);
+        public void OnPieceLock(string piece_name);
+        public void OnLineClear(NetworkBoard boardRef, int lines, bool spin);
+        public void OnLineDrop(NetworkBoard boardRef, int lines, bool spin);
+        public void OnBlockOut();
+    }
 }

@@ -16,29 +16,32 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
-public interface IGrid
+namespace Tetro48.Interfaces
 {
-    int GridWidth { get; set; }
-    int GridHeight { get; set; }
-    void InitializeGrid(int gridWidth, int gridHeight);
-    /// <summary>
-    /// It's a getter of a flat grid, for simplification.
-    /// </summary>
-    int GetGridTile(int x, int y);
-    /// <summary>
-    /// It's a setter of a flat grid, for simplification.
-    /// </summary>
-    void SetGridTile(int x, int y, int tileID);
-    /// <returns>True meaning a full line</returns>
-    bool IsLineFull(uint y, bool clear);
-    /// <summary>
-    /// Clears a line.
-    /// </summary>
-    /// <returns>False if empty.</returns>
-    bool ClearLine(uint y);
-    /// <summary>
-    /// A special use case. It'd usually flag a line to not clear at all.
-    /// </summary>
-    void SetUnclearableLine(uint y, bool flag);
+    public interface IGrid
+    {
+        int GridWidth { get; set; }
+        int GridHeight { get; set; }
+        void InitializeGrid(int gridWidth, int gridHeight);
+        /// <summary>
+        /// It's a getter of a flat grid, for simplification.
+        /// </summary>
+        int GetGridTile(int x, int y);
+        /// <summary>
+        /// It's a setter of a flat grid, for simplification.
+        /// </summary>
+        void SetGridTile(int x, int y, int tileID);
+        /// <returns>True meaning a full line</returns>
+        bool IsLineFull(uint y, bool clear);
+        /// <summary>
+        /// Clears a line.
+        /// </summary>
+        /// <returns>False if empty.</returns>
+        bool ClearLine(uint y);
+        /// <summary>
+        /// A special use case. It'd usually flag a line to not clear at all.
+        /// </summary>
+        void SetUnclearableLine(uint y, bool flag);
 
+    }
 }

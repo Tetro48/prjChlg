@@ -1,6 +1,7 @@
 using Discord;
 using Unity.Collections;
 using UnityEngine;
+using Tetro48.Interfaces;
 
 /*
     Project Challenger, an challenging Tetris game.
@@ -19,70 +20,72 @@ using UnityEngine;
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
-
-public class DummyMode : IMode
+namespace Tetro48.Modes
 {
-    public virtual FixedString64Bytes Name { get; } = "Dummy Mode";
-    public virtual FixedString128Bytes Description { get; } = "A dummy mode to ease on mode development.";
-
-    public virtual double GetDAS() => 15;
-
-    public virtual Activity GetDiscordActivity() => new Activity
+    public class DummyMode : IMode
     {
-        State = "Playing a... dummy mode?",
-        Assets = {
+        public virtual FixedString64Bytes Name { get; } = "Dummy Mode";
+        public virtual FixedString128Bytes Description { get; } = "A dummy mode to ease on mode development.";
+
+        public virtual double GetDAS() => 15;
+
+        public virtual Activity GetDiscordActivity() => new Activity
+        {
+            State = "Playing a... dummy mode?",
+            Assets = {
                 LargeImage = "icon"
             }
-    };
+        };
 
-    public virtual double GetLineDropDelay() => 10;
+        public virtual double GetLineDropDelay() => 10;
 
-    public virtual double GetLineSpawnDelay() => 10;
+        public virtual double GetLineSpawnDelay() => 10;
 
-    public virtual double GetLockDelay() => 30;
+        public virtual double GetLockDelay() => 30;
 
-    public int GetResets() => 32;
+        public int GetResets() => 32;
 
-    public virtual double GetSpawnDelay() => 20;
-    public virtual int GetBGMType() => 0;
+        public virtual double GetSpawnDelay() => 20;
+        public virtual int GetBGMType() => 0;
 
-    public virtual void OnBlockOut()
-    {
-        throw new System.NotImplementedException();
-    }
+        public virtual void OnBlockOut()
+        {
+            throw new System.NotImplementedException();
+        }
 
-    public virtual void OnLineClear(NetworkBoard boardRef, int lines, bool spin)
-    {
+        public virtual void OnLineClear(NetworkBoard boardRef, int lines, bool spin)
+        {
 
-    }
+        }
 
-    public virtual void OnLineDrop(NetworkBoard boardRef, int lines, bool spin)
-    {
+        public virtual void OnLineDrop(NetworkBoard boardRef, int lines, bool spin)
+        {
 
-    }
+        }
 
-    public virtual void OnObjectSpawn(Transform transformRef)
-    {
+        public virtual void OnObjectSpawn(Transform transformRef)
+        {
 
-    }
+        }
 
-    public virtual void OnPieceLock(string piece_name)
-    {
+        public virtual void OnPieceLock(string piece_name)
+        {
 
-    }
+        }
 
-    public virtual void OnPieceSpawn(string piece_name)
-    {
+        public virtual void OnPieceSpawn(string piece_name)
+        {
 
-    }
+        }
 
-    public virtual void OnUpdate(float dt, NetworkBoard board)
-    {
+        public virtual void OnUpdate(float dt, NetworkBoard board)
+        {
 
-    }
+        }
 
-    public virtual bool BeforeStart()
-    {
-        return true;
+        public virtual bool BeforeStart()
+        {
+            return true;
+        }
     }
 }

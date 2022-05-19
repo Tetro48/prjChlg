@@ -20,48 +20,51 @@ using Unity.Collections;
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-public class MarathonMode : DummyMode
+namespace Tetro48.Modes
 {
-    private int lines;
-    private int score;
-    private bool b2b;
-    private TextMeshPro _text;
-    private static readonly int[] lineScoreCount = { 100, 200, 400, 800, 1200, 1600, 2000, 2500 };
-    public override FixedString64Bytes Name { get; } = "150 Lines Marathon";
-
-    public override FixedString128Bytes Description { get; } = "A standard mode. Clear 150 lines!";
-    public override Activity GetDiscordActivity() => new Activity
+    public class MarathonMode : DummyMode
     {
-        State = "Playing Marathon.",
-        Details = $"Cleared {lines}/150 lines",
-        Assets = {
+        private int lines;
+        private int score;
+        private bool b2b;
+        private TextMeshPro _text;
+        private static readonly int[] lineScoreCount = { 100, 200, 400, 800, 1200, 1600, 2000, 2500 };
+        public override FixedString64Bytes Name { get; } = "150 Lines Marathon";
+
+        public override FixedString128Bytes Description { get; } = "A standard mode. Clear 150 lines!";
+        public override Activity GetDiscordActivity() => new Activity
+        {
+            State = "Playing Marathon.",
+            Details = $"Cleared {lines}/150 lines",
+            Assets = {
                 LargeImage = "icon"
             }
-    };
-    public override void OnLineClear(NetworkBoard boardRef, int lines, bool spin)
-    {
-        this.lines += lines;
-        score += lineScoreCount[lines];
-        if (lines >= 4 || spin)
+        };
+        public override void OnLineClear(NetworkBoard boardRef, int lines, bool spin)
         {
-            b2b = true;
+            this.lines += lines;
+            score += lineScoreCount[lines];
+            if (lines >= 4 || spin)
+            {
+                b2b = true;
+            }
+            else
+            {
+                b2b = false;
+            }
+            if (this.lines >= 150)
+            {
+                boardRef.ending = true;
+                boardRef.GameOver = true;
+            }
         }
-        else
+        public override double GetLineDropDelay()
         {
-            b2b = false;
+            return 20;
         }
-        if (this.lines >= 150)
+        public override double GetLineSpawnDelay()
         {
-            boardRef.ending = true;
-            boardRef.GameOver = true;
+            return 10;
         }
-    }
-    public override double GetLineDropDelay()
-    {
-        return 20;
-    }
-    public override double GetLineSpawnDelay()
-    {
-        return 10;
     }
 }

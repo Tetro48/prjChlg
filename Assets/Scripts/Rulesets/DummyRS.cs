@@ -1,5 +1,6 @@
 using System;
 using Unity.Mathematics;
+using Tetro48.Interfaces;
 
 /*
     Project Challenger, an challenging Tetris game.
@@ -19,20 +20,22 @@ using Unity.Mathematics;
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-public class DummyRS : IRuleset
+namespace Tetro48.Rulesets
 {
-    public virtual int Pieces { get; } = 7;
-    public virtual bool Synchro { get; }
-    public virtual bool SwapRotation { get; }
-    public virtual string[] PieceNames { get; } =
+    public class DummyRS : IRuleset
     {
+        public virtual int Pieces { get; } = 7;
+        public virtual bool Synchro { get; }
+        public virtual bool SwapRotation { get; }
+        public virtual string[] PieceNames { get; } =
+        {
         "O", "I", "S", "T", "Z", "L", "J"
     };
-    /// <summary>
-    /// RGB color array?
-    /// </summary>
-    public virtual float3[] PieceColors { get; } =
-    {
+        /// <summary>
+        /// RGB color array?
+        /// </summary>
+        public virtual float3[] PieceColors { get; } =
+        {
         new float3 { x = 1, y = 1, z = 0}, //O
         new float3 { x = 0, y = 1, z = 1}, //I
         new float3 { x = 0, y = 1, z = 0}, //S
@@ -43,9 +46,9 @@ public class DummyRS : IRuleset
 
     };
 
-    // first index is piece id, second index is for rotation index. For most pieces, the first mino MUST BE in 0,0.
-    private readonly Memory<int2>[][] pieceMatrix =
-    {
+        // first index is piece id, second index is for rotation index. For most pieces, the first mino MUST BE in 0,0.
+        private readonly Memory<int2>[][] pieceMatrix =
+        {
         //O piece
         new Memory<int2>[]
         {
@@ -103,75 +106,76 @@ public class DummyRS : IRuleset
             new int2[] { new int2(0, 0), new int2(-1, 0), new int2(0, -1), new int2(0, 1)},
         },
     };
-    private Memory<int2> GetPieceInMatrix(int id, int rotationIndex)
-    {
-        return pieceMatrix[id][rotationIndex];
-    }
-    public virtual bool CanMovePiece(in NetworkBoard board, int2 moveBy)
-    {
-        Span<int2> piece = GetPieceInMatrix((int)board.curType, board.rotationIndex).Span;
-        for (int i = 0; i < piece.Length; i++)
+        private Memory<int2> GetPieceInMatrix(int id, int rotationIndex)
         {
-            if (board.grid.GetGridTile(piece[i].x, piece[i].y) > 0)
+            return pieceMatrix[id][rotationIndex];
+        }
+        public virtual bool CanMovePiece(in NetworkBoard board, int2 moveBy)
+        {
+            Span<int2> piece = GetPieceInMatrix((int)board.curType, board.rotationIndex).Span;
+            for (int i = 0; i < piece.Length; i++)
             {
-                return false;
+                if (board.grid.GetGridTile(piece[i].x, piece[i].y) > 0)
+                {
+                    return false;
+                }
             }
+            return true;
         }
-        return true;
-    }
 
-    public virtual bool CanRotatePiece(in NetworkBoard board, int oldRotationIndex, int newRotationIndex)
-    {
-        Span<int2> piece = GetPieceInMatrix((int)board.curType, newRotationIndex).Span;
-        for (int i = 0; i < piece.Length; i++)
+        public virtual bool CanRotatePiece(in NetworkBoard board, int oldRotationIndex, int newRotationIndex)
         {
-            if (board.grid.GetGridTile(piece[i].x, piece[i].y) > 0)
+            Span<int2> piece = GetPieceInMatrix((int)board.curType, newRotationIndex).Span;
+            for (int i = 0; i < piece.Length; i++)
             {
-                return false;
+                if (board.grid.GetGridTile(piece[i].x, piece[i].y) > 0)
+                {
+                    return false;
+                }
             }
+            return true;
         }
-        return true;
-    }
 
-    public virtual Span<int2> GetPiece(int id)
-    {
-        throw new NotImplementedException();
-    }
-
-    public virtual bool OnPieceMove(int id, int2 moveBy)
-    {
-        throw new NotImplementedException();
-    }
-
-    public virtual bool OnPieceRotate(int id, int oldRotationIndex, int rotationIndex)
-    {
-        throw new NotImplementedException();
-    }
-
-    public virtual void OnPieceSpawn(int id)
-    {
-        throw new NotImplementedException();
-    }
-
-    public virtual void ProcessPiece(in NetworkBoard board, int2 moveBy, float2 movement)
-    {
-        if (Synchro)
+        public virtual Span<int2> GetPiece(int id)
         {
-            board.piecesController.ProcessRotation();
-            board.piecesController.ProcessMovement();
+            throw new NotImplementedException();
         }
-        else
+
+        public virtual bool OnPieceMove(int id, int2 moveBy)
         {
-            board.piecesController.ProcessMovement();
-            board.piecesController.ProcessRotation();
+            throw new NotImplementedException();
         }
-        board.piecesController.ProcessGravity();
-    }
 
-    public float3 GetPieceColor(int id)
-    {
-        return PieceColors[id];
-    }
+        public virtual bool OnPieceRotate(int id, int oldRotationIndex, int rotationIndex)
+        {
+            throw new NotImplementedException();
+        }
 
-    public int GetTextureID(int pieceID) => 0;
+        public virtual void OnPieceSpawn(int id)
+        {
+            throw new NotImplementedException();
+        }
+
+        public virtual void ProcessPiece(in NetworkBoard board, int2 moveBy, float2 movement)
+        {
+            if (Synchro)
+            {
+                board.piecesController.ProcessRotation();
+                board.piecesController.ProcessMovement();
+            }
+            else
+            {
+                board.piecesController.ProcessMovement();
+                board.piecesController.ProcessRotation();
+            }
+            board.piecesController.ProcessGravity();
+        }
+
+        public float3 GetPieceColor(int id)
+        {
+            return PieceColors[id];
+        }
+
+        public int GetTextureID(int pieceID) => 0;
+    }
 }
