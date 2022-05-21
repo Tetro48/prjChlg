@@ -71,7 +71,11 @@ namespace Tetro48.Randomizers
         {
             base.InitPieceIdentities(ids);
             int randID = GetRandomPieceID();
-            PieceHistory = new int[] { randID, randID, randID, randID };
+            PieceHistory = new int[HistorySize];
+            for (int i = 0; i < HistorySize; i++)
+            {
+                PieceHistory[i] = randID;
+            }
         }
     }
 }
