@@ -9,6 +9,8 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 using Tetro48.Interfaces;
 using Tetro48.Modes;
+using Tetro48.Randomizers;
+using Tetro48.Rulesets;
 
 /*
     Project Challenger, an challenging Tetris game.
