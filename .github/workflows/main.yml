@@ -34,20 +34,20 @@ jobs:
       - name: Restore Library cache
         uses: actions/cache@v2
         with:
-          path: test-projects/test-project/Library
+          path: Library
           key: Library-test-project-WebGL
 
       # Test
       - name: Run tests
         uses: game-ci/unity-test-runner@v2
         with:
-          projectPath: test-projects/test-project
+          projectPath: /
 
       # Build
       - name: Build project
         uses: game-ci/unity-builder@v2
         with:
-          projectPath: test-projects/test-project
+          projectPath: /
           targetPlatform: WebGL
 
       # Output
@@ -120,7 +120,7 @@ jobs:
       - name: Restore Library cache
         uses: actions/cache@v2
         with:
-          path: test-projects/test-project/Library
+          path: Library
           key: Library-test-project
           restore-keys: |
             Library-test-
@@ -129,7 +129,7 @@ jobs:
       - uses: game-ci/unity-test-runner@v2
         id: testRunner
         with:
-          projectPath: test-projects/test-project
+          projectPath: /
           testMode: editmode
 
       # Upload artifact
@@ -164,7 +164,7 @@ jobs:
       - name: Restore Library cache
         uses: actions/cache@v2
         with:
-          path: test-projects/test-project/Library
+          path: Library
           key: Library-test-project-${{ matrix.targetPlatform }}
           restore-keys: |
             Library-test-project-
@@ -174,7 +174,7 @@ jobs:
       - uses: game-ci/unity-test-runner@v2
         id: testRunner
         with:
-          projectPath: test-projects/test-project
+          projectPath: /
           testMode: playmode
 
       # Upload artifact
@@ -216,7 +216,7 @@ jobs:
       - name: Restore Library cache
         uses: actions/cache@v2
         with:
-          path: test-projects/test-project/Library
+          path: Library
           key: Library-test-project-${{ matrix.targetPlatform }}
           restore-keys: |
             Library-test-project-
@@ -226,7 +226,7 @@ jobs:
       - uses: game-ci/unity-test-runner@v2.0-alpha-5
         id: testRunner
         with:
-          projectPath: test-projects/test-project
+          projectPath: /
           testMode: ${{ matrix.testMode }}
           checkName: ${{ matrix.testMode }} test results
           githubToken: ${{ secrets.GITHUB_TOKEN }}
@@ -248,7 +248,7 @@ jobs:
       fail-fast: false
       matrix:
         projectPath:
-          - test-projects/test-project
+          - /
         targetPlatform:
           - StandaloneOSX # Build a macOS standalone (Intel 64-bit).
           - StandaloneWindows64 # Build a Windows 64-bit standalone.
