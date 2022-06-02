@@ -40,7 +40,6 @@ jobs:
       # Test
       - name: Run tests
         uses: game-ci/unity-test-runner@v2
-        with:
 
 
       # Build
