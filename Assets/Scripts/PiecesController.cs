@@ -4,7 +4,7 @@ using Unity.Mathematics;
 using UnityEngine;
 
 /*
-    Project Challenger, an challenging Tetris game.
+    Project Challenger, a challenging block stacking game.
     Copyright (C) 2021,  Aymir
 
     This program is free software: you can redistribute it and/or modify
