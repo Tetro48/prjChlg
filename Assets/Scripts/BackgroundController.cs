@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 
 /*
     Project Challenger, a challenging block stacking game.
@@ -25,6 +25,9 @@ public class BackgroundController : MonoBehaviour
     public int backgroundType, nextBackground;
     public bool BGChanging;
     private SpriteRenderer spriteRenderer;
+    [SerializeField]
+    private float finishTime;
+    private float transitionTime;
 
     private void Awake()
     {
@@ -40,18 +43,23 @@ public class BackgroundController : MonoBehaviour
     // Update is called once per frame
     private void FixedUpdate()
     {
+        float deltaTime = Time.deltaTime;
         if (BGChanging)
         {
-            if (backgroundType != nextBackground)
+            transitionTime += deltaTime;
+            if (transitionTime < finishTime / 2)
             {
-                spriteRenderer.color -= new Color(1f / 50f, 1f / 50f, 1f / 50f, 0.0f);
+                float brightness = 1 - (transitionTime / (finishTime / 2));
+                spriteRenderer.color = new Color(brightness, brightness, brightness);
             }
             else
             {
-                spriteRenderer.color += new Color(1 / 50f, 1 / 50f, 1 / 50f, 0.0f);
+                float brightness = (transitionTime / finishTime * 2) - 1;
+                spriteRenderer.color = new Color(brightness, brightness, brightness);
             }
-            if (spriteRenderer.color == new Color(1f, 1f, 1f, 1f))
+            if (transitionTime >= finishTime)
             {
+                transitionTime = 0;
                 BGChanging = false;
             }
         }
@@ -72,6 +80,7 @@ public class BackgroundController : MonoBehaviour
             BGChanging = true;
         }
 
+        transitionTime = 0;
         nextBackground = bg;
     }
 }
