@@ -3,6 +3,7 @@ using System.Collections;
 using TMPro;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.Networking;
 
 /*
     Project Challenger, a challenging block stacking game.
@@ -364,53 +365,57 @@ public class GameEngine : MonoBehaviour
     }
     private IEnumerator LoadLevelMusic(int lv)
     {
-
-        WWW request;
+        string filename;
         if (lv < 6)
         {
-            request = GetAudioFromFile(audioPath, "lv" + (lv + 1) + ".wav");
+            filename = "lv" + (lv + 1) + ".wav";
         }
         else
         {
-            request = GetAudioFromFile(audioPath, "ending.wav");
+            filename = "ending.wav";
         }
 
-        yield return request;
-        int lvindex = lv;
-        if (lv == 6)
-        {
-            lvindex++;
-        }
+        using UnityWebRequest www = UnityWebRequestMultimedia.GetAudioClip(audioPath + filename, AudioType.WAV);
+        yield return www.SendWebRequest();
 
-        bgm_1p_lv[lvindex] = request.GetAudioClip();
-        bgm_1p_lv[lvindex].name = (lv < 6 ? "lv" + (lv + 1) + "" : "ending");
-        if (lv == 0)
+        if (www.result == UnityWebRequest.Result.ConnectionError)
         {
-            gameMusic.clip = bgm_1p_lv[0];
+            Debug.Log(www.error);
+        }
+        else
+        {
+            int lvindex = lv;
+            if (lv == 6)
+            {
+                lvindex++;
+            }
+
+            bgm_1p_lv[lvindex] = DownloadHandlerAudioClip.GetContent(www);
+            bgm_1p_lv[lvindex].name = (lv < 6 ? "lv" + (lv + 1) + "" : "ending");
+            if (lv == 0)
+            {
+                gameMusic.clip = bgm_1p_lv[0];
+            }
         }
     }
 
     private AudioClip MMmusic;
     private IEnumerator LoadMainMenuMusic()
     {
-        WWW request = GetAudioFromFile(audioPath, "menu.wav");
-        if (GameEngine.debugMode)
+        using UnityWebRequest www = UnityWebRequestMultimedia.GetAudioClip(audioPath + "menu.wav", AudioType.WAV);
+        yield return www.SendWebRequest();
+
+        if (www.result == UnityWebRequest.Result.ConnectionError)
         {
-            Debug.Log(request);
+            Debug.Log(www.error);
         }
-
-        yield return request;
-
-        MMmusic = request.GetAudioClip();
-        MMmusic.name = ("menu");
-        MenuEngine.instance.mainMenuMusic.clip = MMmusic;
-        MenuEngine.instance.mainMenuMusic.Play();
-    }
-    public WWW GetAudioFromFile(string path, string filename)
-    {
-        string audioToLoad = string.Format(path + "{0}", filename);
-        WWW request = new WWW(audioToLoad);
-        return request;
+        else
+        {
+            MMmusic = DownloadHandlerAudioClip.GetContent(www);
+            MMmusic.name = "menu";
+            MenuEngine.instance.mainMenuMusic.clip = MMmusic;
+            MenuEngine.instance.mainMenuMusic.Play();
+        }
     }
 
     private int[] tableBGMFadeout = { 385, 585, 680, 860, 950, 1440, -1, -1 };
