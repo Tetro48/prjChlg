@@ -1,4 +1,4 @@
-﻿
+
 // global using static AudioManager;
 using System;
 using System.Collections.Generic;
@@ -58,7 +58,7 @@ public class BoardController : MonoBehaviour
             {
                 networkBoard.SpawnFireworks();
             }
-            if (allClearFireworkTime[fire] == 200)
+            if (allClearFireworkTime[fire] >= 200)
             {
                 allClearFireworkTime.RemoveAt(fire);
             }
