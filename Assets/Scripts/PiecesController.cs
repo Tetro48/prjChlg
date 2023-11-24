@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using Unity.Mathematics;
 using UnityEngine;
@@ -745,6 +745,7 @@ public class PiecesController : MonoBehaviour
         {
             gravityTiles = 22.0f;
         }
+        board.countLockResets = 0;
         int localTextureID = board.activePiece[0].z;
         PieceType storedType = board.curType;
         if (isHeld)
