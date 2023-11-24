@@ -25,6 +25,7 @@ public class MenuSegment : MonoBehaviour
     [SerializeField] private RectTransform[] UIElements, UIPartElements;
     [SerializeField] private GameObject[] PlatformIncompatibleUIElements;
     [SerializeField] private EventSystem control;
+    private int buttonsVisible = 0;
 
     // Start is called before the first frame update
     private void Start()
@@ -53,37 +54,37 @@ public class MenuSegment : MonoBehaviour
 
     private bool CheckUIScroll(bool side, int count, double speed = 1d)
     {
-        double _UITimePassed = UITimePassed;
+        double _UITimePassed = UITimePassed % buttonMovementInSeconds;
         double buttonTime = buttonMovementInSeconds;
-        bool output;
+        bool output = false;
         if (side)
         {
             _UITimePassed += Time.unscaledDeltaTime * speed;
-            buttonTime *= System.Math.Ceiling(_UITimePassed / buttonTime);
-            if (_UITimePassed >= count * buttonTime)
+            if (_UITimePassed > buttonTime && buttonsVisible + 1 < count)
             {
-                output = false;
+                buttonsVisible++;
+                output = true;
             }
-            else
+            if (UITimePassed == 0d)
             {
-                output = _UITimePassed > buttonTime;
+                output = true;
             }
         }
         else
         {
             _UITimePassed -= Time.unscaledDeltaTime * speed;
-            buttonTime *= System.Math.Floor(_UITimePassed / buttonTime);
-            if (_UITimePassed <= 0d)
+            if (_UITimePassed < 0 && buttonsVisible > 0)
             {
-                output = false;
+                buttonsVisible--;
+                output = true;
             }
-            else
+            if (UITimePassed == buttonTime * count)
             {
-                output = _UITimePassed < buttonTime;
+                output = true;
             }
         }
 
-        // Debug.Log(_UITimePassed + " / " + buttonTime + ". " + output); // for debug purposes
+        Debug.Log(_UITimePassed + " / " + buttonTime + ". " + output + buttonsVisible); // for debug purposes
         return output;
     }
     /// <param name="side"> False -> Left side. True -> Right side. </param>

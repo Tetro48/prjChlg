@@ -7,10 +7,6 @@ using Unity.Jobs;
 using Unity.Mathematics;
 using UnityEngine;
 using UnityEngine.InputSystem;
-using Tetro48.Interfaces;
-using Tetro48.Modes;
-using Tetro48.Randomizers;
-using Tetro48.Rulesets;
 
 /*
     Project Challenger, a challenging block stacking game.
@@ -74,19 +70,12 @@ public class MenuEngine : MonoBehaviour
     public TextMeshProUGUI[] switchesGUIText, mainMenuGUIText, settingsGUIText, inputsGUIText;
     private Resolution[] resolutions;
     public float reswidth;
-
-    [SerializeReference]
-    public IMode selectedMode;
-    [SerializeReference]
-    public IRuleset selectedRuleset;
-    [SerializeReference]
-    public IRandomizer selectedRandomizer;
-    [SerializeReference]
-    public IGrid selectedGrid;
     /// <summary>
     /// How long does each button takes to move
     /// </summary>
     public double buttonMovementInSeconds;
+    public double menuSegmentDelay = 0.5d;
+    public double menuSegmentTime = 0d;
 
     [BurstCompatible]
     public struct int3Array : IJobParallelFor
@@ -140,6 +129,9 @@ public class MenuEngine : MonoBehaviour
             case 0:
                 switchName = "Frozen lines: {0}";
                 break;
+            case 1:
+                switchName = "Big Mode: {0}";
+                break;
             default:
                 switchName = "No-name switch: {0}";
                 break;
@@ -165,19 +157,19 @@ public class MenuEngine : MonoBehaviour
 
     private Language previousLang;
     public GameObject InstantiatePlayer(
-        IMode mode,
-        IRuleset rotationSystem,
-        IRandomizer randomizer,
         int nextPieces = 7)
     {
         GameObject newBoard = Instantiate(inGameBoard, transform);
         newBoard.transform.localPosition += new Vector3(25f, 0f, 0f) * (NetworkBoard.player.Count - 1);
         NetworkBoard component = newBoard.GetComponent<NetworkBoard>();
-        component.mode = mode;
-        component.mode.OnObjectSpawn(newBoard.transform);
-        component.ruleset = rotationSystem;
-        component.randomizer = randomizer;
-        component.randomizer.InitPieceIdentities(rotationSystem.PieceNames);
+        component.LockDelay = timings[0];
+        component.spawnDelay = timings[1];
+        component.lineDropDelay = timings[2];
+        component.lineSpawnDelay = timings[3];
+        component.gravity = timings[4];
+        component.RS = rotationSystems;
+        component.lineFreezingMechanic = switches[0];
+        component.bigMode = switches[1];
         component.nextPieces = nextPieces;
         component.piecesController.InitiatePieces();
         return newBoard;
@@ -301,7 +293,7 @@ public class MenuEngine : MonoBehaviour
         }
         else
         {
-            discord = new Discord.Discord(836600860976349192, (UInt64)Discord.CreateFlags.Default);
+            discord = new Discord.Discord(836600860976349192, (UInt64)Discord.CreateFlags.NoRequireDiscord);
         }
     }
     private int resRefreshrates = 0;
@@ -352,44 +344,21 @@ public class MenuEngine : MonoBehaviour
     }
     public void ExtractStatsToNotifications(NetworkBoard board)
     {
-        if (board.singles > 0)
+        for (int i = 0; i < 4; i++)
         {
-            Notify(LanguageList.Extract(LangArray.notifications, language, 0) + board.singles, Color.white); // Singles
+            if (board.clearedLinesArray[i] > 0)
+            Notify(LanguageList.Extract(LangArray.notifications, language, i) + board.clearedLinesArray[i], Color.white);
         }
 
-        if (board.doubles > 0)
+        for (int i = 4; i < board.clearedLinesArray.Length; i++)
         {
-            Notify(LanguageList.Extract(LangArray.notifications, language, 1) + board.doubles, Color.white); // Doubles
+            if (board.clearedLinesArray[i] > 0)
+            Notify(i + " " + LanguageList.Extract(LangArray.notifications, language, 4) + board.clearedLinesArray[i], Color.white);
         }
 
-        if (board.triples > 0)
+        if (board.clearedLinesArray[^1] > 0)
         {
-            Notify(LanguageList.Extract(LangArray.notifications, language, 2) + board.triples, Color.white); // Triples
-        }
-
-        if (board.tetrises > 0)
-        {
-            Notify(LanguageList.Extract(LangArray.notifications, language, 3) + board.tetrises, Color.white); // Tetrises
-        }
-
-        if (board.pentrises > 0)
-        {
-            Notify("5 " + LanguageList.Extract(LangArray.notifications, language, 4) + board.pentrises, Color.white); // 5 lines
-        }
-
-        if (board.sixtrises > 0)
-        {
-            Notify("6 " + LanguageList.Extract(LangArray.notifications, language, 4) + board.sixtrises, Color.white); // 6 lines
-        }
-
-        if (board.septrises > 0)
-        {
-            Notify("7 " + LanguageList.Extract(LangArray.notifications, language, 4) + board.septrises, Color.white); // 7 lines
-        }
-
-        if (board.octrises > 0)
-        {
-            Notify("8+ " + LanguageList.Extract(LangArray.notifications, language, 4) + board.octrises, Color.white); // 8+ lines
+            Notify("8+ " + LanguageList.Extract(LangArray.notifications, language, 4) + board, Color.white); // 8+ lines
         }
 
         if (board.allClears > 0)
@@ -500,10 +469,27 @@ public class MenuEngine : MonoBehaviour
                 }
 
                 Activity activity;
-                if (mainPlayer)
+                if(mainPlayer != null)
+                activity = new Activity
                 {
-                    activity = mainPlayer.mode.GetDiscordActivity();
-                }
+                    Details = mainPlayer.ending ? "Roll time left: " + mainPlayer.rollTimeCounter.text 
+                    : curBoard != null ? "Level " + mainPlayer.level + " | " + rpclvl + (mainPlayer.level > 800 ? ". Struggling." : string.Empty)
+                    : null,
+
+                    State = !Application.genuineCheckAvailable ? "The game is tampered"
+                    : mainPlayer.lives > 1 && mainPlayer.GameOver ? "Lost a life."
+                    : mainPlayer.rollTime >= mainPlayer.rollTimeLimit ? String.Format("Successful at level {0}", mainPlayer.endingLevel)
+                    : mainPlayer.IntentionalGameOver ? "Exiting..."
+                    : mainPlayer.GameOver ? "Topped out"
+                    : curBoard != null && mainPlayer.paused && !mainPlayer.FrameStep ? "Paused" 
+                    : curBoard != null && ReplayRecord.instance.mode == ReplayModeType.read ? "Currently replaying" 
+                    : curBoard != null && mainPlayer.paused && mainPlayer.FrameStep ? "Currently playing (Framestepping)" 
+                    : curBoard != null ? "Currently playing"
+                    : null,
+                    Assets = {
+                        LargeImage = "icon"
+                    }
+                };
                 else
                 {
                     activity = new Activity
@@ -580,7 +566,7 @@ public class MenuEngine : MonoBehaviour
                     menuSectors[0].SetActive(false);
                     executedOnce = true;
 
-                    curBoard = InstantiatePlayer(new MarathonMode(), new DefaultSRS(), new BagRand());
+                    curBoard = InstantiatePlayer();
                     mainMenuMusic.Stop();
                 }
                 if (UITimeDeltas[0] < -0.17)
@@ -597,8 +583,13 @@ public class MenuEngine : MonoBehaviour
         {
             if (segments[prevMenu].MoveCoupleUIElements(false))
             {
-                if (segments[menu].MoveCoupleUIElements(true))
+                if (menuSegmentTime < menuSegmentDelay)
                 {
+                    menuSegmentTime += Time.deltaTime;
+                }
+                else if (segments[menu].MoveCoupleUIElements(true))
+                {
+                    menuSegmentTime = 0;
                     pressedSubMenu = false;
                 }
             }

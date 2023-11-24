@@ -5,7 +5,6 @@ using Unity.Mathematics;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.UI;
-using Tetro48.Interfaces;
 
 /*
     Project Challenger, a challenging block stacking game.
@@ -30,6 +29,8 @@ using Tetro48.Interfaces;
 /// </summary>
 public class NetworkBoard : MonoBehaviour
 {
+
+
     public byte lives = 1;
     public static List<NetworkBoard> player = new List<NetworkBoard>();
     public BoardController boardController;
@@ -77,6 +78,7 @@ public class NetworkBoard : MonoBehaviour
 
     private int virtualBasePoint;
     public TextMeshPro levelTextRender, nextSecLv, timeCounter, rollTimeCounter, ppsCounter;
+    public TextMeshPro earnedScoreText;
     public Slider gradePointSlider;
 
     public SpriteRenderer readyGoIndicator, gradeIndicator;
@@ -104,11 +106,11 @@ public class NetworkBoard : MonoBehaviour
     public double lineSpawnDelay = 16.66666666666666666;
     public double lineDropTicks = 0;
     public double lineDropDelay = 25;
-    public float gravity = 3 / 64f;
+    public double gravity = 3 / 64f;
 
     public int frames;
 
-    public int singles, doubles, triples, tetrises, pentrises, sixtrises, septrises, octrises;
+    public int[] clearedLinesArray = new int[8];
     public int allClears;
 
     public int totalLines;
@@ -148,7 +150,6 @@ public class NetworkBoard : MonoBehaviour
     [Header("Piece")]
     public int3[] activePiece;
     public float2 pivot { get; private set; }
-    public Chunk chunk;
     [SerializeField]
     private GameObject tileRotation;
     public PieceType curType;
@@ -157,6 +158,50 @@ public class NetworkBoard : MonoBehaviour
     public int tileInvisTime = -1;
 
     public float2 movement;
+
+    [Header("Material handling")]
+    public Material minoMaterial;
+    public Mesh minoMesh;
+    // private Material[] minoVariants;
+    private MaterialPropertyBlock[] minoPropertyBlocks;
+    public Transform transformReference;
+
+    public void RenderBlock(int x, int y, int textureID, float alpha = 1f)
+    {
+        RenderBlock(new int2(x, y), textureID, 1f, alpha);
+    }
+    public void RenderBlock(int2 coordinate, int textureID, float alpha = 1f) => RenderBlock((float2)coordinate, textureID, 1, alpha);
+    public void RenderBlock(float2 coordinate, int textureID, float scale = 1, float alpha = 1)
+    {
+        if (textureID >= 0)
+        {
+            transformReference.localPosition = new Vector3(coordinate.x, coordinate.y, 0);
+            transformReference.localScale = Vector3.one * scale;
+            RenderParams renderParams = new RenderParams(minoMaterial);
+            renderParams.matProps = minoPropertyBlocks[textureID];
+            Matrix4x4 matrix = transformReference.localToWorldMatrix;
+            Graphics.RenderMesh(renderParams, minoMesh, 0, matrix);
+        }
+    }
+    public void RenderBlocks(int2[] blocks, int textureID)
+    {
+        for (int i = 0; i < blocks.Length; i++)
+        {
+            RenderBlock(blocks[i], textureID);
+        }
+    }
+    public void RenderPiece(int3[] piece)
+    {
+        for (int i = 0; i < piece.Length; i++)
+        {
+            float2 smoothfall_offset = new float2(0, (float)-piecesController.gravityTiles);
+            if (!CanMovePiece(new int2(0, -1)))
+            {
+                smoothfall_offset = float2.zero;
+            }
+            RenderBlock(piece[i].xy + smoothfall_offset, piece[i].z, 1, 1);
+        }
+    }
 
     public void SpawnPiece(int textureID, int2[] tiles, float2 setPivot, PieceType type)
     {
@@ -246,7 +291,7 @@ public class NetworkBoard : MonoBehaviour
     {
         for (int i = 0; i < activePiece.Length; i++)
         {
-            activePiece[i].xy = RotateObject(tileRotation, activePiece[i].xy, pivot, clockwise, UD);
+            activePiece[i].xy = RotateObject(activePiece[i].xy, pivot, clockwise, UD);
         }
         return CanMovePiece(int2.zero);
     }
@@ -261,30 +306,19 @@ public class NetworkBoard : MonoBehaviour
         }
         return true;
     }
-    public static int2 RotateObject(GameObject obj, int2 tilePos, float2 pivotPos, bool clockwise, bool UD = false)
+    public static int2 RotateObject(int2 tilePos, float2 pivotPos, bool clockwise, bool UD = false)
     {
-        if (math.any(pivotPos == math.floor(pivotPos)))
-        {
-            int2 relativePos = tilePos - (int2)pivotPos;
-            int2[] rotMatrix = clockwise ? new int2[2] { new int2(0, -1), new int2(1, 0) }
-                                            : new int2[2] { new int2(0, 1), new int2(-1, 0) };
-            int newXPos = (rotMatrix[0].x * relativePos.x) + (rotMatrix[1].x * relativePos.y);
-            int newYPos = (rotMatrix[0].y * relativePos.x) + (rotMatrix[1].y * relativePos.y);
-            int2 newPos = new int2(newXPos, newYPos);
-
-            newPos += (int2)pivotPos * (UD ? 2 : 1);
-            return newPos;
-        }
         int multi = clockwise ? 1 : -1;
         if (UD)
         {
             multi *= 2;
         }
-
-        obj.transform.position = new float3((float2)tilePos, 0f);
-        obj.transform.RotateAround((Vector2)pivotPos, Vector3.forward, -90 * multi);
-        obj.transform.Rotate(new Vector3(90f * multi, 0f, 0f), Space.Self);
-        return V3ToInt2(obj.transform.position);
+        float rads = math.radians(90 * multi);
+        float2 tilePos_f2 = (float2)tilePos;
+        tilePos_f2 -= pivotPos;
+        tilePos_f2 = tilePos_f2.Rotate(-rads);
+        tilePos_f2 += pivotPos;
+        return (int2)math.floor(tilePos_f2+0.1f);
     }
     /// <summary>
     /// Rotates the piece by 90 degrees in specified direction. Offest operations should almost always be attempted,
@@ -314,7 +348,6 @@ public class NetworkBoard : MonoBehaviour
         // {
         //     RotatePiece180(clockwise, true, firstAttempt);
         // }
-
         if (!shouldOffset)
         {
             int2[,] curOffsetData;
@@ -373,7 +406,7 @@ public class NetworkBoard : MonoBehaviour
 
         bool movePossible = false;
 
-        for (int testIndex = 0; testIndex < curOffsetData.Length; testIndex++)
+        for (int testIndex = 0; testIndex < curOffsetData.GetLength(0); testIndex++)
         {
             offsetVal1 = curOffsetData[testIndex, oldRotIndex];
             offsetVal2 = curOffsetData[testIndex, newRotIndex];
@@ -451,6 +484,10 @@ public class NetworkBoard : MonoBehaviour
     }
     public void SendPieceToFloor()
     {
+        if (activePiece == null || fullyLocked)
+        {
+            return;
+        }
         harddrop = true;
         piecesController.PrevInputs.c0.x = true;
         AudioManager.PlayClip(hardDropSE);
@@ -630,14 +667,26 @@ public class NetworkBoard : MonoBehaviour
         }
         gradePointSlider.value = (float)gradePoints;
         totalLines += lines;
-        if (lines == 1) singles++;
-        if (lines == 2) doubles++;
-        if (lines == 3) triples++;
-        if (lines == 4) tetrises++;
-        if (lines == 5) pentrises++;
-        if (lines == 6) sixtrises++;
-        if (lines == 7) septrises++;
-        if (lines > 7) octrises++;
+        var sysRand = new System.Random();
+        var random = new Unity.Mathematics.Random((uint)sysRand.Next(int.MinValue, int.MaxValue));
+        TextMeshPro scoreText = Instantiate(earnedScoreText);
+        scoreText.transform.localPosition = new Vector3(activePiece[0].x, activePiece[0].y, 0);
+        scoreText.gameObject.SetActive(true);
+        scoreText.text = string.Format("+ {0:.#}", point);
+        Rigidbody2D rigidbody;
+        rigidbody = scoreText.gameObject.AddComponent<Rigidbody2D>();
+        rigidbody.mass = 1;
+        rigidbody.AddForce(random.NextFloat2Direction() * 1000);
+        rigidbody.angularDrag = 1f;
+        Destroy(scoreText.gameObject, 2f);
+        if (lines > clearedLinesArray.Length)
+        {
+            clearedLinesArray[clearedLinesArray.Length]++;
+        }
+        else
+        {
+            clearedLinesArray[lines-1]++;
+        }
     }
     public void OnMovement(InputAction.CallbackContext value)
     {
@@ -779,7 +828,21 @@ public class NetworkBoard : MonoBehaviour
 
     private void Start()
     {
-
+        minoPropertyBlocks = new MaterialPropertyBlock[TextureUVs.UVs.Length];
+        for (int i = 0; i < TextureUVs.UVs.Length; i++)
+        {
+            float2 uvs = TextureUVs.UVs[i];
+            minoPropertyBlocks[i] = new MaterialPropertyBlock();
+            minoPropertyBlocks[i].SetVector("_MainTex_ST", new Vector4(1f / 4f, 1f / 10f, 1- uvs.x, 1-uvs.y));
+        }
+    }
+    // This is only for rendering purposes.
+    private void Update()
+    {
+        if (!fullyLocked)
+        {
+            RenderPiece(activePiece);
+        }
     }
 
     private void FixedUpdate()
@@ -798,13 +861,11 @@ public class NetworkBoard : MonoBehaviour
     // Update is called once per frame
     private void NetworkUpdate()
     {
-        float deltaTime = Time.deltaTime;
-        // chunk.UpdateChunk(new int2(10,40), activePiece, new float[10,40]);
         if (!GameOver)
         {
             if(framestepped && activePiece != null)
             {
-                if (!LockDelayEnable && !piecesController.piecemovementlocked)  
+                if (!LockDelayEnable)  
                 {
                     if(!CanMovePiece(new int2(0,-1)) && !fullyLocked)  
                     {
@@ -877,7 +938,6 @@ public class NetworkBoard : MonoBehaviour
                     {
                         rollTime = rollTimeLimit;
                         spawnTicks = (int)spawnDelay - 1000;
-                        Destroy(piecesController.piecesInGame[piecesController.piecesInGame.Count-1]);
                         piecesController.UpdatePieceBag();
                     }
                 }

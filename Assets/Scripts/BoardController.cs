@@ -1,4 +1,4 @@
-
+﻿
 // global using static AudioManager;
 using System;
 using System.Collections.Generic;
@@ -26,6 +26,10 @@ using static AudioManager;
 
 public class BoardController : MonoBehaviour
 {
+    public Material minoMaterial;
+    public Mesh minoMesh;
+    public MaterialPropertyBlock[] minoPropertyBlocks;
+    public Transform transformReference;
 
     public NetworkBoard networkBoard;
     public BoardParticleSystem boardParticles;
@@ -42,11 +46,17 @@ public class BoardController : MonoBehaviour
     private List<int> ldldy = new List<int>();
     [SerializeField] private Vector2 boneblockw, boneblock;
     private List<int> allClearFireworkTime = new List<int>();
-    private int[] flatTextureIDs;
     private int[,] textureIDs;
     private float[,] transparencyGrid;
     private void Start()
     {
+        minoPropertyBlocks = new MaterialPropertyBlock[TextureUVs.UVs.Length];
+        for (int i = 0; i < TextureUVs.UVs.Length; i++)
+        {
+            float2 uvs = TextureUVs.UVs[i];
+            minoPropertyBlocks[i] = new MaterialPropertyBlock();
+            minoPropertyBlocks[i].SetVector("_BaseMap_ST", new Vector4(1 / 4, 1 / 10, uvs.x, uvs.y));
+        }
         CreateGrid();
     }
     private void FixedUpdate()
@@ -93,33 +103,15 @@ public class BoardController : MonoBehaviour
     }
     public int GetMino(int x, int y) => textureIDs[x, y];
 
-    private void UpdateRender()
+    public void Update()
     {
-        // //turns out my implementation of chunks literally wastes triangles
-        // chunk.UpdateChunk(new int2(gridSizeX, gridSizeY), textureIDs, transparencyGrid);
-        // much more flexible.
         for (int x = 0; x < gridSizeX; x++)
         {
             for (int y = 0; y < gridSizeY; y++)
             {
-                UpdateOccupiedPosition(new int3(x, y, textureIDs[x, y]));
+                networkBoard.RenderBlock(x, y, textureIDs[x, y], 1 - transparencyGrid[x,y]);
             }
         }
-    }
-    public void UpdateOccupiedPosition(int3 tile)
-    {
-        // throw new NotImplementedException("No use of it in chunk state.");
-
-        if (math.any(tile.xy < int2.zero | tile.xy >= new int2(gridSizeX, gridSizeY)))
-        {
-            return;
-        }
-        if (tile.z >= 0)
-        {
-            Vector2 offset = TextureUVs.UVs[tile.z];
-            // gridOfMaterials[tile.x, tile.y].mainTextureOffset = Vector2.right - offset;
-        }
-        // gridOfMaterials[tile.x, tile.y].color = new Color(1,1,1, tile.z >= 0 ? 1 - transparencyGrid[tile.x,tile.y] : 0);
     }
 
     public void TopoutWarning()
@@ -149,7 +141,7 @@ public class BoardController : MonoBehaviour
     }
     private void LineClear(List<int> linesToClear)
     {
-        networkBoard.lineDropTicks += Time.deltaTime;
+        networkBoard.lineDropTicks += Time.deltaTime / Time.fixedDeltaTime;
         if (networkBoard.lineDropTicks >= (int)Math.Floor(networkBoard.lineDropDelay) && networkBoard.lineDropDelay >= 1)
         {
             gameAudio.PlayOneShot(audioLineFall);
@@ -174,7 +166,6 @@ public class BoardController : MonoBehaviour
                     }
                 }
             }
-            UpdateRender();
         }
     }
     public int TilesInALine(int line)
@@ -218,16 +209,17 @@ public class BoardController : MonoBehaviour
                     if (textureIDs[x, y] >= 0 || textureIDs[x, additive] >= 0)
                     {
                         textureIDs[x, additive] = textureIDs[x, y];
+                        textureIDs[x,y] = -1;
                         transparencyGrid[x, additive] = transparencyGrid[x, y];
                         if (y == 0)
                         {
                             if (networkBoard.sectAfter20g > 1)
                             {
-                                textureIDs[x, y] = 16;
+                                textureIDs[x, y] = 24;
                             }
                             else
                             {
-                                textureIDs[x, y] = 0 + additive;
+                                textureIDs[x, y] = 8;
                             }
                         }
                     }
@@ -236,7 +228,6 @@ public class BoardController : MonoBehaviour
         }
 
         PlayClip(audioLineClone);
-        UpdateRender();
         if (networkBoard.LockDelayEnable)
         {
             networkBoard.MovePiece(new int2(0, 1), true);
@@ -489,7 +480,6 @@ public class BoardController : MonoBehaviour
                 }
             }
         }
-        UpdateRender();
     }
 
     /// <summary>

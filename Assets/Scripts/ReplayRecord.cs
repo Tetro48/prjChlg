@@ -107,7 +107,9 @@ public class ReplayRecord : MonoBehaviour
             {
                 for (int i = 0; i < NetworkBoard.player.Count; i++)
                 {
+                    switches[i] = new bool[2];
                     switches[i][0] = NetworkBoard.player[i].lineFreezingMechanic;
+                    switches[i][1] = NetworkBoard.player[i].bigMode;
                     bool[] localInputs = new bool[7];
 
                 }

@@ -69,7 +69,8 @@ public class BoardParticleSystem : MonoBehaviour
         GameObject newFirework = Instantiate(fireworkPrefab, transform);
         newFirework.transform.position = new Vector3(UnityEngine.Random.Range(coordinates.x, coordinates.x + borderSize.x), UnityEngine.Random.Range(coordinates.y, coordinates.y + borderSize.y), 0.0f);
         ParticleSystem particlesModify = newFirework.GetComponent<ParticleSystem>();
-        particlesModify.startColor = new Color(UnityEngine.Random.Range(0f, 1f), UnityEngine.Random.Range(0f, 1f), UnityEngine.Random.Range(0f, 1f), 1f);
+        var particlesMainParams = particlesModify.main;
+        particlesMainParams.startColor = new Color(UnityEngine.Random.Range(0f, 1f), UnityEngine.Random.Range(0f, 1f), UnityEngine.Random.Range(0f, 1f), 1f);
         particlesModify.Play();
     }
     public void SummonParticles(int2 coords, int tileTexture)
@@ -92,7 +93,8 @@ public class BoardParticleSystem : MonoBehaviour
             GameObject newParticle = GameObject.Instantiate(tileParticlesPrefab, transform);
             newParticle.transform.position = new Vector3(coords.x, coords.y, 0f);
             ParticleSystem particlesModify = newParticle.GetComponent<ParticleSystem>();
-            particlesModify.startColor = tileColors[tileTexture];
+            var particlesMainParams = particlesModify.main;
+            particlesMainParams.startColor = tileColors[tileTexture];
             particlesModify.Play();
         }
     }
