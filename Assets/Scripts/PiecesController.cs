@@ -569,6 +569,7 @@ public class PiecesController : MonoBehaviour
 
     public void ProcessRotation()
     {
+        if (board.activePiece.Length == 0) return;
         if (((board.Inputs.c0.z && !PrevInputs.c0.z) || (board.Inputs.c1.z && !PrevInputs.c1.z) || IRSCW) && !piecemovementlocked)
         {
             board.RotatePiece(true, true, false);

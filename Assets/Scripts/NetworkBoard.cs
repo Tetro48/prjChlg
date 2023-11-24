@@ -272,6 +272,10 @@ public class NetworkBoard : MonoBehaviour
     }
     public bool MovePiece(int2 movement, bool offset)
     {
+        if (activePiece.Length == 0 || fullyLocked)
+        {
+            return false;
+        }
         for (int i = 0; i < activePiece.Length; i++)
         {
             if (!CanTileMove(movement + activePiece[i].xy))
