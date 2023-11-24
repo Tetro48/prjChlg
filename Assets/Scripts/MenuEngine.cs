@@ -476,7 +476,7 @@ public class MenuEngine : MonoBehaviour
                     : curBoard != null ? "Level " + mainPlayer.level + " | " + rpclvl + (mainPlayer.level > 800 ? ". Struggling." : string.Empty)
                     : null,
 
-                    State = !Application.genuineCheckAvailable ? "The game is tampered"
+                    State = !Application.genuineCheckAvailable ? "The game's integrity couldn't be confirmed."
                     : mainPlayer.lives > 1 && mainPlayer.GameOver ? "Lost a life."
                     : mainPlayer.rollTime >= mainPlayer.rollTimeLimit ? String.Format("Successful at level {0}", mainPlayer.endingLevel)
                     : mainPlayer.IntentionalGameOver ? "Exiting..."
@@ -494,12 +494,16 @@ public class MenuEngine : MonoBehaviour
                 {
                     activity = new Activity
                     {
-                        State = !Application.genuineCheckAvailable ? "The game's integrity couldn't confirmed." : framerate < 20 ? "Performance issues"
-                    : curBoard != null ? "Currently playing" : quitting ? "Quitting" : menu == 1 ? "Currently in settings menu" : "Currently in main menu",
+                        State = !Application.genuineCheckAvailable ? "The game's integrity couldn't be confirmed."
+                        : framerate < 20 ? "Performance issues"
+                        : curBoard != null ? "Currently playing"
+                        : quitting ? "Quitting"
+                        : menu == 1 ? "Currently in settings menu"
+                        : "Currently in main menu",
                         Details = "Highlighted: " + GetGameObjectName(UnityEngine.EventSystems.EventSystem.current.currentSelectedGameObject),
                         Assets = {
-                    LargeImage = "icon"
-                }
+                            LargeImage = "icon"
+                        }
                     };
                 }
 
