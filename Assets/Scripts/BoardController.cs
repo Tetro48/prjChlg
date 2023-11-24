@@ -64,6 +64,7 @@ public class BoardController : MonoBehaviour
         TopoutWarning();
         for (int fire = 0; fire < allClearFireworkTime.Count; fire++)
         {
+            allClearFireworkTime[fire]++;
             if (allClearFireworkTime[fire] % 20 == 0)
             {
                 networkBoard.SpawnFireworks();
@@ -72,7 +73,6 @@ public class BoardController : MonoBehaviour
             {
                 allClearFireworkTime.RemoveAt(fire);
             }
-            allClearFireworkTime[fire]++;
         }
         if (networkBoard.framestepped && !networkBoard.GameOver)
         {
