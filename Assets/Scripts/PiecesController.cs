@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using Unity.Mathematics;
 using UnityEngine;
@@ -402,11 +402,11 @@ public class PiecesController : MonoBehaviour
             int isHoldEmpty = isHeld ? 1 : 0;
             int isBigMode = board.bigMode ? 7 : 0;
             int textureSel = board.RS == RotationSystems.ARS ? 7 : 0;
-            int ibmTextureSel = board.sectAfter20g > 1 ? 14 : 0;
+            int ibmTextureSel = (board.sectAfter20g > 1 && board.nextibmblocks >= board.nextPieces - i) ? 14 : 0;
             int combine = textureSel + ibmTextureSel;
             int result = bag[pieces + i + isHoldEmpty];
             int2[] blocks = minoPositions[result + isBigMode];
-            RenderNextQueue((float2)relativeNextPieceCoordinates[i], blocks, numberToTextureIDs[result] + combine, nextPieceManagerSizes[i] * (board.bigMode ? 0.5f : 1));
+            RenderNextQueue((float2)relativeNextPieceCoordinates[i], blocks, numberToTextureIDs[result + combine], nextPieceManagerSizes[i] * (board.bigMode ? 0.5f : 1));
         }
     }
     void OnDrawGizmosSelected()
@@ -720,11 +720,11 @@ public class PiecesController : MonoBehaviour
         IHSexecuted = false;
         int isHoldEmpty = !isHeld ? 0 : 1;
         int textureSel = board.RS == RotationSystems.ARS ? 7 : 0;
-        int ibmTextureSel = board.sectAfter20g > 1 ? 14 : 0;
+        int ibmTextureSel = (board.sectAfter20g > 1 && board.nextibmblocks >= board.nextPieces) ? 14 : 0;
         int isBigMode = board.bigMode ? 7 : 0;
         int combine = textureSel + ibmTextureSel;
         int result = bag[lockedPieces + isHoldEmpty];
-        board.SpawnPiece(numberToTextureIDs[result] + combine, minoPositions[result + isBigMode], pivotPositions[result + isBigMode], (PieceType)result);
+        board.SpawnPiece(numberToTextureIDs[result + combine], minoPositions[result + isBigMode], pivotPositions[result + isBigMode], (PieceType)result);
         piecemovementlocked = false;
         NextPiece();
     }
