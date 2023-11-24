@@ -149,6 +149,7 @@ public class NetworkBoard : MonoBehaviour
     #region Piece handling
     [Header("Piece")]
     public int3[] activePiece;
+    private int3[] ghostPiece;
     public float2 pivot { get; private set; }
     [SerializeField]
     private GameObject tileRotation;
@@ -162,7 +163,7 @@ public class NetworkBoard : MonoBehaviour
     [Header("Material handling")]
     public Material minoMaterial;
     public Mesh minoMesh;
-    // private Material[] minoVariants;
+    private Material[] minoAlphaLevels;
     private MaterialPropertyBlock[] minoPropertyBlocks;
     public Transform transformReference;
 
@@ -173,11 +174,20 @@ public class NetworkBoard : MonoBehaviour
     public void RenderBlock(int2 coordinate, int textureID, float alpha = 1f) => RenderBlock((float2)coordinate, textureID, 1, alpha);
     public void RenderBlock(float2 coordinate, int textureID, float scale = 1, float alpha = 1)
     {
+        Material material;
+        if (alpha >= 1)
+        {
+            material = minoMaterial;
+        }
+        else
+        {
+            material = minoAlphaLevels[(int)math.floor(alpha * 256)];
+        }
         if (textureID >= 0)
         {
             transformReference.localPosition = new Vector3(coordinate.x, coordinate.y, 0);
             transformReference.localScale = Vector3.one * scale;
-            RenderParams renderParams = new RenderParams(minoMaterial);
+            RenderParams renderParams = new RenderParams(material);
             renderParams.matProps = minoPropertyBlocks[textureID];
             Matrix4x4 matrix = transformReference.localToWorldMatrix;
             Graphics.RenderMesh(renderParams, minoMesh, 0, matrix);
@@ -190,7 +200,7 @@ public class NetworkBoard : MonoBehaviour
             RenderBlock(blocks[i], textureID);
         }
     }
-    public void RenderPiece(int3[] piece)
+    public void RenderPiece(int3[] piece, float alpha = 1f, bool offset = true)
     {
         for (int i = 0; i < piece.Length; i++)
         {
@@ -199,10 +209,41 @@ public class NetworkBoard : MonoBehaviour
             {
                 smoothfall_offset = float2.zero;
             }
-            RenderBlock(piece[i].xy + smoothfall_offset, piece[i].z, 1, 1);
+            if (!offset) smoothfall_offset.y = 0;
+            RenderBlock(piece[i].xy + smoothfall_offset, piece[i].z, 1, alpha);
+        }
+    }
+    private void DropGhostPiece()
+    {
+        if (ghostPiece.Length == 0)
+        {
+            return;
+        }
+        int2 movement = int2.zero;
+        bool ghostFloor = false;
+        while (!ghostFloor)
+        {
+            movement.y--;
+            for (int i = 0; i < ghostPiece.Length; i++)
+            {
+                if (!CanTileMove(movement + ghostPiece[i].xy))
+                {
+                    ghostFloor = true;
+                    movement.y++;
+                }
+            }
+        }
+        for (int i = 0; i < ghostPiece.Length; i++)
+        {
+            ghostPiece[i].y += movement.y;
         }
     }
 
+    private void ProcessGhostPiece()
+    {
+        ghostPiece = (int3[]) activePiece.Clone();
+        DropGhostPiece();
+    }
     public void SpawnPiece(int textureID, int2[] tiles, float2 setPivot, PieceType type)
     {
         rotationIndex = 0;
@@ -216,6 +257,8 @@ public class NetworkBoard : MonoBehaviour
         {
             activePiece[i] = new int3(tiles[i] + new int2(4, 22), textureID);
         }
+        ghostPiece = (int3[]) activePiece.Clone();
+        DropGhostPiece();
     }
     public void SwapPiece(int3[] tiles, float2 setPivot, PieceType type)
     {
@@ -277,6 +320,8 @@ public class NetworkBoard : MonoBehaviour
             LockDelayEnable = false;
         }
 
+        ghostPiece = (int3[]) activePiece.Clone();
+        DropGhostPiece();
         return true;
     }
     public void UnisonPieceMove(int2 movement)
@@ -833,7 +878,13 @@ public class NetworkBoard : MonoBehaviour
         {
             float2 uvs = TextureUVs.UVs[i];
             minoPropertyBlocks[i] = new MaterialPropertyBlock();
-            minoPropertyBlocks[i].SetVector("_MainTex_ST", new Vector4(1f / 4f, 1f / 10f, 1- uvs.x, 1-uvs.y));
+            minoPropertyBlocks[i].SetVector("_BaseMap_ST", new Vector4(1f / 4f, 1f / 10f, 1- uvs.x, 1-uvs.y));
+        }
+        minoAlphaLevels = new Material[255];
+        for (int i = 0; i < 255; i++)
+        {
+            minoAlphaLevels[i] = Instantiate(minoMaterial);
+            minoAlphaLevels[i].color = new Color(1, 1, 1, i / 256f);
         }
     }
     // This is only for rendering purposes.
@@ -842,6 +893,10 @@ public class NetworkBoard : MonoBehaviour
         if (!fullyLocked)
         {
             RenderPiece(activePiece);
+            if (ghostPiece != null && (TLS || curSect == 0))
+            {
+                RenderPiece(ghostPiece, 0.5f, false);
+            }
         }
     }
 

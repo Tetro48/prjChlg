@@ -5105,7 +5105,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 10303, guid: 0000000000000000f000000000000000, type: 0}
+  - {fileID: 2100000, guid: dd13532597e72624fa8f496decf5844a, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -5202,7 +5202,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 10303, guid: 0000000000000000f000000000000000, type: 0}
+  - {fileID: 2100000, guid: dd13532597e72624fa8f496decf5844a, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -5555,7 +5555,6 @@ MonoBehaviour:
   scaling:
     x: 4
     y: 10
-  piecesInGame: []
   pieceToDestroy: {fileID: 0}
   sacText: {fileID: 0}
   gameOverText: {fileID: 0}
@@ -5644,6 +5643,10 @@ MonoBehaviour:
     y: 20
   - x: -4
     y: 22
+  - x: -4
+    y: 24
+  - x: -7
+    y: 24
   - x: -7
     y: 22
   - x: -7
@@ -5777,10 +5780,6 @@ MonoBehaviour:
   - x: 2
     y: -6
   - x: 5
-    y: -6
-  - x: 7
-    y: -6
-  - x: 9
     y: -6
   nextPieceManagerSizes:
   - 1
@@ -5883,8 +5882,6 @@ MonoBehaviour:
   - 0.4
   - 0.35
   - 0.25
-  nextPieceManagerPrefab: {fileID: 2226977780930885380, guid: af2c5f4b9c2c7e948a4c1ee0aa323334,
-    type: 3}
   PrevInputs:
     c0:
       x: 0
@@ -5965,7 +5962,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 10303, guid: 0000000000000000f000000000000000, type: 0}
+  - {fileID: 2100000, guid: dd13532597e72624fa8f496decf5844a, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -6134,7 +6131,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 10303, guid: 0000000000000000f000000000000000, type: 0}
+  - {fileID: 2100000, guid: dd13532597e72624fa8f496decf5844a, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -6798,6 +6795,7 @@ MonoBehaviour:
     y: 0
   minoMaterial: {fileID: 2100000, guid: 96d1f6a0b4f54c54391ec6e00f682ddd, type: 2}
   minoMesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
+  minoAlphaLevels: []
   transformReference: {fileID: 5275245016151031469}
   rolltimeObject: {fileID: 2851023820170990937}
 --- !u!114 &8119781463180149542
