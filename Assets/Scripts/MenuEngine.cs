@@ -329,7 +329,7 @@ public class MenuEngine : MonoBehaviour
 
         if (board.clearedLinesArray[^1] > 0)
         {
-            Notify("8+ " + LanguageList.Extract(LangArray.notifications, language, 4) + board, Color.white); // 8+ lines
+            Notify("8+ " + LanguageList.Extract(LangArray.notifications, language, 4) + board.clearedLinesArray[7], Color.white); // 8+ lines
         }
 
         if (board.allClears > 0)
