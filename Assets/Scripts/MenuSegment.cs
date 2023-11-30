@@ -90,7 +90,15 @@ public class MenuSegment : MonoBehaviour
     /// <param name="side"> False -> Left side. True -> Right side. </param>
     public bool MoveCoupleUIElements(bool side, double speed = 1d)
     {
+        if (UITimePassed == double.NaN)
+        {
+            UITimePassed = 0;
+        }
         float time = Time.deltaTime;
+        if (time == double.NaN)
+        {
+            time = 0;
+        }
         if (CheckUIScroll(side, UIElements.Length, speed))
         {
             AudioManager.PlayClip("scroll");
