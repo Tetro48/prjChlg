@@ -28,7 +28,7 @@ public static class SIUnitsConversion
 
     private static double valueScale(double input, double scale)
     {
-        return Math.Floor((input / scale) * 100) / 100;
+        return Math.Floor((input / scale) * 100 + 0.5) / 100;
     }
 
     private static double[] timeScales = new double[] { 3600, 60, 1, 0.001, 0.000001, 0.000000001 };
