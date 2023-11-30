@@ -32,9 +32,16 @@ public class MenuSegment : MonoBehaviour
     {
         for (int i = 0; i < UIElements.Length; i++)
         {
-            UIElements[i].position -= new Vector3(3000, 0f, 0f);
+            UIElements[i].position -= new Vector3(3000f, 0f, 0f);
         }
 
+        for (int i = 0; i < UIPartElements.Length; i++)
+        {
+            if (UIPartElements[i] != null)
+            {
+                UIPartElements[i].position -= new Vector3(3000f, 0f, 0f);
+            }
+        }
         if (MenuEngine.instance.platformCompat())
         {
             return;
