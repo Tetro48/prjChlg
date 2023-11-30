@@ -73,6 +73,8 @@ public class MenuEngine : MonoBehaviour
     public MenuSegment pauseMenuSegment;
 
     public TextMeshProUGUI[] switchesGUIText, mainMenuGUIText, settingsGUIText, inputsGUIText;
+    public TextMeshProUGUI[] timingsGUIText, miscGUIText;
+    public TMP_InputField[] timingsInputFields, miscInputFields;
     private Resolution[] resolutions;
     public float reswidth;
     /// <summary>
@@ -84,17 +86,61 @@ public class MenuEngine : MonoBehaviour
 
     #region Player Configuration
     public double[] timings = { 50, 41.6666666, 16.6666666, 25, 3 / 64 };
+    public double percentage;
     public RotationSystems rotationSystem;
-    public int nextPieces = 7, endingLevel = 2100;
+    public int nextPieces = 7, sectionSize = 100, endingLevel = 2100;
     public bool[] switches;
-
-    public void ChangeTiming(int index, double timing)
+    private int configIndex;
+    
+    public void SetConfigIndex(int newIndex) => configIndex = newIndex;
+    public void ChangeTiming(string timing)
     {
-        timings[index] = timing;
+        double divisionFactor = 1d / Time.fixedDeltaTime;
+        timings[configIndex] = double.Parse(timing);
+        if (configIndex == 4)
+        {
+            timings[4] = timings[4] / divisionFactor;
+        }
+        timingsGUIText[configIndex].text = SIUnitsConversion.doubleToSITime(timings[configIndex] / divisionFactor);
+        timingsInputFields[configIndex].text = string.Empty;
+        if (configIndex == 4)
+        {
+            timingsGUIText[4].text = string.Format("{0:0.####}/sec", timings[4] / divisionFactor * 10000);
+        }
     }
-    public void ChangeNextPieces(int amount)
+    public void ChangeMiscValue(string strValue)
     {
-        nextPieces = amount;
+        double value;
+        if (!double.TryParse(strValue, out value))
+        {
+            miscGUIText[configIndex].text = "INVALID VALUE";
+        }
+        value = math.max(value, 0);
+        miscInputFields[configIndex].text = string.Empty;
+        switch (configIndex)
+        {
+            case 0:
+                percentage = math.min(value / 100, 0.99);
+                miscGUIText[0].text = percentage * 100 + "%";
+                break;
+            case 1:
+                nextPieces = math.min((int)value, 100);
+                miscGUIText[1].text = nextPieces.ToString();
+                break;
+            case 2:
+                endingLevel = (int)value;
+                miscGUIText[2].text = endingLevel.ToString();
+                break;
+            case 3:
+                endingLevel /= sectionSize;
+                sectionSize = (int)value;
+                endingLevel *= sectionSize;
+                miscGUIText[2].text = endingLevel.ToString();
+                miscGUIText[3].text = sectionSize.ToString();
+                break;
+            default:
+                break;
+        }
     }
     public void ChangeRotationSystem(int id)
     {
@@ -167,7 +213,10 @@ public class MenuEngine : MonoBehaviour
         component.RS = rotationSystem;
         component.lineFreezingMechanic = switches[0];
         component.bigMode = switches[1];
+        component.percentage = percentage;
         component.nextPieces = nextPieces;
+        component.sectionSize = sectionSize;
+        component.endingLevel = endingLevel;
         component.piecesController.InitiatePieces();
         return newBoard;
     }
@@ -341,6 +390,21 @@ public class MenuEngine : MonoBehaviour
                 mainMenuGUIMovement[2].gameObject.SetActive(false);
             }
         }
+        double divisionFactor = 1d / Time.fixedDeltaTime;
+        for (int i = 0; i < timingsInputFields.Length; i++)
+        {
+            timingsGUIText[i].text = SIUnitsConversion.doubleToSITime(timings[i] / divisionFactor);
+            timingsInputFields[i].text = string.Empty;
+        }
+        for (int i = 0; i < miscInputFields.Length; i++)
+        {
+            miscInputFields[i].text = string.Empty;
+        }
+        miscGUIText[0].text = percentage * 100 + "%";
+        // miscGUIText[1].text = nextPieces.ToString();
+        // miscGUIText[2].text = endingLevel.ToString();
+        // miscGUIText[3].text = sectionSize.ToString();
+        timingsGUIText[4].text = string.Format("{0:0.####}/sec", timings[4] / divisionFactor * 10000);
         starting = true;
     }
     public void PlayerResume()
