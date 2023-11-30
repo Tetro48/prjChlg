@@ -1,4 +1,4 @@
-﻿using Discord;
+using Discord;
 using System;
 using System.Collections.Generic;
 using TMPro;
@@ -76,35 +76,6 @@ public class MenuEngine : MonoBehaviour
     public double buttonMovementInSeconds;
     public double menuSegmentDelay = 0.5d;
     public double menuSegmentTime = 0d;
-
-    [BurstCompatible]
-    public struct int3Array : IJobParallelFor
-    {
-        public NativeArray<int3> array;
-        public int3 setTo;
-        public void Execute(int i)
-        {
-            array[i] = setTo;
-        }
-    }
-
-    public void TestAmountOfInt3s(int size)
-    {
-        float time = Time.realtimeSinceStartup;
-        NativeArray<int3> int3s = new NativeArray<int3>(size, Allocator.TempJob);
-        int3 setTo = new int3(1023, 255, 511);
-        var job = new int3Array()
-        {
-            array = int3s,
-            setTo = setTo
-        };
-        JobHandle jobHandle = job.Schedule(int3s.Length, 1);
-        jobHandle.Complete();
-        float afterTime = Time.realtimeSinceStartup;
-        Debug.Log(afterTime - time);
-        Notify("Time: " + (afterTime - time) + ". Jobified Ints: " + size * 3);
-        int3s.Dispose();
-    }
 
     #region Player Configuration
     public double[] timings = { 50, 41.6666666, 16.6666666, 25, 3 / 64 };
