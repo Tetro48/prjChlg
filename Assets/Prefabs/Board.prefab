@@ -5899,7 +5899,7 @@ MonoBehaviour:
   lockedPieces: 0
   deadzone: 0.5
   curPieceController: {fileID: 0}
-  numberToTextureIDs: 0b0000000d0000000c000000090000000a0000000e0000000f0000000300000001000000070000000400000002000000060000000500000018000000190000001a0000001b0000001c0000001d0000001e00000010000000110000001200000013000000140000001500000016000000
+  numberToTextureIDs: 0b0000000d0000000c000000090000000a0000000e0000000f00000003000000010000000700000004000000020000000600000005000000190000001a0000001b0000001c0000001d0000001e0000001f00000011000000120000001300000014000000150000001600000017000000
 --- !u!1 &1554080078095360850
 GameObject:
   m_ObjectHideFlags: 0
@@ -6795,7 +6795,6 @@ MonoBehaviour:
     y: 0
   minoMaterial: {fileID: 2100000, guid: 96d1f6a0b4f54c54391ec6e00f682ddd, type: 2}
   minoMesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
-  minoAlphaLevels: []
   transformReference: {fileID: 5275245016151031469}
   rolltimeObject: {fileID: 2851023820170990937}
 --- !u!114 &8119781463180149542
@@ -7487,14 +7486,14 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 5638089127756266593}
-  m_LocalRotation: {x: 0, y: -0.7071068, z: 0, w: 0.7071068}
+  m_LocalRotation: {x: 0, y: -1, z: 0, w: 0}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 6241171629878019178}
   m_RootOrder: 8
-  m_LocalEulerAnglesHint: {x: 0, y: -90, z: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: -180, z: 0}
 --- !u!1 &6760701133627983911
 GameObject:
   m_ObjectHideFlags: 0

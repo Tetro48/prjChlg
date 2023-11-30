@@ -324,7 +324,7 @@ public class NetworkBoard : MonoBehaviour
             LockDelayEnable = false;
         }
 
-        ghostPiece = (int3[]) activePiece.Clone();
+        ghostPiece = activePiece.Clone() as int3[];
         DropGhostPiece();
         return true;
     }
@@ -417,6 +417,12 @@ public class NetworkBoard : MonoBehaviour
             offsetVal2 = curOffsetData[0, rotationIndex];
             endOffset = offsetVal1 - offsetVal2;
             RotateInUnison(clockwise, UD);
+            if (bigMode)
+            {
+                endOffset *= 2;
+            }
+            MovePiece(endOffset, true);
+            return;
         }
 
         bool canOffset = Offset(oldRotationIndex, rotationIndex, clockwise, UD);
@@ -547,6 +553,7 @@ public class NetworkBoard : MonoBehaviour
     [Header("UI?")]
     [SerializeField] GameObject rolltimeObject;
     
+    private int cooldispframe = 0;
     private bool cool, cooldisplayed;
 	private void checkCool() {
 		// COOL check
@@ -567,7 +574,7 @@ public class NetworkBoard : MonoBehaviour
 		// COOLиЎЁз¤є
 		if((level % sectionSize >= sectionSize * 0.82) && (cool == true) && (cooldisplayed == false)) {
 			AudioManager.PlayClip(coolSE);
-			// cooldispframe = 180;
+			cooldispframe = 300;
 			cooldisplayed = true;
 			virtualBasePoint += 600;
 		}
@@ -679,6 +686,10 @@ public class NetworkBoard : MonoBehaviour
             coolchecked = false;
             cooldisplayed = false;
         }
+        if (virtualBasePoint >= 600)
+        {
+            AudioManager.PlayClip("b2b_continue");
+        }
         if (spin)
         {
             if (lines == 1) virtualBasePoint += 10;
@@ -716,6 +727,8 @@ public class NetworkBoard : MonoBehaviour
         }
         gradePointSlider.value = (float)gradePoints;
         totalLines += lines;
+
+        #region Floating score text
         var sysRand = new System.Random();
         var random = new Unity.Mathematics.Random((uint)sysRand.Next(int.MinValue, int.MaxValue));
         TextMeshPro scoreText = Instantiate(earnedScoreText);
@@ -728,6 +741,8 @@ public class NetworkBoard : MonoBehaviour
         rigidbody.AddForce(random.NextFloat2Direction() * 1000);
         rigidbody.angularDrag = 1f;
         Destroy(scoreText.gameObject, 2f);
+        #endregion
+
         if (lines > clearedLinesArray.Length)
         {
             clearedLinesArray[clearedLinesArray.Length]++;
@@ -736,6 +751,17 @@ public class NetworkBoard : MonoBehaviour
         {
             clearedLinesArray[lines-1]++;
         }
+    }
+    public void OnGameQuit()
+    {
+        GameOver = true;
+        IntentionalGameOver = true;
+        lives = 1;
+        MenuEngine.instance.mainPlayer.frames = 300;
+        // else
+        // {
+        //     curPieceController.SetPiece();
+        // }
     }
     public void OnMovement(InputAction.CallbackContext value)
     {
@@ -947,6 +973,11 @@ public class NetworkBoard : MonoBehaviour
                     }
                 }
             }
+            cooldispframe--;
+            if (cool) levelTextRender.outlineColor = Color.yellow;
+            else levelTextRender.outlineColor = Color.black;
+            if(cooldispframe % 4 >= 2 && cooldispframe > 0) levelTextRender.color = Color.yellow;
+            else levelTextRender.color = Color.white;
             checkCool();
             if(level > endingLevel) level = endingLevel;
             rolltimeObject.SetActive(ending);

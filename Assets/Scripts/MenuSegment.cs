@@ -121,7 +121,7 @@ public class MenuSegment : MonoBehaviour
                 tempPos.x = Mathf.Clamp(timeToPosX - (300 * i), -200f, 100f);
                 // Debug.Log(tempPos.x);
                 UIElements[i].localPosition = tempPos;
-                if (i >= UIPartElements.Length)
+                if (i >= UIPartElements.Length || UIPartElements[i] == null)
                 {
                     continue;
                 }
@@ -152,7 +152,7 @@ public class MenuSegment : MonoBehaviour
                 tempPos.x = Mathf.Clamp(timeToPosX - (300 * (UIElements.Length - i - 1)), -200f, 100f);
                 // Debug.Log(tempPos.x);
                 UIElements[i].localPosition = tempPos;
-                if (UIPartElements.Length <= i)
+                if (UIPartElements.Length <= i || UIPartElements[i] == null)
                 {
                     continue;
                 }

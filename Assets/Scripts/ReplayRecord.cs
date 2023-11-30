@@ -116,7 +116,7 @@ public class ReplayRecord : MonoBehaviour
             }
             else
             {
-                for (int i = 0; i < boards; i++)
+                for (int i = 0; i < NetworkBoard.player.Count; i++)
                 {
                     if (NetworkBoard.player[i].framestepped)
                     {

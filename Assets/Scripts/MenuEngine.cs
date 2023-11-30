@@ -1,4 +1,4 @@
-using Discord;
+﻿using Discord;
 using System;
 using System.Collections.Generic;
 using TMPro;
@@ -66,6 +66,11 @@ public class MenuEngine : MonoBehaviour
     public GameObject imgprjchlg, mobileInput;
     public RectTransform[] mainMenuGUIMovement, settingsGUIMovement, settingsGUIPartMovement;
     public MenuSegment[] segments;
+    public bool isGamePaused;
+    private bool pauseMenuConditional;
+    private int pauseMenuTimeBlock;
+    private bool gameRestart;
+    public MenuSegment pauseMenuSegment;
 
     public TextMeshProUGUI[] switchesGUIText, mainMenuGUIText, settingsGUIText, inputsGUIText;
     private Resolution[] resolutions;
@@ -79,7 +84,7 @@ public class MenuEngine : MonoBehaviour
 
     #region Player Configuration
     public double[] timings = { 50, 41.6666666, 16.6666666, 25, 3 / 64 };
-    public RotationSystems rotationSystems;
+    public RotationSystems rotationSystem;
     public int nextPieces = 7, endingLevel = 2100;
     public bool[] switches;
 
@@ -90,6 +95,10 @@ public class MenuEngine : MonoBehaviour
     public void ChangeNextPieces(int amount)
     {
         nextPieces = amount;
+    }
+    public void ChangeRotationSystem(int id)
+    {
+        rotationSystem = (RotationSystems) id;
     }
     public void ChangeSwitch(int index)
     {
@@ -124,6 +133,23 @@ public class MenuEngine : MonoBehaviour
         })
         .Start();
     }
+    public void RebindMovement(int compositeIndex)
+    {
+        modifiableInputAsset.Disable();
+        // just a note: "actions[0]" assumes action "Movement".
+        modifiableInputAsset.actionMaps[0].actions[0].PerformInteractiveRebinding()
+        .WithTargetBinding(compositeIndex)
+        .WithControlsExcluding("<Mouse>/*")
+        .WithControlsExcluding("*/escape")
+        .OnMatchWaitForAnother(1f)
+        .OnComplete(callback =>
+        {
+            Notify("Rebound! Currently it'll reset when the game is closed.", Color.green);
+            modifiableInputAsset.Enable();
+            callback.Dispose();
+        })
+        .Start();
+    }
     #endregion
 
     private Language previousLang;
@@ -138,7 +164,7 @@ public class MenuEngine : MonoBehaviour
         component.lineDropDelay = timings[2];
         component.lineSpawnDelay = timings[3];
         component.gravity = timings[4];
-        component.RS = rotationSystems;
+        component.RS = rotationSystem;
         component.lineFreezingMechanic = switches[0];
         component.bigMode = switches[1];
         component.nextPieces = nextPieces;
@@ -241,6 +267,10 @@ public class MenuEngine : MonoBehaviour
 
     private void Awake()
     {
+        for (int i = 0; i < modifiableInputAsset.actionMaps[0].actions.Count; i++)
+        {
+            Debug.Log(modifiableInputAsset.actionMaps[0].actions[i].name);
+        }
         players = new List<GameObject>();
         Application.targetFrameRate = Screen.currentResolution.refreshRate * 4;
         alreadystarted = true;
@@ -312,6 +342,16 @@ public class MenuEngine : MonoBehaviour
             }
         }
         starting = true;
+    }
+    public void PlayerResume()
+    {
+        isGamePaused = false;
+    }
+    public void PlayerExitInvoke(bool restart = false)
+    {
+        isGamePaused = false;
+        mainPlayer.OnGameQuit();
+        gameRestart = restart;
     }
     public void ExtractStatsToNotifications(NetworkBoard board)
     {
@@ -502,7 +542,31 @@ public class MenuEngine : MonoBehaviour
             }
         }
         reswidth = (float)(Screen.width / 1920.0);
-        framerateCounter.text = (Math.Floor((framerate) * 100) / 100) + " FPS";
+        framerateCounter.text = string.Format("{0:0.00} FPS", framerate);
+        if (isGamePaused || pauseMenuConditional)
+        {
+            pauseMenuSegment.gameObject.SetActive(true);
+            if (pauseMenuTimeBlock < 3)
+            {
+                bool pauseMenuSegmentOut = pauseMenuSegment.MoveCoupleUIElements(true, 0.5);
+                pauseMenuConditional = !pauseMenuSegmentOut;
+                if (pauseMenuSegmentOut)
+                {
+                    pauseMenuTimeBlock++;
+                }
+            }
+            GameEngine.instance.gameMusic.Pause();
+            mainPlayer.paused = true;
+        }
+        else if (mainPlayer != null && pauseMenuSegment.gameObject.activeSelf)
+        {
+            if (pauseMenuSegment.MoveCoupleUIElements(false))
+            {
+                GameEngine.instance.gameMusic.UnPause();
+                mainPlayer.paused = false;
+                pauseMenuTimeBlock = 0;
+            }
+        }
         if (quitting || startGame)
         {
             if (quitting && segments[0].MoveCoupleUIElements(false))
@@ -571,6 +635,13 @@ public class MenuEngine : MonoBehaviour
         }
         if (starting)
         {
+            if (gameRestart)
+            {
+                gameRestart = false;
+                startGame = true;
+                starting = false;
+                return;
+            }
             if (!mainMenuMusic.isPlaying)
             {
                 mainMenuMusic.Play();

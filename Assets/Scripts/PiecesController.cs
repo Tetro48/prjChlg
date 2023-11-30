@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using Unity.Mathematics;
 using UnityEngine;
@@ -142,6 +142,7 @@ public class PiecesController : MonoBehaviour
 
     public double deadzone = 0.5;
     public PieceController curPieceController = null;
+    public IRandomizer randomizer;
     [SerializeField] private int[] numberToTextureIDs;
 
     /// <summary>
@@ -150,6 +151,8 @@ public class PiecesController : MonoBehaviour
     private void Awake()
     {
         UnityEngine.Random.InitState(SeedManager.seed);
+
+        randomizer = new History6Rolls35Bag(SeedManager.seed);
 
         JLSTZ_OFFSET_DATA = new int2[5, 4];
         JLSTZ_OFFSET_DATA[0, 0] = int2.zero;
@@ -284,23 +287,9 @@ public class PiecesController : MonoBehaviour
     public void InitiatePieces()
     {
         bag = new List<int>();
-        // holdPieceManager = Instantiate(nextPieceManagerPrefab, transform).GetComponent<NextPieceManager>();
-        // holdPieceManager.transform.localPosition = new Vector2(relativeHoldPieceCoordinate.x, relativeHoldPieceCoordinate.y);
-        for (int i = 0; i < 16; i++)
+        for (int i = 0; i < 112; i++)
         {
-            // bag.Add(new List<int> { 0, 1, 2, 3, 4, 5, 6 });
-
-            List<int> bagshuff = new List<int>() { 0, 1, 2, 3, 4, 5, 6 };
-            Shuffle(bagshuff);
-            if (GameEngine.debugMode)
-            {
-                Debug.Log(bagshuff);
-            }
-
-            foreach (var piece in bagshuff)
-            {
-                bag.Add(piece);
-            }
+            bag.Add(randomizer.getNextPieceID());
         }
         UpdatePieceBag();
     }
@@ -346,20 +335,7 @@ public class PiecesController : MonoBehaviour
 
             executedHold = false;
         }
-        if (pieces % 7 == 0)
-        {
-            List<int> bagshuff = new List<int>() { 0, 1, 2, 3, 4, 5, 6 };
-            Shuffle(bagshuff);
-            if (GameEngine.debugMode)
-            {
-                Debug.Log(bagshuff);
-            }
-
-            for (int j = 0; j < 7; j++)
-            {
-                bag.Add(bagshuff[j]);
-            }
-        }
+        bag.Add(randomizer.getNextPieceID());
     }
 
     private bool IHSexecuted;
@@ -396,17 +372,33 @@ public class PiecesController : MonoBehaviour
     {
         // if(board.framestepped && !board.GameOver && nextpiecequeued)
         // board.spawnTicks += Time.deltaTime * 100;
-        RenderNextQueue((float2)relativeHoldPieceCoordinate, minoPositions[holdPieceID], holdPieceTextureID, board.bigMode ? 0.5f : 1);
+        float isARS_radians = board.RS == RotationSystems.ARS ? math.PI : 0;
+        float2 isARS_coords = board.RS == RotationSystems.ARS ? new float2(0, 1) : 0;
+        int isBigMode = board.bigMode ? 7 : 0;
+        RenderNextQueue((float2)relativeHoldPieceCoordinate + isARS_coords,
+                        minoPositions[holdPieceID + isBigMode],
+                        pivotPositions[holdPieceID + isBigMode],
+                        holdPieceTextureID,
+                        board.bigMode ? 0.5f : 1,
+                        isARS_radians);
         for (int i = 0; i < math.min(relativeNextPieceCoordinates.Count, board.nextPieces); i++)
         {
             int isHoldEmpty = isHeld ? 1 : 0;
-            int isBigMode = board.bigMode ? 7 : 0;
             int textureSel = board.RS == RotationSystems.ARS ? 7 : 0;
             int ibmTextureSel = (board.sectAfter20g > 1 && board.nextibmblocks >= board.nextPieces - i) ? 14 : 0;
             int combine = textureSel + ibmTextureSel;
             int result = bag[pieces + i + isHoldEmpty];
+            if (board.RS == RotationSystems.ARS && result == 1)
+            {
+                isARS_coords = 0;
+            }
             int2[] blocks = minoPositions[result + isBigMode];
-            RenderNextQueue((float2)relativeNextPieceCoordinates[i], blocks, numberToTextureIDs[result + combine], nextPieceManagerSizes[i] * (board.bigMode ? 0.5f : 1));
+            RenderNextQueue((float2)relativeNextPieceCoordinates[i] + isARS_coords,
+                            blocks,
+                            pivotPositions[result + isBigMode],
+                            numberToTextureIDs[result + combine],
+                            nextPieceManagerSizes[i] * (board.bigMode ? 0.5f : 1),
+                            isARS_radians);
         }
     }
     void OnDrawGizmosSelected()
@@ -416,12 +408,17 @@ public class PiecesController : MonoBehaviour
             Gizmos.DrawCube(new Vector3(relativeNextPieceCoordinates[i].x, relativeNextPieceCoordinates[i].y, 0), new Vector3(4, 2, 1) * nextPieceManagerSizes[i]);
         }
     }
-    void RenderNextQueue(float2 coordinates, int2[] blocks, int id, float scale)
+    void RenderNextQueue(float2 coordinates, int2[] blocks, float2 pivot, int id, float scale, float radians = 0f)
     {
-            for (int j = 0; j < blocks.Length; j++)
-            {
-                board.RenderBlock(((float2)blocks[j] * scale) + coordinates, id, scale);
-            }
+        for (int j = 0; j < blocks.Length; j++)
+        {
+            float2 blockPos = (float2)blocks[j];
+            blockPos -= pivot;
+            blockPos = blockPos.Rotate(radians);
+            blockPos += pivot;
+            blockPos *= scale;
+            board.RenderBlock(blockPos + coordinates, id, scale);
+        }
     }
     /// <summary>
     /// Called once every frame. Checks for player input.
@@ -499,21 +496,12 @@ public class PiecesController : MonoBehaviour
             //This is temporary.
             if (Input.GetKeyDown(KeyCode.Escape))
             {
-                MenuEngine.instance.mainPlayer.GameOver = true;
-                MenuEngine.instance.mainPlayer.IntentionalGameOver = true;
-                if (MenuEngine.instance.mainPlayer.lives == 1)
-                {
-                    MenuEngine.instance.mainPlayer.frames = 300;
-                }
-                else
-                {
-                    curPieceController.SetPiece();
-                }
+                MenuEngine.instance.isGamePaused = true;
             }
-            else if (Input.GetKeyDown(KeyCode.Escape))
-            {
-                NotificationEngine.Notify("Oneshot switch is on.");
-            }
+            // else if (Input.GetKeyDown(KeyCode.Escape))
+            // {
+            //     NotificationEngine.Notify("Oneshot switch is on.");
+            // }
 
             ProcessRotation();
             // if (IARS && !piecemovementlocked) curPieceController.RotatePiece(true, false, true);
@@ -593,6 +581,10 @@ public class PiecesController : MonoBehaviour
             {
                 gameAudio.PlayOneShot(audioIRS);
             }
+        }
+        if (IARS)
+        {
+            board.RotatePiece(true, false, true);
         }
     }
 
