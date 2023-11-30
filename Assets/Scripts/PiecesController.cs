@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using Unity.Mathematics;
 using UnityEngine;
@@ -748,9 +748,10 @@ public class PiecesController : MonoBehaviour
         board.countLockResets = 0;
         int localTextureID = board.activePiece[0].z;
         PieceType storedType = board.curType;
+        int isBigMode = board.bigMode ? 7 : 0;
         if (isHeld)
         {
-            board.SpawnPiece(holdPieceTextureID, minoPositions[holdPieceID], pivotPositions[holdPieceID], holdPieceType);
+            board.SpawnPiece(holdPieceTextureID, minoPositions[holdPieceID + isBigMode], pivotPositions[holdPieceID + isBigMode], holdPieceType);
         }
         else
         {
