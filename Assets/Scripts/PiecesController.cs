@@ -446,7 +446,7 @@ public class PiecesController : MonoBehaviour
 
             if (nextpiecequeued == true)
             {
-                board.spawnTicks++;
+                if (board.lineDropTicks == 0) board.spawnTicks++;
                 if (board.spawnTicks >= (int)Math.Floor(board.spawnDelay))
                 {
                     nextpiecequeued = false;
