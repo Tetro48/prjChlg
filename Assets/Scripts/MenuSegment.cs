@@ -91,7 +91,6 @@ public class MenuSegment : MonoBehaviour
             }
         }
 
-        Debug.Log(_UITimePassed + " / " + buttonTime + ". " + output + buttonsVisible); // for debug purposes
         return output;
     }
     /// <param name="side"> False -> Left side. True -> Right side. </param>
