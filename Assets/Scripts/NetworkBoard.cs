@@ -708,7 +708,7 @@ public class NetworkBoard : MonoBehaviour
         if (indexcombo > 9) indexcombo = 9;
         float combobonus = tableGradeComboBonus[lines - 1, indexcombo];
 	
-		int levelbonus = 1 + (level / 250);
+		float levelbonus = 1f + (level / 250f);
 	
 		float point = basepoint * combobonus * levelbonus;
         if (sectAfter20g >= 21) point *= 10;
@@ -722,7 +722,7 @@ public class NetworkBoard : MonoBehaviour
             if (grade < gradeSprites.Length - 1) grade++;
             gradeIndicator.sprite = gradeSprites[grade];
             AudioManager.PlayClip(gradeUp);
-            gradePointRequirement *= Math.Abs(1 + (Math.Abs(Math.Floor((double)level / sectionSize) + 1) / 4));
+            gradePointRequirement *= 1 + Math.Min((Math.Floor((double)level / sectionSize) + 1) / 4, 2f);
             gradePointSlider.maxValue = (float)gradePointRequirement;
         }
         gradePointSlider.value = (float)gradePoints;
