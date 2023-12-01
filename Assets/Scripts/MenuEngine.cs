@@ -93,10 +93,14 @@ public class MenuEngine : MonoBehaviour
     private int configIndex;
     
     public void SetConfigIndex(int newIndex) => configIndex = newIndex;
-    public void ChangeTiming(string timing)
+    public void ChangeTiming(string strValue)
     {
+        if (strValue == string.Empty)
+        {
+            return;
+        }
         double divisionFactor = 1d / Time.fixedDeltaTime;
-        timings[configIndex] = double.Parse(timing);
+        timings[configIndex] = double.Parse(strValue);
         if (configIndex == 4)
         {
             timings[4] = timings[4] / divisionFactor;
@@ -110,6 +114,10 @@ public class MenuEngine : MonoBehaviour
     }
     public void ChangeMiscValue(string strValue)
     {
+        if (strValue == string.Empty)
+        {
+            return;
+        }
         double value;
         if (!double.TryParse(strValue, out value))
         {
