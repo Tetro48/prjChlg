@@ -388,7 +388,7 @@ public class PiecesController : MonoBehaviour
             int ibmTextureSel = (board.sectAfter20g > 1 && board.nextibmblocks >= board.nextPieces - i) ? 14 : 0;
             int combine = textureSel + ibmTextureSel;
             int result = bag[pieces + i + isHoldEmpty];
-            if (board.RS == RotationSystems.ARS && result == 1)
+            if (board.RS == RotationSystems.ARS && result == 0)
             {
                 isARS_coords = 0;
             }
@@ -399,6 +399,7 @@ public class PiecesController : MonoBehaviour
                             numberToTextureIDs[result + combine],
                             nextPieceManagerSizes[i] * (board.bigMode ? 0.5f : 1),
                             isARS_radians);
+            isARS_coords = board.RS == RotationSystems.ARS ? new float2(0, 1) : 0;
         }
     }
     void OnDrawGizmosSelected()
