@@ -31,8 +31,8 @@ public static class SIUnitsConversion
         return Math.Floor((input / scale) * 100 + 0.5) / 100;
     }
 
-    private static double[] timeScales = new double[] { 3600, 60, 1, 0.001, 0.000001, 0.000000001 };
-    private static string[] timeIndicators = new string[] { "h", "m", "s", "ms", "μs", "ns" };
+    private static double[] timeScales = new double[] {3600*60*365.24, 3600*60, 3600, 60, 1, 0.001, 0.000001, 0.000000001 };
+    private static string[] timeIndicators = new string[] {" years", "d", "h", "m", "s", "ms", "μs", "ns" };
     private static double[] sizeScales = new double[] { 1000000, 1000, 1, 0.001, 0.000001, 0.000000001 };
     private static string[] sizeIndicators = new string[] { "mgm", "km", "m", "mm", "μm", "nm" };
 
@@ -57,6 +57,10 @@ public static class SIUnitsConversion
     ///</summary>
     public static string doubleToSITime(double time, bool showSymbol = true)
     {
+        if (double.IsInfinity(time))
+        {
+            return "Infinite";
+        }
         double value;
         for (int i = 0; i < timeScales.Length; i++)
         {
