@@ -92,6 +92,19 @@ public class MenuEngine : MonoBehaviour
     public bool[] switches;
     private int configIndex;
     
+    public void ResetCMConfigs()
+    {
+        double divisionFactor = 1d / Time.fixedDeltaTime;
+        timings = new[] { 50, 41.6666666, 16.6666666, 25, 3d / 64d };
+        for (int i = 0; i < timings.Length - 1; i++)
+        {
+            timingsGUIText[i].text = SIUnitsConversion.doubleToSITime(timings[i] / divisionFactor);
+            timingsInputFields[i].text = string.Empty;
+        }
+        timingsGUIText[4].text = string.Format("{0:0.####}/sec", timings[4] / divisionFactor * 10000);
+        percentage = 0.8;
+        miscGUIText[0].text = "80%";
+    }
     public void SetConfigIndex(int newIndex) => configIndex = newIndex;
     public void ChangeTiming(string strValue)
     {
@@ -100,6 +113,9 @@ public class MenuEngine : MonoBehaviour
             return;
         }
         double divisionFactor = 1d / Time.fixedDeltaTime;
+        if (strValue.Length >= 3 && strValue[..3].ToLowerInvariant() == "inf")
+        timings[configIndex] = double.PositiveInfinity;
+        else
         timings[configIndex] = double.Parse(strValue);
         if (configIndex == 4)
         {
