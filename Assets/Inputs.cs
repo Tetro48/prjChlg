@@ -278,7 +278,7 @@ public partial class @Inputs: IInputActionCollection2, IDisposable
                 {
                     ""name"": """",
                     ""id"": ""7b923eaf-fa6f-46ce-b0eb-ae1c17903346"",
-                    ""path"": ""<Keyboard>/f1"",
+                    ""path"": ""<Keyboard>/escape"",
                     ""interactions"": """",
                     ""processors"": """",
                     ""groups"": """",
@@ -343,8 +343,8 @@ public partial class @Inputs: IInputActionCollection2, IDisposable
                 },
                 {
                     ""name"": """",
-                    ""id"": ""8e856f33-89d7-4d4c-b9db-5f6182b7cc96"",
-                    ""path"": ""<Gamepad>/leftShoulder"",
+                    ""id"": ""6068c7fa-fbd1-4b5e-91ce-742d06804935"",
+                    ""path"": ""<Keyboard>/c"",
                     ""interactions"": """",
                     ""processors"": """",
                     ""groups"": """",
@@ -354,8 +354,8 @@ public partial class @Inputs: IInputActionCollection2, IDisposable
                 },
                 {
                     ""name"": """",
-                    ""id"": ""6068c7fa-fbd1-4b5e-91ce-742d06804935"",
-                    ""path"": ""<Keyboard>/c"",
+                    ""id"": ""8e856f33-89d7-4d4c-b9db-5f6182b7cc96"",
+                    ""path"": ""<Gamepad>/leftShoulder"",
                     ""interactions"": """",
                     ""processors"": """",
                     ""groups"": """",

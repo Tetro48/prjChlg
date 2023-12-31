@@ -72,7 +72,7 @@ public class MenuEngine : MonoBehaviour
     private bool gameRestart;
     public MenuSegment pauseMenuSegment;
 
-    public TextMeshProUGUI[] switchesGUIText, mainMenuGUIText, settingsGUIText, inputsGUIText;
+    public TextMeshProUGUI[] switchesGUIText, mainMenuGUIText, settingsGUIText, inputsGUIText, inputMovementGUIText;
     public TextMeshProUGUI[] timingsGUIText, miscGUIText;
     public TMP_InputField[] timingsInputFields, miscInputFields;
     private Resolution[] resolutions;
@@ -194,10 +194,13 @@ public class MenuEngine : MonoBehaviour
         modifiableInputAsset.actionMaps[0].actions[index].PerformInteractiveRebinding()
         .WithControlsExcluding("<Mouse>/*")
         .WithControlsExcluding("*/escape")
-        .OnMatchWaitForAnother(1f)
+        // .OnMatchWaitForAnother(1f)
         .OnComplete(callback =>
         {
-            Notify("Rebound! Currently it'll reset when the game is closed.", Color.green);
+            Notify("Rebound!", Color.green);
+            inputsGUIText[index-1].text = callback.action.name + ": " + InputControlPath.ToHumanReadableString(
+            callback.action.bindings[0].effectivePath,
+            InputControlPath.HumanReadableStringOptions.OmitDevice);
             modifiableInputAsset.Enable();
             callback.Dispose();
         })
@@ -208,17 +211,46 @@ public class MenuEngine : MonoBehaviour
         modifiableInputAsset.Disable();
         // just a note: "actions[0]" assumes action "Movement".
         modifiableInputAsset.actionMaps[0].actions[0].PerformInteractiveRebinding()
-        .WithTargetBinding(compositeIndex)
+        .WithTargetBinding(compositeIndex+1)
         .WithControlsExcluding("<Mouse>/*")
         .WithControlsExcluding("*/escape")
-        .OnMatchWaitForAnother(1f)
+        // .OnMatchWaitForAnother(1f)
         .OnComplete(callback =>
         {
-            Notify("Rebound! Currently it'll reset when the game is closed.", Color.green);
+            Notify("Rebound!", Color.green);
+            inputMovementGUIText[compositeIndex].text = callback.action.bindings[compositeIndex+1].name + ": " + InputControlPath.ToHumanReadableString(
+            callback.action.bindings[compositeIndex+1].effectivePath,
+            InputControlPath.HumanReadableStringOptions.OmitDevice);
             modifiableInputAsset.Enable();
             callback.Dispose();
         })
         .Start();
+    }
+    public void LoadBindings()
+    {
+        string bindingJSON = PlayerPrefs.GetString("InputBindings", string.Empty);
+        if (bindingJSON == string.Empty)
+        {
+            return;
+        }
+        modifiableInputAsset.LoadBindingOverridesFromJson(bindingJSON);
+        for (int i = 0; i < inputsGUIText.Length; i++)
+        {
+            inputsGUIText[i].text = modifiableInputAsset.actionMaps[0].actions[i+1].name + ": " + InputControlPath.ToHumanReadableString(
+            modifiableInputAsset.actionMaps[0].actions[i+1].bindings[0].effectivePath,
+            InputControlPath.HumanReadableStringOptions.OmitDevice);
+        }
+        for (int i = 0; i < inputMovementGUIText.Length; i++)
+        {
+            inputMovementGUIText[i].text = modifiableInputAsset.actionMaps[0].actions[0].bindings[i+1].name + ": " + InputControlPath.ToHumanReadableString(
+            modifiableInputAsset.actionMaps[0].actions[0].bindings[i+1].effectivePath,
+            InputControlPath.HumanReadableStringOptions.OmitDevice);
+        }
+    }
+    public void SaveBindings()
+    {
+        string bindingJSON = modifiableInputAsset.SaveBindingOverridesAsJson();
+        PlayerPrefs.SetString("InputBindings", bindingJSON);
     }
     #endregion
 
@@ -379,6 +411,7 @@ public class MenuEngine : MonoBehaviour
             reswidth = 1f;
             menuSectors[1].transform.position += new Vector3(0f, 60.00f * (Screen.width / 1920.0f), 0f);
         }
+        LoadBindings();
         imgprjchlg.SetActive(true);
         if (platformCompat())
         {
@@ -532,6 +565,7 @@ public class MenuEngine : MonoBehaviour
     // }
     private void OnApplicationQuit()
     {
+        SaveBindings();
         if (platformCompat() && drpcSwitch)
         {
             discord.Dispose();

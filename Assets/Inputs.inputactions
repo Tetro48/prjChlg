@@ -11,7 +11,8 @@
                     "id": "a56601bd-502e-4770-8fc2-136638dedb16",
                     "expectedControlType": "Digital",
                     "processors": "",
-                    "interactions": ""
+                    "interactions": "",
+                    "initialStateCheck": true
                 },
                 {
                     "name": "Counterclockwise",
@@ -19,7 +20,8 @@
                     "id": "fcc83a91-170d-48a4-882c-840d92c8be88",
                     "expectedControlType": "Button",
                     "processors": "",
-                    "interactions": ""
+                    "interactions": "",
+                    "initialStateCheck": false
                 },
                 {
                     "name": "Clockwise",
@@ -27,7 +29,8 @@
                     "id": "da2010e5-7209-450d-a26a-c29b44be5992",
                     "expectedControlType": "Button",
                     "processors": "",
-                    "interactions": ""
+                    "interactions": "",
+                    "initialStateCheck": false
                 },
                 {
                     "name": "Clockwise 2",
@@ -35,7 +38,8 @@
                     "id": "4b820601-d419-4422-ae27-e9e5cf8bcc62",
                     "expectedControlType": "Button",
                     "processors": "",
-                    "interactions": ""
+                    "interactions": "",
+                    "initialStateCheck": false
                 },
                 {
                     "name": "UpsideDown",
@@ -43,7 +47,8 @@
                     "id": "404c7974-63fd-4e34-86cf-eeeb33a62d7c",
                     "expectedControlType": "Button",
                     "processors": "",
-                    "interactions": ""
+                    "interactions": "",
+                    "initialStateCheck": false
                 },
                 {
                     "name": "Hold",
@@ -51,7 +56,8 @@
                     "id": "58394490-f9be-48bd-863b-2a7571ed01be",
                     "expectedControlType": "Button",
                     "processors": "",
-                    "interactions": ""
+                    "interactions": "",
+                    "initialStateCheck": false
                 },
                 {
                     "name": "Pause",
@@ -59,7 +65,8 @@
                     "id": "4ebbee2c-e26b-4bd4-b26e-fd75d3127f33",
                     "expectedControlType": "Button",
                     "processors": "",
-                    "interactions": ""
+                    "interactions": "",
+                    "initialStateCheck": false
                 },
                 {
                     "name": "Framestep",
@@ -67,7 +74,8 @@
                     "id": "c81b05b0-1a7b-4ec9-8adc-8db3aca77184",
                     "expectedControlType": "Button",
                     "processors": "",
-                    "interactions": ""
+                    "interactions": "",
+                    "initialStateCheck": false
                 },
                 {
                     "name": "Show Grade Score",
@@ -75,7 +83,8 @@
                     "id": "cf300265-2f9e-481f-bd7d-0a0d56df258c",
                     "expectedControlType": "Button",
                     "processors": "",
-                    "interactions": ""
+                    "interactions": "",
+                    "initialStateCheck": false
                 }
             ],
             "bindings": [
@@ -247,7 +256,7 @@
                 {
                     "name": "",
                     "id": "7b923eaf-fa6f-46ce-b0eb-ae1c17903346",
-                    "path": "<Keyboard>/f1",
+                    "path": "<Keyboard>/escape",
                     "interactions": "",
                     "processors": "",
                     "groups": "",
@@ -312,8 +321,8 @@
                 },
                 {
                     "name": "",
-                    "id": "8e856f33-89d7-4d4c-b9db-5f6182b7cc96",
-                    "path": "<Gamepad>/leftShoulder",
+                    "id": "6068c7fa-fbd1-4b5e-91ce-742d06804935",
+                    "path": "<Keyboard>/c",
                     "interactions": "",
                     "processors": "",
                     "groups": "",
@@ -323,8 +332,8 @@
                 },
                 {
                     "name": "",
-                    "id": "6068c7fa-fbd1-4b5e-91ce-742d06804935",
-                    "path": "<Keyboard>/c",
+                    "id": "8e856f33-89d7-4d4c-b9db-5f6182b7cc96",
+                    "path": "<Gamepad>/leftShoulder",
                     "interactions": "",
                     "processors": "",
                     "groups": "",
