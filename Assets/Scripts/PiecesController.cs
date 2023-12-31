@@ -418,7 +418,7 @@ public class PiecesController : MonoBehaviour
             blockPos = blockPos.Rotate(radians);
             blockPos += pivot;
             blockPos *= scale;
-            board.RenderBlock(blockPos + coordinates, id, scale);
+            board.boardRenderer.RenderBlock(blockPos + coordinates, id, 0, scale);
         }
     }
     /// <summary>
@@ -494,11 +494,6 @@ public class PiecesController : MonoBehaviour
                 ExecuteHold();
             }
             ProcessMovement();
-            //This is temporary.
-            if (Input.GetKeyDown(KeyCode.Escape))
-            {
-                MenuEngine.instance.isGamePaused = true;
-            }
             // else if (Input.GetKeyDown(KeyCode.Escape))
             // {
             //     NotificationEngine.Notify("Oneshot switch is on.");

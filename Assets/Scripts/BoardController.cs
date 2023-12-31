@@ -109,7 +109,7 @@ public class BoardController : MonoBehaviour
         {
             for (int y = 0; y < gridSizeY; y++)
             {
-                networkBoard.RenderBlock(x, y, textureIDs[x, y], 1 - transparencyGrid[x,y]);
+                networkBoard.boardRenderer.RenderBlock(x, y, textureIDs[x, y], 1 - transparencyGrid[x,y]);
             }
         }
     }

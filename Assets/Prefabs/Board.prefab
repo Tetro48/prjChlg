@@ -6582,6 +6582,7 @@ GameObject:
   - component: {fileID: -7467898028736111208}
   - component: {fileID: -1545146102209895259}
   - component: {fileID: 8119781463180149542}
+  - component: {fileID: 6801669932567235623}
   m_Layer: 0
   m_Name: Board
   m_TagString: Untagged
@@ -6793,9 +6794,7 @@ MonoBehaviour:
   movement:
     x: 0
     y: 0
-  minoMaterial: {fileID: 2100000, guid: 96d1f6a0b4f54c54391ec6e00f682ddd, type: 2}
-  minoMesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
-  transformReference: {fileID: 5275245016151031469}
+  boardRenderer: {fileID: 6801669932567235623}
   rolltimeObject: {fileID: 2851023820170990937}
 --- !u!114 &8119781463180149542
 MonoBehaviour:
@@ -6996,6 +6995,23 @@ MonoBehaviour:
   m_DefaultActionMap: Game maps
   m_SplitScreenIndex: -1
   m_Camera: {fileID: 0}
+--- !u!114 &6801669932567235623
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3231009631264951806}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8dd17e2b63b53f84e92be663aff37754, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  minoMaterial: {fileID: 2100000, guid: 96d1f6a0b4f54c54391ec6e00f682ddd, type: 2}
+  minoMeshes:
+  - {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
+  - {fileID: 10209, guid: 0000000000000000e000000000000000, type: 0}
+  transformReference: {fileID: 5275245016151031469}
 --- !u!1 &3244449801509119056
 GameObject:
   m_ObjectHideFlags: 0
