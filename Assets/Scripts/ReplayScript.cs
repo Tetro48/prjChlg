@@ -35,7 +35,7 @@ public static class ReplayScript
     /// <summary>
     ///Note: You have to manually manage this through code.
     /// </summary>
-    public static dynamic LoadData(string saveName)
+    public static object LoadData(string saveName)
     {
         string path = Path.Combine(Application.persistentDataPath, saveName.ToString());
         if (File.Exists(path))
@@ -43,7 +43,7 @@ public static class ReplayScript
             BinaryFormatter formatter = new BinaryFormatter();
             FileStream stream = new FileStream(path, FileMode.Open);
 
-            dynamic data = formatter.Deserialize(stream);
+            object data = formatter.Deserialize(stream);
 
             stream.Close();
             return data;
@@ -81,36 +81,6 @@ public static class ReplayScript
         else
         {
             Debug.LogError("Replay file is not there! Path: " + path);
-            return null;
-        }
-    }
-    public static void SaveInputConfig(ReplayRecord replayRecord, string saveName)
-    {
-        BinaryFormatter formatter = new BinaryFormatter();
-        string path = Path.Combine(Application.persistentDataPath, "replay-" + saveName + ".clg");
-        FileStream stream = new FileStream(path, FileMode.Create);
-
-        ReplayVars data = new ReplayVars(replayRecord);
-        formatter.Serialize(stream, data);
-        stream.Close();
-    }
-
-    public static InputVars LoadInputConfig(string saveName)
-    {
-        string path = Path.Combine(Application.persistentDataPath, "replay-" + saveName + ".clg");
-        if (File.Exists(path))
-        {
-            BinaryFormatter formatter = new BinaryFormatter();
-            FileStream stream = new FileStream(path, FileMode.Open);
-
-            InputVars data = formatter.Deserialize(stream) as InputVars;
-
-            stream.Close();
-            return data;
-        }
-        else
-        {
-            Debug.LogError("File is not there! Path: " + path);
             return null;
         }
     }
