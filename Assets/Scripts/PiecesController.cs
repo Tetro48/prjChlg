@@ -111,7 +111,7 @@ public class PiecesController : MonoBehaviour
     public AudioClip[] nextpieceSE;
     public AudioClip audioIRS, audioIHS, bell, levelup, holdSE;
     [SerializeField]
-    private int2 relativeHoldPieceCoordinate;
+    private float2 relativeHoldPieceCoordinate;
 
     [SerializeField]
     private int holdPieceTextureID, holdPieceID;
@@ -119,7 +119,7 @@ public class PiecesController : MonoBehaviour
     private PieceType holdPieceType;
 
     [SerializeField]
-    private List<int2> relativeNextPieceCoordinates;
+    private List<float2> relativeNextPieceCoordinates;
     [SerializeField]
     private float[] nextPieceManagerSizes;
 
@@ -375,12 +375,14 @@ public class PiecesController : MonoBehaviour
         float isARS_radians = board.RS == RotationSystems.ARS ? math.PI : 0;
         float2 isARS_coords = board.RS == RotationSystems.ARS ? new float2(0, 1) : 0;
         int isBigMode = board.bigMode ? 7 : 0;
-        RenderNextQueue((float2)relativeHoldPieceCoordinate + isARS_coords,
-                        minoPositions[holdPieceID + isBigMode],
-                        pivotPositions[holdPieceID + isBigMode],
-                        holdPieceTextureID,
-                        board.bigMode ? 0.5f : 1,
-                        isARS_radians);
+        if (isHeld) 
+        RenderNextQueue(
+            relativeHoldPieceCoordinate + isARS_coords,
+            minoPositions[holdPieceID + isBigMode],
+            pivotPositions[holdPieceID + isBigMode],
+            holdPieceTextureID,
+            board.bigMode ? 0.5f : 1,
+            isARS_radians);
         for (int i = 0; i < math.min(relativeNextPieceCoordinates.Count, board.nextPieces); i++)
         {
             int isHoldEmpty = isHeld ? 1 : 0;
@@ -393,7 +395,7 @@ public class PiecesController : MonoBehaviour
                 isARS_coords = 0;
             }
             int2[] blocks = minoPositions[result + isBigMode];
-            RenderNextQueue((float2)relativeNextPieceCoordinates[i] + isARS_coords,
+            RenderNextQueue(relativeNextPieceCoordinates[i] + isARS_coords,
                             blocks,
                             pivotPositions[result + isBigMode],
                             numberToTextureIDs[result + combine],
