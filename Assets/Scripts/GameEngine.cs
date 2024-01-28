@@ -378,11 +378,7 @@ public class GameEngine : MonoBehaviour
         using UnityWebRequest www = UnityWebRequestMultimedia.GetAudioClip(audioPath + filename, AudioType.WAV);
         yield return www.SendWebRequest();
 
-        if (www.result == UnityWebRequest.Result.ConnectionError)
-        {
-            Debug.Log(www.error);
-        }
-        else
+        if (www.result == UnityWebRequest.Result.Success)
         {
             int lvindex = lv;
             if (lv == 6)
@@ -405,11 +401,7 @@ public class GameEngine : MonoBehaviour
         using UnityWebRequest www = UnityWebRequestMultimedia.GetAudioClip(audioPath + "menu.wav", AudioType.WAV);
         yield return www.SendWebRequest();
 
-        if (www.result == UnityWebRequest.Result.ConnectionError)
-        {
-            Debug.Log(www.error);
-        }
-        else
+        if (www.result == UnityWebRequest.Result.Success)
         {
             MMmusic = DownloadHandlerAudioClip.GetContent(www);
             MMmusic.name = "menu";
