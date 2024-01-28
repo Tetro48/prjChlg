@@ -19517,7 +19517,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3ddef0a43a901694097606b6015c70af, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  mode: 0
+  mode: 2
   frames: 00000000
   boards: 0
   textMode: {fileID: 1370771948}
