@@ -39,7 +39,7 @@ public class ReplayRecord : MonoBehaviour
     public void SaveReplay(string name)
     {
         ReplayVars vars = new ReplayVars(this);
-        ReplayScript.SaveData(vars, name);
+        ReplayScript.SaveData(vars, "replay-" + name + ".clg");
         vars.Dispose();
     }
     public void LoadReplay(string name)
