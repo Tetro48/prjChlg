@@ -377,7 +377,7 @@ public class MenuEngine : MonoBehaviour
             Debug.Log(modifiableInputAsset.actionMaps[0].actions[i].name);
         }
         players = new List<GameObject>();
-        Application.targetFrameRate = Screen.currentResolution.refreshRate * 4;
+        // Application.targetFrameRate = Screen.currentResolution.refreshRate * 4;
         alreadystarted = true;
         instance = this;
         AudioManager.audioDictionary = new Dictionary<string, AudioClip>();
@@ -515,7 +515,7 @@ public class MenuEngine : MonoBehaviour
             Notify(Math.Floor(board.statGradePoints).ToString(), Color.white);
         }
         Notify(LanguageList.LangString[(int)LangArray.notifications][(int)language, 9] + board.level + "/" + (board.level < 2100 ? (board.curSect + 1) * 100 : 2100), Color.white); // Level
-        Notify(LanguageList.LangString[(int)LangArray.notifications][(int)language, 10] + (board.gravity / 6 * Time.fixedDeltaTime * 1000), Color.white); // Gravity
+        Notify(LanguageList.LangString[(int)LangArray.notifications][(int)language, 10] + string.Format("{0:0.####}", board.gravity / 6 * Time.fixedDeltaTime * 1000), Color.white); // Gravity
         Notify(LanguageList.Extract(LangArray.notifications, language, 11) + board.timeCounter.text, Color.white);
     }
     public void Notify(string text, Color color = default)
@@ -543,7 +543,7 @@ public class MenuEngine : MonoBehaviour
         if (platformCompat())
         {
             Resolution resolution = resolutions[index];
-            Screen.SetResolution(resolution.width, resolution.height, true);
+            Screen.SetResolution(resolution.width, resolution.height, true, resolution.refreshRate);
             reswidth = (float)(resolution.width / 1920.0);
         }
     }
@@ -722,7 +722,7 @@ public class MenuEngine : MonoBehaviour
                     if (ReplayRecord.instance.mode == ReplayModeType.read)
                     {
                         ReplayRecord.instance.LoadReplay("1");
-                        UnityEngine.Random.InitState(ReplayRecord.seed);
+                        // UnityEngine.Random.InitState(ReplayRecord.seed);
                     }
                     menuSectors[0].SetActive(false);
                     executedOnce = true;
